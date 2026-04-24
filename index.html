@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lukkari.io</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: linear-gradient(140deg, oklch(0.93 0.055 345) 0%, oklch(0.91 0.07 50) 55%, oklch(0.92 0.055 20) 100%);
+  --glass: rgba(255,255,255,0.58);
+  --glass-s: rgba(255,255,255,0.75);
+  --glass-b: rgba(255,255,255,0.85);
+  --shadow: 0 8px 32px rgba(80,40,10,0.10), 0 1.5px 0 rgba(255,255,255,0.7) inset;
+  --ink: #1f1d1a;
+  --ink-s: #797470;
+  --ink-f: #b2ada8;
+  --accent: oklch(0.60 0.13 45);
+  --p1: oklch(0.93 0.055 45);  --p1b: oklch(0.80 0.09 45);  --p1l: oklch(0.55 0.13 45);
+  --p2: oklch(0.93 0.045 150); --p2b: oklch(0.78 0.08 150); --p2l: oklch(0.44 0.10 150);
+  --p3: oklch(0.93 0.05 80);   --p3b: oklch(0.79 0.085 80); --p3l: oklch(0.50 0.12 80);
+  --p4: oklch(0.93 0.045 240); --p4b: oklch(0.78 0.08 240); --p4l: oklch(0.44 0.10 240);
+  --p5: oklch(0.93 0.05 340);  --p5b: oklch(0.80 0.085 340);--p5l: oklch(0.52 0.11 340);
+  --r-lg: 24px; --r-md: 16px; --r-sm: 10px;
+}
+html,body { min-height:100%; font-family:'Inter',sans-serif; background:var(--bg); background-attachment:fixed; color:var(--ink); -webkit-font-smoothing:antialiased; }
+#root { min-height:100vh; }
+.fr { font-family:'Fraunces',serif; }
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.13); border-radius:99px; }
+.glass { background:var(--glass); border:1.5px solid var(--glass-b); backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); box-shadow:var(--shadow); }
+.tab-pill { display:inline-flex; background:rgba(255,255,255,0.42); border:1.5px solid rgba(255,255,255,0.82); border-radius:99px; padding:3px; gap:2px; backdrop-filter:blur(10px); }
+.tab-btn { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; padding:6px 22px; border-radius:99px; border:none; cursor:pointer; transition:all .18s; color:var(--ink-s); background:transparent; }
+.tab-btn.on { background:white; color:var(--ink); box-shadow:0 2px 8px rgba(0,0,0,0.10); }
+.tab-btn:not(.on):hover { color:var(--ink); background:rgba(255,255,255,0.45); }
+.ci { width:100%; height:100%; border:none; background:transparent; font-family:'Fraunces',serif; font-size:15px; font-weight:500; color:var(--ink); outline:none; text-align:center; padding:4px 6px; border-radius:8px; transition:background .12s; caret-color:var(--accent); }
+.ci::placeholder { color:var(--ink-f); font-style:italic; font-size:20px; font-weight:400; }
+.ci:focus { background:rgba(255,255,255,0.65); }
+.ci:focus::placeholder { opacity:0; }
+.icon-btn { display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:all .15s; }
+.icon-btn:hover { background:rgba(255,255,255,0.85) !important; color:var(--ink) !important; }
+@media (max-width:900px) { .mx-scroll { overflow-x:auto; } .wk-grid { grid-template-columns:1fr !important; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+/* ── SCHOOLS DATA ───────────────────────────────────────────── */
+const SCHOOLS = [
+  {
+    id:"otaniemi", name:"Otaniemen lukio", location:"Espoo",
+    palkkiCount:8, periodCount:5,
+    times:["8.15–9.45","10.00–11.30","11.45–13.15","13.30–15.00","15.15–16.45"],
+    days:["Ma","Ti","Ke","To","Pe"],
+    rotation:[
+      [1,2,3,4,5],[6,7,8,1,2],[3,4,5,6,7],[8,1,2,3,4],[5,6,7,8,null]
+    ],
+    note:"Tuntikiiertokaavio on likiarvo — tarkista koulusi sivulta"
+  },
+  {
+    id:"espoonlahti", name:"Espoonlahden lukio", location:"Espoo",
+    palkkiCount:8, periodCount:5,
+    times:["8.30–9.45","9.55–11.10","11.25–13.10","13.20–14.35","14.45–16.00"],
+    days:["Ma","Ti","Ke","To","Pe"],
+    rotation:[
+      [2,7,4,7,1],[3,5,2,5,4],[7,4,3,1,6],[6,1,6,2,5],[8,null,8,3,8]
+    ]
+  },
+  {
+    id:"haukilahti", name:"Haukilahden lukio", location:"Espoo",
+    palkkiCount:8, periodCount:5,
+    times:["8.30–9.45","10.00–11.15","11.25–13.20","13.35–14.50","15.05–16.20"],
+    days:["Ma","Ti","Ke","To","Pe"],
+    rotation:[
+      [2,7,7,7,1],[3,5,2,5,4],[4,4,3,1,6],[6,1,6,2,5],[8,null,8,3,8]
+    ]
+  },
+  {
+    id:"matinkyla", name:"Matinkylän lukio", location:"Espoo",
+    palkkiCount:8, periodCount:5,
+    times:["8.15–9.30","9.45–11.00","11.10–13.00","13.15–14.30","14.45–16.00"],
+    days:["Ma","Ti","Ke","To","Pe"],
+    rotation:[
+      [2,7,4,7,1],[3,5,2,5,4],[7,4,3,1,6],[6,1,6,2,5],[8,null,8,3,8]
+    ]
+  },
+  {
+    id:"etela-tapiola", name:"Etelä-Tapiolan lukio", location:"Espoo",
+    palkkiCount:9, periodCount:5,
+    times:["8.15–9.30","9.45–11.00","11.00–13.00","13.15–14.30","14.45–16.00"],
+    days:["Ma","Ti","Ke","To","Pe"],
+    rotation:[
+      [2,7,4,7,1],[3,5,2,5,4],[7,4,3,1,6],[6,1,6,2,5],[8,9,8,3,8]
+    ]
+  }
+];
+
+const PTINTS = [
+  {bg:"var(--p1)",b:"var(--p1b)",l:"var(--p1l)"},
+  {bg:"var(--p2)",b:"var(--p2b)",l:"var(--p2l)"},
+  {bg:"var(--p3)",b:"var(--p3b)",l:"var(--p3l)"},
+  {bg:"var(--p4)",b:"var(--p4b)",l:"var(--p4l)"},
+  {bg:"var(--p5)",b:"var(--p5b)",l:"var(--p5l)"},
+];
+
+/* ── STORAGE ────────────────────────────────────────────────── */
+const KEY = "lukkari.v1";
+function loadState() { try { const r=localStorage.getItem(KEY); return r?JSON.parse(r):null; } catch{return null;} }
+function saveState(s) { try { localStorage.setItem(KEY,JSON.stringify(s)); } catch{} }
+function clearStoredSelections() { try { const r=loadState(); if(r){r.selections={};localStorage.setItem(KEY,JSON.stringify(r));} } catch{} }
+
+/* ── EXPORT HELPERS ─────────────────────────────────────────── */
+function buildTextExport(school, selections, year) {
+  const lines = [];
+  lines.push(`LUKUJÄRJESTYS — ${school.name} ${year}`);
+  lines.push(`Viety Lukkari.io:sta\n`);
+  for (let pi=0; pi<school.periodCount; pi++) {
+    lines.push(`${pi+1}. PERIODI`);
+    let any = false;
+    for (let bi=0; bi<school.palkkiCount; bi++) {
+      const v = selections[`p${pi+1}-b${bi+1}`]?.trim();
+      if (v) { lines.push(`  Palkki ${bi+1}: ${v}`); any=true; }
+    }
+    if (!any) lines.push("  (ei kursseja kirjattu)");
+    lines.push("");
+  }
+  lines.push("\nVIIKKONÄKYMÄ");
+  for (let pi=0; pi<school.periodCount; pi++) {
+    lines.push(`\n${pi+1}. periodi:`);
+    const header = "  " + "Aika".padEnd(14) + school.days.map(d=>d.padEnd(10)).join("");
+    lines.push(header);
+    for (let ti=0; ti<school.times.length; ti++) {
+      const row = school.days.map((_, di) => {
+        const beam = school.rotation[ti]?.[di];
+        if (!beam) return "—".padEnd(10);
+        const c = selections[`p${pi+1}-b${beam}`]?.trim();
+        return (c||`(${beam})`).substring(0,9).padEnd(10);
+      });
+      lines.push("  " + school.times[ti].padEnd(14) + row.join(""));
+    }
+  }
+  return lines.join("\n");
+}
+
+/* ── ICONS ──────────────────────────────────────────────────── */
+const Ico = {
+  gear: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  close: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  mail: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  download: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  print: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>,
+  trash: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  check: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  star: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  bolt: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  shield: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  calendar: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  conflict: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+};
+
+/* ── SETTINGS PANEL ─────────────────────────────────────────── */
+function SettingsPanel({ open, onClose, school, selections, year, setYear, onClear, filledCount }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleEmail = () => {
+    const text = buildTextExport(school, selections, year);
+    const subject = encodeURIComponent(`Lukujärjestykseni — ${school.name} ${year}`);
+    const body = encodeURIComponent(text);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleDownload = () => {
+    const text = buildTextExport(school, selections, year);
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `lukkari-${school.id}-${year}.txt`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopy = async () => {
+    const text = buildTextExport(school, selections, year);
+    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(()=>setCopied(false),2000); } catch{}
+  };
+
+  const handlePrint = () => window.print();
+
+  const settingBtn = (icon, label, onClick, danger) => (
+    <button onClick={onClick} style={{
+      display:"flex", alignItems:"center", gap:10,
+      width:"100%", padding:"11px 14px", borderRadius:12, border:"none",
+      background: danger ? "rgba(200,60,40,0.07)" : "rgba(255,255,255,0.55)",
+      color: danger ? "oklch(0.45 0.18 25)" : "var(--ink)",
+      fontSize:13, fontWeight:500, cursor:"pointer",
+      transition:"all .14s", textAlign:"left",
+      borderWidth:1.5, borderStyle:"solid",
+      borderColor: danger ? "rgba(200,60,40,0.15)" : "rgba(255,255,255,0.8)",
+    }}
+      onMouseEnter={e=>{e.currentTarget.style.background=danger?"rgba(200,60,40,0.12)":"rgba(255,255,255,0.85)";}}
+      onMouseLeave={e=>{e.currentTarget.style.background=danger?"rgba(200,60,40,0.07)":"rgba(255,255,255,0.55)";}}
+    >
+      <span style={{color:danger?"oklch(0.52 0.18 25)":"var(--ink-s)", display:"flex"}}>{icon}</span>
+      {label}
+    </button>
+  );
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position:"fixed",inset:0,zIndex:90,
+        background:"rgba(20,10,5,0.18)",
+        backdropFilter:"blur(2px)",
+        opacity:open?1:0, pointerEvents:open?"all":"none",
+        transition:"opacity .22s",
+      }}/>
+      {/* Drawer */}
+      <div className="glass" style={{
+        position:"fixed",top:0,right:0,bottom:0,zIndex:91,
+        width:320,
+        transform:open?"translateX(0)":"translateX(100%)",
+        transition:"transform .28s cubic-bezier(.4,0,.2,1)",
+        borderRadius:"24px 0 0 24px",
+        borderRight:"none",
+        display:"flex",flexDirection:"column",
+        overflow:"hidden",
+      }}>
+        {/* Drawer header */}
+        <div style={{
+          display:"flex",alignItems:"center",justifyContent:"space-between",
+          padding:"20px 20px 16px",
+          borderBottom:"1px solid rgba(255,255,255,0.6)",
+        }}>
+          <span className="fr" style={{fontSize:20,fontWeight:500,color:"var(--ink)"}}>Asetukset</span>
+          <button className="icon-btn" onClick={onClose} style={{
+            width:32,height:32,borderRadius:"50%",
+            background:"rgba(255,255,255,0.5)",
+            border:"1.5px solid rgba(255,255,255,0.8)",
+            color:"var(--ink-s)",
+          }}>{Ico.close}</button>
+        </div>
+
+        {/* Drawer body */}
+        <div style={{flex:1,overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:20}}>
+
+          {/* Lukuvuosi */}
+          <div>
+            <div style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)",marginBottom:8}}>Lukuvuosi</div>
+            <div style={{display:"flex",gap:6}}>
+              {["2025–2026","2026–2027","2027–2028"].map(y=>(
+                <button key={y} onClick={()=>setYear(y)} style={{
+                  flex:1,padding:"7px 4px",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer",
+                  border:`1.5px solid ${year===y?"var(--accent)":"rgba(255,255,255,0.8)"}`,
+                  background:year===y?"rgba(255,255,255,0.85)":"rgba(255,255,255,0.45)",
+                  color:year===y?"var(--accent)":"var(--ink-s)",
+                  transition:"all .14s",
+                }}>{y}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Export */}
+          <div>
+            <div style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)",marginBottom:8}}>
+              Vie & jaa
+              {filledCount===0 && <span style={{marginLeft:6,fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--ink-f)"}}>— lisää ensin kursseja</span>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,opacity:filledCount===0?0.45:1,pointerEvents:filledCount===0?"none":"all"}}>
+              {settingBtn(Ico.mail, "Lähetä sähköpostiin", handleEmail)}
+              {settingBtn(Ico.download, "Lataa tekstitiedostona", handleDownload)}
+              {settingBtn(copied?Ico.check:"", copied?"Kopioitu!" : "Kopioi leikepöydälle", handleCopy)}
+              {settingBtn(Ico.print, "Tulosta / Tallenna PDF:ksi", handlePrint)}
+            </div>
+          </div>
+
+          {/* About */}
+          <div>
+            <div style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)",marginBottom:8}}>Koulut</div>
+            <div style={{background:"rgba(255,255,255,0.45)",border:"1.5px solid rgba(255,255,255,0.8)",borderRadius:12,padding:"10px 14px"}}>
+              {SCHOOLS.map(s=>(
+                <div key={s.id} style={{fontSize:12,color:"var(--ink-s)",padding:"3px 0",display:"flex",justifyContent:"space-between"}}>
+                  <span>{s.name}</span>
+                  <span style={{color:"var(--ink-f)"}}>{s.palkkiCount}P</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Danger */}
+          <div>
+            <div style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)",marginBottom:8}}>Hallinta</div>
+            {settingBtn(Ico.trash, "Tyhjennä kaikki kurssit", onClear, true)}
+          </div>
+
+          {/* Footer info */}
+          <div style={{marginTop:"auto",padding:"12px 0 0",borderTop:"1px solid rgba(200,195,190,0.3)"}}>
+            <p style={{fontSize:11,color:"var(--ink-f)",lineHeight:1.5}}>
+              Lukkari.io — kaikki tiedot tallennetaan vain tällä laitteella.<br/>
+              Ei tiliä. Ei seurantaa.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+function Header({ tab, setTab, onGear }) {
+  return (
+    <header style={{
+      display:"flex",alignItems:"center",justifyContent:"space-between",
+      padding:"0 28px",height:60,
+      background:"rgba(255,255,255,0.42)",
+      borderBottom:"1.5px solid rgba(255,255,255,0.72)",
+      backdropFilter:"blur(28px) saturate(1.5)",
+      WebkitBackdropFilter:"blur(28px) saturate(1.5)",
+      position:"sticky",top:0,zIndex:50,
+    }}>
+      <span className="fr" style={{fontSize:22,fontWeight:500,letterSpacing:"-0.02em"}}>
+        Lukkari<span style={{color:"var(--accent)"}}>.</span><span style={{color:"var(--ink-s)"}}>io</span>
+      </span>
+      <div className="tab-pill">
+        <button className={"tab-btn"+(tab==="free"?" on":"")} onClick={()=>setTab("free")}>Free</button>
+        <button className={"tab-btn"+(tab==="pro"?" on":"")} onClick={()=>setTab("pro")}>Pro</button>
+      </div>
+      <button className="icon-btn" onClick={onGear} style={{
+        width:36,height:36,borderRadius:"50%",
+        background:"rgba(255,255,255,0.5)",
+        border:"1.5px solid rgba(255,255,255,0.8)",
+        color:"var(--ink-s)",
+      }} title="Asetukset">{Ico.gear}</button>
+    </header>
+  );
+}
+
+/* ── SCHOOL PICKER ──────────────────────────────────────────── */
+function SchoolPicker({ schoolId, setSchoolId }) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <span style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)"}}>Koulu</span>
+      <div style={{position:"relative"}}>
+        <select value={schoolId} onChange={e=>setSchoolId(e.target.value)} style={{
+          background:"rgba(255,255,255,0.62)",border:"1.5px solid rgba(255,255,255,0.88)",
+          borderRadius:99,padding:"5px 30px 5px 14px",fontSize:13,fontWeight:500,
+          color:"var(--ink)",cursor:"pointer",outline:"none",
+          backdropFilter:"blur(8px)",appearance:"none",
+        }}>
+          {SCHOOLS.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <svg style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width="10" height="7" viewBox="0 0 10 7"><path d="M1 1l4 4 4-4" stroke="var(--ink-s)" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
+      </div>
+    </div>
+  );
+}
+
+/* ── CHOICE GRID ────────────────────────────────────────────── */
+function ChoiceGrid({ school, selections, onChange }) {
+  const refs = useRef({});
+
+  const jump = useCallback((e, pi, bi) => {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+    let np=pi, nb=bi+1;
+    if (nb > school.palkkiCount) { nb=1; np=pi+1; }
+    if (np > school.periodCount) { np=1; nb=1; }
+    refs.current[`p${np}-b${nb}`]?.focus();
+  }, [school]);
+
+  return (
+    <div className="mx-scroll">
+      <table style={{borderCollapse:"separate",borderSpacing:"5px 4px",width:"100%",minWidth:560}}>
+        <thead>
+          <tr>
+            <th style={{width:72}}></th>
+            {Array.from({length:school.periodCount},(_,pi)=>{
+              const t=PTINTS[pi];
+              return (
+                <th key={pi} style={{textAlign:"center",padding:"0 2px 12px"}}>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                    <span className="fr" style={{fontSize:24,fontWeight:500,color:t.l,fontStyle:"italic",lineHeight:1}}>{pi+1}</span>
+                    <span style={{fontSize:9,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-f)"}}>periodi</span>
+                  </div>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({length:school.palkkiCount},(_,bi)=>(
+            <tr key={bi}>
+              <td style={{padding:"1px 8px 1px 0",verticalAlign:"middle"}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",lineHeight:1}}>
+                  <span className="fr" style={{fontSize:19,fontWeight:500,color:"var(--ink-s)",fontStyle:"italic"}}>{bi+1}</span>
+                  <span style={{fontSize:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--ink-f)",marginTop:1}}>palkki</span>
+                </div>
+              </td>
+              {Array.from({length:school.periodCount},(_,pi)=>{
+                const k=`p${pi+1}-b${bi+1}`, v=selections[k]||"", filled=v.trim().length>0, t=PTINTS[pi];
+                return (
+                  <td key={pi} style={{padding:0}}>
+                    <div style={{
+                      height:54,borderRadius:10,
+                      background:filled?t.bg:"rgba(255,255,255,0.42)",
+                      border:`1.5px solid ${filled?t.b:"rgba(255,255,255,0.82)"}`,
+                      transition:"all .14s",
+                      display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
+                    }}>
+                      <input
+                        ref={el=>{if(el)refs.current[k]=el;}}
+                        className="ci"
+                        type="text" value={v} placeholder="+"
+                        maxLength={20}
+                        onChange={e=>onChange(k,e.target.value)}
+                        onKeyDown={e=>jump(e,pi+1,bi+1)}
+                        style={{fontSize:v.length>8?12:15}}
+                      />
+                    </div>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{marginTop:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontSize:11,color:"var(--ink-f)"}}>Tab-näppäimellä seuraavaan soluun →</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── PERIOD CARD ────────────────────────────────────────────── */
+function PeriodCard({ pi, school, selections }) {
+  const t = PTINTS[pi];
+  const {rotation,times,days,palkkiCount} = school;
+  const count = Array.from({length:palkkiCount},(_,bi)=>selections[`p${pi+1}-b${bi+1}`]?.trim()?1:0).reduce((a,b)=>a+b,0);
+
+  return (
+    <div className="glass" style={{borderRadius:20,padding:"20px 18px",overflow:"hidden"}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:4}}>
+        <span className="fr" style={{fontSize:26,fontWeight:500,fontStyle:"italic",color:t.l}}>{pi+1}.</span>
+        <span className="fr" style={{fontSize:17,fontWeight:500,color:"var(--ink)"}}>periodi</span>
+        <div style={{flex:1}}/>
+        <span style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.1em",color:t.l}}>
+          {count} {count===1?"kurssi":"kurssia"}
+        </span>
+      </div>
+      <div style={{height:2,width:32,borderRadius:99,background:t.l,opacity:.65,marginBottom:14}}/>
+      <div style={{overflowX:"auto"}}>
+        <table style={{borderCollapse:"separate",borderSpacing:"3px 2px",width:"100%",minWidth:260}}>
+          <thead>
+            <tr>
+              <th style={{width:60,padding:"0 4px 5px 0"}}/>
+              {days.map((d,di)=>(
+                <th key={di} style={{textAlign:"center",padding:"0 1px 5px"}}>
+                  <span style={{fontSize:9,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-s)"}}>{d}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {times.map((time,ti)=>(
+              <tr key={ti}>
+                <td style={{padding:"1px 5px 1px 0",verticalAlign:"middle",whiteSpace:"nowrap"}}>
+                  <span style={{fontSize:9,fontWeight:500,color:"var(--ink-f)",fontVariantNumeric:"tabular-nums"}}>{time}</span>
+                </td>
+                {days.map((_,di)=>{
+                  const beam = rotation[ti]?.[di];
+                  const ck = beam?`p${pi+1}-b${beam}`:null;
+                  const course = ck?selections[ck]?.trim():null;
+                  const has = course && course.length>0;
+                  return (
+                    <td key={di} style={{textAlign:"center",padding:1}}>
+                      <div style={{
+                        height:34,minWidth:48,borderRadius:7,
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        background:beam===null?"transparent":has?t.bg:"rgba(255,255,255,0.32)",
+                        border:beam===null?"none":has?`1px solid ${t.b}`:"1px solid rgba(200,195,190,0.35)",
+                      }}>
+                        {beam===null ? null : has ? (
+                          <span className="fr" style={{fontSize:course.length>6?10:12,fontWeight:500,color:"var(--ink)"}}>{course}</span>
+                        ) : (
+                          <span style={{fontSize:9,color:"var(--ink-f)",fontWeight:500}}>{beam}.</span>
+                        )}
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ── WEEK PREVIEW ───────────────────────────────────────────── */
+function WeekPreview({ school, selections }) {
+  return (
+    <div style={{marginTop:52}}>
+      <div style={{marginBottom:24}}>
+        <h2 className="fr" style={{fontSize:36,fontWeight:500,letterSpacing:"-0.02em",color:"var(--ink)"}}>Viikkonäkymä</h2>
+        <p style={{fontSize:13,color:"var(--ink-s)",marginTop:4}}>Sama kiertokaavio joka viikko — kurssit vaihtuvat periodeittain</p>
+      </div>
+      <div className="wk-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,440px),1fr))",gap:14}}>
+        {Array.from({length:school.periodCount},(_,pi)=>(
+          <PeriodCard key={pi} pi={pi} school={school} selections={selections}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── PRO COMING SOON ────────────────────────────────────────── */
+function ProComingSoon() {
+  const features = [
+    {
+      icon: Ico.bolt,
+      color: "oklch(0.60 0.15 45)",
+      bg: "oklch(0.93 0.055 45)",
+      title: "Wilma-automaatio",
+      desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.",
+      badge: "Tärkein ominaisuus"
+    },
+    {
+      icon: Ico.conflict,
+      color: "oklch(0.52 0.14 25)",
+      bg: "oklch(0.94 0.04 25)",
+      title: "Konfliktianalyysi",
+      desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla.",
+    },
+    {
+      icon: Ico.calendar,
+      color: "oklch(0.44 0.10 240)",
+      bg: "oklch(0.93 0.04 240)",
+      title: "Kalenteri-synkronointi",
+      desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona.",
+    },
+    {
+      icon: Ico.download,
+      color: "oklch(0.45 0.10 150)",
+      bg: "oklch(0.93 0.04 150)",
+      title: "PDF-export",
+      desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona.",
+    },
+    {
+      icon: Ico.shield,
+      color: "oklch(0.50 0.11 340)",
+      bg: "oklch(0.93 0.04 340)",
+      title: "Varmuuskopiointi",
+      desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä.",
+    },
+  ];
+
+  return (
+    <div style={{maxWidth:780,margin:"0 auto",padding:"48px 24px 80px"}}>
+      {/* Hero */}
+      <div style={{textAlign:"center",marginBottom:48}}>
+        <div style={{
+          display:"inline-flex",alignItems:"center",gap:6,
+          background:"rgba(255,255,255,0.55)",border:"1.5px solid rgba(255,255,255,0.85)",
+          borderRadius:99,padding:"6px 16px",marginBottom:20,
+          backdropFilter:"blur(10px)",
+        }}>
+          <span style={{color:"var(--accent)",display:"flex"}}>{Ico.star}</span>
+          <span style={{fontSize:12,fontWeight:600,color:"var(--ink-s)",letterSpacing:"0.04em"}}>TULOSSA PIAN</span>
+        </div>
+        <h1 className="fr" style={{fontSize:54,fontWeight:500,letterSpacing:"-0.025em",color:"var(--ink)",marginBottom:12}}>Lukkari Pro</h1>
+        <p style={{fontSize:15,color:"var(--ink-s)",maxWidth:460,margin:"0 auto",lineHeight:1.6}}>
+          Automaattinen kurssivalinta Wilmaan ja paljon muuta — tee lukuvuosisuunnittelu muutamassa minuutissa.
+        </p>
+      </div>
+
+      {/* Feature cards */}
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:40}}>
+        {features.map((f,i)=>(
+          <div key={i} className="glass" style={{borderRadius:18,padding:"18px 20px",display:"flex",gap:16,alignItems:"flex-start"}}>
+            <div style={{
+              width:40,height:40,borderRadius:12,flexShrink:0,
+              background:f.bg,display:"flex",alignItems:"center",justifyContent:"center",
+              color:f.color,border:`1.5px solid ${f.bg.replace("0.93","0.82").replace("0.94","0.82")}`,
+            }}>{f.icon}</div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <span className="fr" style={{fontSize:17,fontWeight:500,color:"var(--ink)"}}>{f.title}</span>
+                {f.badge && (
+                  <span style={{
+                    fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",
+                    background:"var(--accent)",color:"white",borderRadius:99,padding:"2px 7px",
+                  }}>{f.badge}</span>
+                )}
+              </div>
+              <p style={{fontSize:13,color:"var(--ink-s)",lineHeight:1.55}}>{f.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div className="glass" style={{borderRadius:20,padding:"28px 32px",textAlign:"center"}}>
+        <p className="fr" style={{fontSize:20,fontWeight:500,color:"var(--ink)",marginBottom:6}}>Kiinnostuitko?</p>
+        <p style={{fontSize:13,color:"var(--ink-s)",marginBottom:20}}>Ilmoita sähköpostisi niin kerromme kun Pro-versio on saatavilla.</p>
+        <div style={{display:"flex",gap:8,maxWidth:360,margin:"0 auto"}}>
+          <input type="email" placeholder="sinun@email.fi" style={{
+            flex:1,padding:"10px 16px",borderRadius:12,
+            border:"1.5px solid rgba(255,255,255,0.85)",
+            background:"rgba(255,255,255,0.65)",
+            fontSize:13,outline:"none",color:"var(--ink)",
+            backdropFilter:"blur(8px)",
+          }}/>
+          <button style={{
+            padding:"10px 20px",borderRadius:12,border:"none",
+            background:"linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20))",
+            color:"white",fontSize:13,fontWeight:600,cursor:"pointer",
+            boxShadow:"0 4px 16px oklch(0.62 0.13 45 / 0.35)",
+            whiteSpace:"nowrap",
+          }}
+            onClick={()=>alert("Kiitos! Otamme yhteyttä kun Pro on valmis.")}
+          >Ilmoittaudu</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── CONFIRM DIALOG ─────────────────────────────────────────── */
+function ConfirmClear({ onConfirm, onCancel }) {
+  return (
+    <div onClick={onCancel} style={{position:"fixed",inset:0,zIndex:200,background:"rgba(20,10,5,0.28)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+      <div className="glass" onClick={e=>e.stopPropagation()} style={{borderRadius:20,padding:"28px 28px",maxWidth:320,width:"100%"}}>
+        <h3 className="fr" style={{fontSize:22,fontWeight:500,marginBottom:8}}>Tyhjennä kaikki?</h3>
+        <p style={{fontSize:13,color:"var(--ink-s)",lineHeight:1.55,marginBottom:22}}>Kaikki kurssikirjaukset poistetaan pysyvästi. Tätä ei voi perua.</p>
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button onClick={onCancel} style={{padding:"8px 18px",borderRadius:99,border:"1.5px solid rgba(200,195,190,0.7)",background:"transparent",fontSize:13,fontWeight:500,cursor:"pointer",color:"var(--ink-s)"}}>Peruuta</button>
+          <button onClick={onConfirm} style={{padding:"8px 18px",borderRadius:99,border:"none",background:"oklch(0.50 0.15 25)",color:"white",fontSize:13,fontWeight:600,cursor:"pointer"}}>Tyhjennä</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── APP ────────────────────────────────────────────────────── */
+function App() {
+  const [tab, setTab] = useState("free");
+  const [schoolId, setSchoolId] = useState("otaniemi");
+  const [selections, setSelections] = useState({});
+  const [year, setYear] = useState("2026–2027");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+
+  useEffect(() => {
+    const s = loadState();
+    if (s) {
+      if (s.schoolId) setSchoolId(s.schoolId);
+      if (s.selections) setSelections(s.selections);
+      if (s.year) setYear(s.year);
+    }
+  }, []);
+
+  useEffect(() => {
+    saveState({schoolId, selections, year});
+  }, [schoolId, selections, year]);
+
+  const onChange = useCallback((k, v) => {
+    setSelections(prev => {
+      const n = {...prev};
+      if (!v.trim()) delete n[k]; else n[k]=v;
+      return n;
+    });
+  }, []);
+
+  const doClear = useCallback(() => {
+    setSelections({});
+    clearStoredSelections();
+    setConfirmClear(false);
+    setSettingsOpen(false);
+  }, []);
+
+  const school = SCHOOLS.find(s=>s.id===schoolId)||SCHOOLS[0];
+  const filledCount = Object.values(selections).filter(v=>v?.trim()).length;
+
+  return (
+    <div style={{minHeight:"100vh"}}>
+      <Header tab={tab} setTab={setTab} onGear={()=>setSettingsOpen(true)}/>
+      <SettingsPanel
+        open={settingsOpen} onClose={()=>setSettingsOpen(false)}
+        school={school} selections={selections}
+        year={year} setYear={setYear}
+        onClear={()=>setConfirmClear(true)}
+        filledCount={filledCount}
+      />
+
+      {tab==="pro" ? <ProComingSoon/> : (
+        <main style={{maxWidth:1120,margin:"0 auto",padding:"36px 24px 80px"}}>
+          {/* Hero */}
+          <div style={{marginBottom:36}}>
+            <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:"8px 20px",marginBottom:14}}>
+              <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId}/>
+              <div style={{height:14,width:1,background:"rgba(200,195,190,0.45)"}}/>
+              <span style={{fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--ink-f)"}}>{year}</span>
+            </div>
+            <h1 className="fr" style={{fontSize:48,fontWeight:500,letterSpacing:"-0.025em",lineHeight:1.05,color:"var(--ink)"}}>
+              {school.name}
+            </h1>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8,flexWrap:"wrap"}}>
+              <p style={{fontSize:13,color:"var(--ink-s)"}}>Täytä palkit, näe lukujärjestyksesi</p>
+              {filledCount>0 && (
+                <span style={{
+                  fontSize:11,fontWeight:600,
+                  background:"rgba(255,255,255,0.55)",border:"1.5px solid rgba(255,255,255,0.85)",
+                  borderRadius:99,padding:"2px 10px",color:"var(--accent)",
+                  backdropFilter:"blur(6px)",
+                }}>{filledCount} kurssia kirjattu</span>
+              )}
+            </div>
+            {school.note && (
+              <p style={{fontSize:11,color:"var(--ink-f)",marginTop:6,fontStyle:"italic"}}>{school.note}</p>
+            )}
+          </div>
+
+          {/* Matrix */}
+          <div className="glass" style={{borderRadius:24,padding:"24px 24px 18px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,flexWrap:"wrap",gap:8}}>
+              <h2 className="fr" style={{fontSize:20,fontWeight:500,color:"var(--ink)"}}>Kurssimatriisi</h2>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:10,color:"var(--ink-f)",fontWeight:500}}>
+                  {school.palkkiCount} palkkia · {school.periodCount} periodia
+                </span>
+                {filledCount>0 && (
+                  <button onClick={()=>setConfirmClear(true)} style={{
+                    fontSize:11,color:"var(--ink-f)",background:"transparent",border:"none",
+                    cursor:"pointer",padding:"2px 6px",borderRadius:6,
+                    textDecoration:"underline",textUnderlineOffset:3,
+                  }}>Tyhjennä</button>
+                )}
+              </div>
+            </div>
+            <ChoiceGrid school={school} selections={selections} onChange={onChange}/>
+          </div>
+
+          <WeekPreview school={school} selections={selections}/>
+        </main>
+      )}
+
+      {/* Saved pill */}
+      {filledCount>0 && tab==="free" && !settingsOpen && (
+        <div style={{
+          position:"fixed",bottom:20,right:20,
+          background:"rgba(255,255,255,0.72)",border:"1.5px solid rgba(255,255,255,0.92)",
+          borderRadius:99,backdropFilter:"blur(12px)",
+          padding:"6px 14px",display:"flex",alignItems:"center",gap:6,
+          boxShadow:"0 3px 14px rgba(0,0,0,0.07)",
+          pointerEvents:"none",
+        }}>
+          <div style={{width:5,height:5,borderRadius:"50%",background:"oklch(0.58 0.15 150)"}}/>
+          <span style={{fontSize:11,fontWeight:500,color:"var(--ink-s)"}}>Tallennettu</span>
+        </div>
+      )}
+
+      {confirmClear && <ConfirmClear onConfirm={doClear} onCancel={()=>setConfirmClear(false)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
