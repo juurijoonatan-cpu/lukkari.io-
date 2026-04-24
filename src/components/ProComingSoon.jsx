@@ -1,44 +1,58 @@
+import { useState } from 'react';
 import { Ico } from './icons';
 
+const FEATURES = [
+  {
+    icon: Ico.bolt,
+    color: "oklch(0.60 0.15 45)",
+    bg: "oklch(0.93 0.055 45)",
+    border: "oklch(0.82 0.09 45)",
+    title: "Wilma-automaatio",
+    desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.",
+    badge: "Tärkein ominaisuus"
+  },
+  {
+    icon: Ico.conflict,
+    color: "oklch(0.52 0.14 25)",
+    bg: "oklch(0.94 0.04 25)",
+    border: "oklch(0.82 0.08 25)",
+    title: "Konfliktianalyysi",
+    desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla.",
+  },
+  {
+    icon: Ico.calendar,
+    color: "oklch(0.44 0.10 240)",
+    bg: "oklch(0.93 0.04 240)",
+    border: "oklch(0.78 0.08 240)",
+    title: "Kalenteri-synkronointi",
+    desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona.",
+  },
+  {
+    icon: Ico.download,
+    color: "oklch(0.45 0.10 150)",
+    bg: "oklch(0.93 0.04 150)",
+    border: "oklch(0.78 0.08 150)",
+    title: "PDF-export",
+    desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona.",
+  },
+  {
+    icon: Ico.shield,
+    color: "oklch(0.50 0.11 340)",
+    bg: "oklch(0.93 0.04 340)",
+    border: "oklch(0.80 0.085 340)",
+    title: "Varmuuskopiointi",
+    desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä.",
+  },
+];
+
 export function ProComingSoon() {
-  const features = [
-    {
-      icon: Ico.bolt,
-      color: "oklch(0.60 0.15 45)",
-      bg: "oklch(0.93 0.055 45)",
-      title: "Wilma-automaatio",
-      desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.",
-      badge: "Tärkein ominaisuus"
-    },
-    {
-      icon: Ico.conflict,
-      color: "oklch(0.52 0.14 25)",
-      bg: "oklch(0.94 0.04 25)",
-      title: "Konfliktianalyysi",
-      desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla.",
-    },
-    {
-      icon: Ico.calendar,
-      color: "oklch(0.44 0.10 240)",
-      bg: "oklch(0.93 0.04 240)",
-      title: "Kalenteri-synkronointi",
-      desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona.",
-    },
-    {
-      icon: Ico.download,
-      color: "oklch(0.45 0.10 150)",
-      bg: "oklch(0.93 0.04 150)",
-      title: "PDF-export",
-      desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona.",
-    },
-    {
-      icon: Ico.shield,
-      color: "oklch(0.50 0.11 340)",
-      bg: "oklch(0.93 0.04 340)",
-      title: "Varmuuskopiointi",
-      desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä.",
-    },
-  ];
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSignup = () => {
+    if (!email.trim()) return;
+    setSubmitted(true);
+  };
 
   return (
     <div style={{ maxWidth: 780, margin: "0 auto", padding: "48px 24px 80px" }}>
@@ -59,12 +73,12 @@ export function ProComingSoon() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 40 }}>
-        {features.map((f, i) => (
+        {FEATURES.map((f, i) => (
           <div key={i} className="glass" style={{ borderRadius: 18, padding: "18px 20px", display: "flex", gap: 16, alignItems: "flex-start" }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
               background: f.bg, display: "flex", alignItems: "center", justifyContent: "center",
-              color: f.color, border: `1.5px solid ${f.bg.replace("0.93","0.82").replace("0.94","0.82")}`,
+              color: f.color, border: `1.5px solid ${f.border}`,
             }}>{f.icon}</div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -84,25 +98,44 @@ export function ProComingSoon() {
 
       <div className="glass" style={{ borderRadius: 20, padding: "28px 32px", textAlign: "center" }}>
         <p className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)", marginBottom: 6 }}>Kiinnostuitko?</p>
-        <p style={{ fontSize: 13, color: "var(--ink-s)", marginBottom: 20 }}>Ilmoita sähköpostisi niin kerromme kun Pro-versio on saatavilla.</p>
-        <div style={{ display: "flex", gap: 8, maxWidth: 360, margin: "0 auto" }}>
-          <input type="email" placeholder="sinun@email.fi" style={{
-            flex: 1, padding: "10px 16px", borderRadius: 12,
-            border: "1.5px solid rgba(255,255,255,0.85)",
-            background: "rgba(255,255,255,0.65)",
-            fontSize: 13, outline: "none", color: "var(--ink)",
-            backdropFilter: "blur(8px)",
-          }}/>
-          <button style={{
-            padding: "10px 20px", borderRadius: 12, border: "none",
-            background: "linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20))",
-            color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
-            boxShadow: "0 4px 16px oklch(0.62 0.13 45 / 0.35)",
-            whiteSpace: "nowrap",
-          }}
-            onClick={() => alert("Kiitos! Otamme yhteyttä kun Pro on valmis.")}
-          >Ilmoittaudu</button>
-        </div>
+        {submitted ? (
+          <p style={{ fontSize: 14, color: "var(--ink-s)", marginTop: 8 }}>
+            Kiitos! Otamme yhteyttä kun Pro-versio on saatavilla.
+          </p>
+        ) : (
+          <>
+            <p style={{ fontSize: 13, color: "var(--ink-s)", marginBottom: 20 }}>Ilmoita sähköpostisi niin kerromme kun Pro-versio on saatavilla.</p>
+            <div style={{ display: "flex", gap: 8, maxWidth: 360, margin: "0 auto" }}>
+              <input
+                type="email"
+                placeholder="sinun@email.fi"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSignup()}
+                maxLength={255}
+                style={{
+                  flex: 1, padding: "10px 16px", borderRadius: 12,
+                  border: "1.5px solid rgba(255,255,255,0.85)",
+                  background: "rgba(255,255,255,0.65)",
+                  fontSize: 13, outline: "none", color: "var(--ink)",
+                  backdropFilter: "blur(8px)", fontFamily: "inherit",
+                }}
+              />
+              <button
+                onClick={handleSignup}
+                disabled={!email.trim()}
+                style={{
+                  padding: "10px 20px", borderRadius: 12, border: "none",
+                  background: "linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20))",
+                  color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  boxShadow: "0 4px 16px oklch(0.62 0.13 45 / 0.35)",
+                  whiteSpace: "nowrap", opacity: email.trim() ? 1 : 0.5,
+                  transition: "opacity .14s", fontFamily: "inherit",
+                }}
+              >Ilmoittaudu</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

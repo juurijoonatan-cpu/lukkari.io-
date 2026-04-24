@@ -7,7 +7,7 @@ export const SCHOOLS = [
     rotation: [
       [1,2,3,4,5],[6,7,8,1,2],[3,4,5,6,7],[8,1,2,3,4],[5,6,7,8,null]
     ],
-    note: "Tuntikiiertokaavio on likiarvo — tarkista koulusi sivulta"
+    note: "Tuntikiertokaavio on likiarvo — tarkista koulusi sivulta"
   },
   {
     id: "espoonlahti", name: "Espoonlahden lukio", location: "Espoo",
