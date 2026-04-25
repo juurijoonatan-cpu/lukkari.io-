@@ -3,7 +3,11 @@ import { PTINTS } from '../data/schools';
 export function PeriodCard({ pi, school, selections }) {
   const t = PTINTS[pi];
   const { rotation, times, days, palkkiCount } = school;
-  const count = Array.from({ length: palkkiCount }, (_, bi) => selections[`p${pi + 1}-b${bi + 1}`]?.trim() ? 1 : 0).reduce((a, b) => a + b, 0);
+  const prefix = `p${pi + 1}-b`;
+  let count = 0;
+  for (let bi = 1; bi <= palkkiCount; bi++) {
+    if (selections[prefix + bi]?.trim()) count++;
+  }
 
   return (
     <div className="glass" style={{ borderRadius: 20, padding: "20px 18px", overflow: "hidden" }}>
@@ -36,18 +40,17 @@ export function PeriodCard({ pi, school, selections }) {
                 </td>
                 {days.map((_, di) => {
                   const beam = rotation[ti]?.[di];
-                  const ck = beam ? `p${pi + 1}-b${beam}` : null;
-                  const course = ck ? selections[ck]?.trim() : null;
-                  const has = course && course.length > 0;
+                  const course = beam ? selections[prefix + beam]?.trim() : null;
+                  const has = !!course;
                   return (
                     <td key={di} style={{ textAlign: "center", padding: 1 }}>
                       <div style={{
                         height: 34, minWidth: 48, borderRadius: 7,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        background: beam === null ? "transparent" : has ? t.bg : "rgba(255,255,255,0.32)",
-                        border: beam === null ? "none" : has ? `1px solid ${t.b}` : "1px solid rgba(200,195,190,0.35)",
+                        background: !beam ? "transparent" : has ? t.bg : "rgba(255,255,255,0.32)",
+                        border: !beam ? "none" : has ? `1px solid ${t.b}` : "1px solid rgba(200,195,190,0.35)",
                       }}>
-                        {beam === null ? null : has ? (
+                        {!beam ? null : has ? (
                           <span className="fr" style={{ fontSize: course.length > 6 ? 10 : 12, fontWeight: 500, color: "var(--ink)" }}>{course}</span>
                         ) : (
                           <span style={{ fontSize: 9, color: "var(--ink-f)", fontWeight: 500 }}>{beam}.</span>

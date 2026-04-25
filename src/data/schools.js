@@ -1,16 +1,16 @@
 export const SCHOOLS = [
   {
-    id: "otaniemi", name: "Otaniemen lukio", location: "Espoo",
+    id: "otaniemi", name: "Otaniemen lukio",
     palkkiCount: 8, periodCount: 5,
     times: ["8.15–9.45","10.00–11.30","11.45–13.15","13.30–15.00","15.15–16.45"],
     days: ["Ma","Ti","Ke","To","Pe"],
     rotation: [
       [1,2,3,4,5],[6,7,8,1,2],[3,4,5,6,7],[8,1,2,3,4],[5,6,7,8,null]
     ],
-    note: "Tuntikiiertokaavio on likiarvo — tarkista koulusi sivulta"
+    note: "Tuntikiertokaavio on likiarvo — tarkista koulusi sivulta"
   },
   {
-    id: "espoonlahti", name: "Espoonlahden lukio", location: "Espoo",
+    id: "espoonlahti", name: "Espoonlahden lukio",
     palkkiCount: 8, periodCount: 5,
     times: ["8.30–9.45","9.55–11.10","11.25–13.10","13.20–14.35","14.45–16.00"],
     days: ["Ma","Ti","Ke","To","Pe"],
@@ -19,7 +19,7 @@ export const SCHOOLS = [
     ]
   },
   {
-    id: "haukilahti", name: "Haukilahden lukio", location: "Espoo",
+    id: "haukilahti", name: "Haukilahden lukio",
     palkkiCount: 8, periodCount: 5,
     times: ["8.30–9.45","10.00–11.15","11.25–13.20","13.35–14.50","15.05–16.20"],
     days: ["Ma","Ti","Ke","To","Pe"],
@@ -28,7 +28,7 @@ export const SCHOOLS = [
     ]
   },
   {
-    id: "matinkyla", name: "Matinkylän lukio", location: "Espoo",
+    id: "matinkyla", name: "Matinkylän lukio",
     palkkiCount: 8, periodCount: 5,
     times: ["8.15–9.30","9.45–11.00","11.10–13.00","13.15–14.30","14.45–16.00"],
     days: ["Ma","Ti","Ke","To","Pe"],
@@ -37,7 +37,7 @@ export const SCHOOLS = [
     ]
   },
   {
-    id: "etela-tapiola", name: "Etelä-Tapiolan lukio", location: "Espoo",
+    id: "etela-tapiola", name: "Etelä-Tapiolan lukio",
     palkkiCount: 9, periodCount: 5,
     times: ["8.15–9.30","9.45–11.00","11.00–13.00","13.15–14.30","14.45–16.00"],
     days: ["Ma","Ti","Ke","To","Pe"],
