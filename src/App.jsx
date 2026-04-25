@@ -8,6 +8,7 @@ import { WeekPreview } from './components/WeekPreview';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ProComingSoon } from './components/ProComingSoon';
 import { ConfirmClear } from './components/ConfirmClear';
+import { WishlistPanel } from './components/WishlistPanel';
 
 function Orbs() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
   const [year, setYear] = useState("2026–2027");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
     const s = loadState();
@@ -34,12 +36,13 @@ export default function App() {
       if (s.schoolId) setSchoolId(s.schoolId);
       if (s.selections) setSelections(s.selections);
       if (s.year) setYear(s.year);
+      if (s.wishlist) setWishlist(s.wishlist);
     }
   }, []);
 
   useEffect(() => {
-    saveState({ schoolId, selections, year });
-  }, [schoolId, selections, year]);
+    saveState({ schoolId, selections, year, wishlist });
+  }, [schoolId, selections, year, wishlist]);
 
   const onChange = useCallback((k, v) => {
     setSelections(prev => {
@@ -72,7 +75,7 @@ export default function App() {
       />
 
       {tab === "pro" ? <ProComingSoon/> : (
-        <main style={{ maxWidth: 1120, margin: "0 auto", padding: "36px 24px 80px" }}>
+        <main className="main-pad" style={{ maxWidth: 1120, margin: "0 auto", padding: "36px 24px 80px" }}>
           <div style={{ marginBottom: 36 }}>
             <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px 20px", marginBottom: 14 }}>
               <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId}/>
@@ -120,17 +123,19 @@ export default function App() {
 
       {filledCount > 0 && tab === "free" && !settingsOpen && (
         <div style={{
-          position: "fixed", bottom: 20, right: 20,
+          position: "fixed", bottom: 20, left: 20,
           background: "rgba(255,255,255,0.72)", border: "1.5px solid rgba(255,255,255,0.92)",
           borderRadius: 99, backdropFilter: "blur(12px)",
           padding: "6px 14px", display: "flex", alignItems: "center", gap: 6,
           boxShadow: "0 3px 14px rgba(0,0,0,0.07)",
-          pointerEvents: "none",
+          pointerEvents: "none", zIndex: 70,
         }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "oklch(0.58 0.15 150)" }}/>
           <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-s)" }}>Tallennettu</span>
         </div>
       )}
+
+      <WishlistPanel wishlist={wishlist} setWishlist={setWishlist} selections={selections}/>
 
       {confirmClear && <ConfirmClear onConfirm={doClear} onCancel={() => setConfirmClear(false)}/>}
     </div>

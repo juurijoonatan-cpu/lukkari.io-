@@ -14,3 +14,10 @@ export function clearStoredSelections() {
     if (r) { r.selections = {}; localStorage.setItem(KEY, JSON.stringify(r)); }
   } catch {}
 }
+
+export function clearStoredWishlist() {
+  try {
+    const r = loadState();
+    if (r) { r.wishlist = []; localStorage.setItem(KEY, JSON.stringify(r)); }
+  } catch {}
+}

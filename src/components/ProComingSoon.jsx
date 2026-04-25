@@ -3,12 +3,43 @@ import { Ico } from './icons';
 import { PTINTS } from '../data/schools';
 
 const FEATURES = [
-  { icon: Ico.bolt,     pi: 0, label: "Wilma-automaatio",  title: "Wilma-automaatio",    desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.", badge: "Tärkein ominaisuus" },
-  { icon: Ico.conflict, pi: 4, label: "Konfliktianalyysi",  title: "Konfliktianalyysi",   desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla." },
-  { icon: Ico.calendar, pi: 3, label: "Kalenteri",          title: "Kalenteri-synkronointi", desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona." },
-  { icon: Ico.download, pi: 1, label: "PDF-export",         title: "PDF-export",          desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona." },
-  { icon: Ico.shield,   pi: 2, label: "Varmuuskopiointi",   title: "Varmuuskopiointi",    desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä." },
+  { icon: Ico.bolt,     pi: 0, label: "Wilma-automaatio",   title: "Wilma-automaatio",     desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.", badge: "Tärkein ominaisuus" },
+  { icon: Ico.conflict, pi: 4, label: "Konfliktianalyysi",   title: "Konfliktianalyysi",    desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla." },
+  { icon: Ico.calendar, pi: 3, label: "Kalenteri",           title: "Kalenteri-synkronointi", desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona." },
+  { icon: Ico.download, pi: 1, label: "PDF-export",          title: "PDF-export",           desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona." },
+  { icon: Ico.shield,   pi: 2, label: "Varmuuskopiointi",    title: "Varmuuskopiointi",     desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä." },
 ];
+
+// Pre-computed light/mid gradient stops per period for glass tile backgrounds
+const TILE_GRADIENTS = [
+  { from: "oklch(0.88 0.08 48)",  to: "oklch(0.75 0.11 45)"  },  // orange
+  { from: "oklch(0.88 0.06 150)", to: "oklch(0.70 0.09 150)" },  // sage
+  { from: "oklch(0.88 0.07 82)",  to: "oklch(0.73 0.10 80)"  },  // lime
+  { from: "oklch(0.88 0.06 238)", to: "oklch(0.70 0.09 240)" },  // blue
+  { from: "oklch(0.88 0.07 338)", to: "oklch(0.74 0.10 340)" },  // pink
+];
+
+function GlassTile({ icon, pi }) {
+  const g = TILE_GRADIENTS[pi];
+  const t = PTINTS[pi];
+  return (
+    <div style={{
+      width: 52, height: 52, borderRadius: 16, flexShrink: 0,
+      background: `linear-gradient(145deg, ${g.from} 0%, ${g.to} 100%)`,
+      border: "1px solid rgba(255,255,255,0.65)",
+      boxShadow: `0 6px 20px ${t.glow}, 0 1px 0 rgba(255,255,255,0.85) inset`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <span style={{ color: "white", opacity: 0.95, display: "flex" }}>
+        {/* Scale up the icon slightly */}
+        <svg width="22" height="22" viewBox={icon.props.viewBox} fill={icon.props.fill} stroke={icon.props.stroke}
+          strokeWidth={icon.props.strokeWidth} strokeLinecap={icon.props.strokeLinecap} strokeLinejoin={icon.props.strokeLinejoin}>
+          {icon.props.children}
+        </svg>
+      </span>
+    </div>
+  );
+}
 
 function ProFlowDiagram() {
   const containerRef = useRef(null);
@@ -77,32 +108,38 @@ function ProFlowDiagram() {
         </svg>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 36, position: "relative", zIndex: 2 }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, position: "relative", zIndex: 2 }}>
         <div ref={centerRef} style={{
           background: "rgba(255,255,255,0.75)",
           border: "2px solid rgba(255,255,255,0.96)",
-          borderRadius: 22, padding: "18px 32px",
+          borderRadius: 22, padding: "16px 28px",
           backdropFilter: "blur(30px) saturate(1.9)",
           WebkitBackdropFilter: "blur(30px) saturate(1.9)",
           boxShadow: "0 14px 44px rgba(80,40,10,0.14), 0 2px 0 rgba(255,255,255,0.95) inset",
           textAlign: "center",
           animation: "center-in .45s ease forwards",
         }}>
-          <div className="fr" style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.02em", color: "var(--ink)" }}>
+          <div className="fr" style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.02em", color: "var(--ink)" }}>
             Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "var(--ink-s)" }}>io</span>
           </div>
-          <div style={{ fontSize: 11, color: "var(--ink-s)", marginTop: 3, fontWeight: 500 }}>Suunnittele kurssisi</div>
+          <div style={{ fontSize: 11, color: "var(--ink-s)", marginTop: 2, fontWeight: 500 }}>Suunnittele kurssisi</div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, position: "relative", zIndex: 2 }}>
+      {/* Responsive grid: ≥3 cols on 375px phones */}
+      <div className="pro-flow-grid" style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(5, 1fr)",
+        gap: 8, position: "relative", zIndex: 2,
+      }}>
         {FEATURES.map((f, i) => {
           const t = PTINTS[f.pi];
+          const g = TILE_GRADIENTS[f.pi];
           return (
             <div key={i} ref={el => nodeRefs.current[i] = el} style={{
               background: "rgba(255,255,255,0.60)",
               border: `1.5px solid ${t.b}`,
-              borderRadius: 18, padding: "14px 10px",
+              borderRadius: 18, padding: "12px 8px",
               backdropFilter: "blur(20px) saturate(1.6)",
               WebkitBackdropFilter: "blur(20px) saturate(1.6)",
               boxShadow: "0 6px 20px rgba(80,40,10,0.08), 0 1.5px 0 rgba(255,255,255,0.85) inset",
@@ -110,10 +147,18 @@ function ProFlowDiagram() {
               opacity: 0,
               animation: `node-in 0.5s ease forwards ${i * 0.1 + 0.25}s`,
             }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: t.bg, border: `1.5px solid ${t.b}`, display: "flex", alignItems: "center", justifyContent: "center", color: t.l }}>
+              {/* Glass tile icon */}
+              <div style={{
+                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                background: `linear-gradient(145deg, ${g.from} 0%, ${g.to} 100%)`,
+                border: "1px solid rgba(255,255,255,0.65)",
+                boxShadow: `0 4px 14px ${t.glow}, 0 1px 0 rgba(255,255,255,0.8) inset`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "white",
+              }}>
                 {f.icon}
               </div>
-              <span className="fr" style={{ fontSize: 12, fontWeight: 500, color: "var(--ink)", lineHeight: 1.3 }}>{f.label}</span>
+              <span className="fr" style={{ fontSize: 11, fontWeight: 500, color: "var(--ink)", lineHeight: 1.3 }}>{f.label}</span>
             </div>
           );
         })}
@@ -126,13 +171,9 @@ export function ProComingSoon() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSignup = () => {
-    if (!email.trim()) return;
-    setSubmitted(true);
-  };
-
   return (
-    <div style={{ maxWidth: 740, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <div className="pro-pad" style={{ maxWidth: 740, margin: "0 auto", padding: "48px 20px 80px" }}>
+      {/* Hero */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
@@ -150,6 +191,7 @@ export function ProComingSoon() {
         </p>
       </div>
 
+      {/* Flow diagram card */}
       <div className="glass" style={{ borderRadius: 24, padding: "24px 20px 28px", marginBottom: 24 }}>
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ink-s)", marginBottom: 20, textAlign: "center" }}>
           Mitä Pro tekee
@@ -157,12 +199,29 @@ export function ProComingSoon() {
         <ProFlowDiagram />
       </div>
 
+      {/* Feature rows with glass-tile icons */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
         {FEATURES.map((f, i) => {
           const t = PTINTS[f.pi];
+          const g = TILE_GRADIENTS[f.pi];
           return (
-            <div key={i} className="glass" style={{ borderRadius: 16, padding: "14px 16px", display: "flex", gap: 12, alignItems: "center" }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, background: t.bg, display: "flex", alignItems: "center", justifyContent: "center", color: t.l, border: `1.5px solid ${t.b}` }}>{f.icon}</div>
+            <div key={i} className="glass" style={{ borderRadius: 16, padding: "14px 16px", display: "flex", gap: 14, alignItems: "center" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 16, flexShrink: 0,
+                background: `linear-gradient(145deg, ${g.from} 0%, ${g.to} 100%)`,
+                border: "1px solid rgba(255,255,255,0.65)",
+                boxShadow: `0 6px 20px ${t.glow}, 0 1px 0 rgba(255,255,255,0.85) inset`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "white",
+              }}>
+                <svg width="22" height="22" viewBox={f.icon.props.viewBox}
+                  fill={f.icon.props.fill} stroke={f.icon.props.stroke}
+                  strokeWidth={f.icon.props.strokeWidth}
+                  strokeLinecap={f.icon.props.strokeLinecap}
+                  strokeLinejoin={f.icon.props.strokeLinejoin}>
+                  {f.icon.props.children}
+                </svg>
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
                   <span className="fr" style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{f.title}</span>
@@ -177,20 +236,21 @@ export function ProComingSoon() {
         })}
       </div>
 
-      <div className="glass" style={{ borderRadius: 20, padding: "28px 28px", textAlign: "center" }}>
+      {/* Signup */}
+      <div className="glass" style={{ borderRadius: 20, padding: "28px", textAlign: "center" }}>
         <p className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)", marginBottom: 6 }}>Kiinnostuitko?</p>
         {submitted ? (
           <p style={{ fontSize: 14, color: "var(--ink-s)", marginTop: 8 }}>Kiitos! Kerromme kun Pro on saatavilla.</p>
         ) : (
           <>
             <p style={{ fontSize: 13, color: "var(--ink-s)", marginBottom: 20 }}>Ilmoita sähköpostisi — kerromme heti kun Pro on saatavilla.</p>
-            <div style={{ display: "flex", gap: 8, maxWidth: 340, margin: "0 auto" }}>
+            <div className="email-row" style={{ display: "flex", gap: 8, maxWidth: 340, margin: "0 auto" }}>
               <input type="email" placeholder="sinun@email.fi" value={email}
                 onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleSignup()}
+                onKeyDown={e => e.key === "Enter" && email.trim() && setSubmitted(true)}
                 style={{ flex: 1, padding: "10px 16px", borderRadius: 12, border: "1.5px solid rgba(255,255,255,0.88)", background: "rgba(255,255,255,0.65)", fontSize: 13, outline: "none", color: "var(--ink)", fontFamily: "inherit" }}
               />
-              <button onClick={handleSignup} disabled={!email.trim()} style={{
+              <button onClick={() => email.trim() && setSubmitted(true)} disabled={!email.trim()} style={{
                 padding: "10px 18px", borderRadius: 12, border: "none",
                 background: "linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20))",
                 color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
