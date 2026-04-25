@@ -46,18 +46,20 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
       backdropFilter: "blur(28px) saturate(1.5)",
       WebkitBackdropFilter: "blur(28px) saturate(1.5)",
       position: "sticky", top: 0, zIndex: 100,
-      overflow: "hidden",
+      overflow: "visible",
       transition: "background 0.4s ease, border-color 0.4s ease",
     }}>
-      {/* Header video background (Pro only) */}
+      {/* Header video — clipped via dedicated overflow:hidden container so dropdowns can escape header bounds */}
       {isPro && (
-        <video autoPlay loop muted playsInline
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover", opacity: 0.28, zIndex: 0, pointerEvents: "none",
-          }}
-          src="/138770-770553751_medium.mp4"
-        />
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+          <video autoPlay loop muted playsInline
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover", opacity: 0.28,
+            }}
+            src="/138770-770553751_medium.mp4"
+          />
+        </div>
       )}
 
       {/* Content layer above video */}
