@@ -4,6 +4,9 @@ import { buildTextExport } from '../utils/export';
 
 export function SettingsPanel({ open, onClose, school, selections, year, setYear, onClear, filledCount }) {
   const [copied, setCopied] = useState(false);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareConsent, setShareConsent] = useState(false);
+  const [shareStatus, setShareStatus] = useState('idle'); // idle | sending | done | error
 
   const handleEmail = () => {
     const text = buildTextExport(school, selections, year);
@@ -23,6 +26,35 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
   const handleCopy = async () => {
     const text = buildTextExport(school, selections, year);
     try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
+  };
+
+  const handleSubscribe = async () => {
+    if (!shareEmail || !shareConsent || shareStatus === 'sending') return;
+    setShareStatus('sending');
+    const text = filledCount > 0 ? buildTextExport(school, selections, year) : '';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+          subject: `Lukkari.io — uusi tilaaja: ${shareEmail}`,
+          from_name: 'Lukkari.io',
+          email: shareEmail,
+          message: [
+            `Sähköposti: ${shareEmail}`,
+            `Koulu: ${school.name}`,
+            `Lukuvuosi: ${year}`,
+            `Markkinointisuostumus: Kyllä`,
+            `Kursseja täytetty: ${filledCount}`,
+            text ? `\nLukujärjestys:\n${text}` : '',
+          ].filter(Boolean).join('\n'),
+        }),
+      });
+      setShareStatus(res.ok ? 'done' : 'error');
+    } catch {
+      setShareStatus('error');
+    }
   };
 
   const settingBtn = (icon, label, onClick, danger) => (
@@ -66,6 +98,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
+
           <div>
             <div className="sec-label">Lukuvuosi</div>
             <div style={{ display: "flex", gap: 6 }}>
@@ -95,6 +128,70 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
           </div>
 
           <div>
+            <div className="sec-label">Liity Lukkari.io-listalle</div>
+            {shareStatus === 'done' ? (
+              <div style={{
+                background: "rgba(255,255,255,0.55)", border: "1.5px solid rgba(255,255,255,0.8)",
+                borderRadius: 12, padding: "12px 14px",
+                display: "flex", alignItems: "center", gap: 10,
+              }}>
+                <span style={{ color: "var(--accent)", display: "flex" }}>{Ico.check}</span>
+                <span style={{ fontSize: 13, color: "var(--ink)" }}>Kiitos! Olet nyt listalla.</span>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ fontSize: 11, color: "var(--ink-s)", lineHeight: 1.6 }}>
+                  Saat tiedon uusista ominaisuuksista. Ei spämmejä.
+                </p>
+                <input
+                  type="email"
+                  value={shareEmail}
+                  onChange={e => setShareEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
+                  placeholder="sähköpostisi@esim.fi"
+                  style={{
+                    width: "100%", padding: "9px 12px", borderRadius: 10,
+                    border: "1.5px solid rgba(255,255,255,0.8)",
+                    background: "rgba(255,255,255,0.55)",
+                    fontSize: 13, fontFamily: "inherit", color: "var(--ink)",
+                    outline: "none",
+                  }}
+                />
+                <label style={{
+                  display: "flex", gap: 8, alignItems: "flex-start",
+                  fontSize: 11, color: "var(--ink-s)", lineHeight: 1.5, cursor: "pointer",
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={shareConsent}
+                    onChange={e => setShareConsent(e.target.checked)}
+                    style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
+                  />
+                  Suostun, että Lukkari.io käyttää sähköpostiani markkinointiviestintään. Voin peruuttaa suostumukseni milloin tahansa.
+                </label>
+                {shareStatus === 'error' && (
+                  <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>Jokin meni pieleen — yritä uudelleen.</p>
+                )}
+                <button
+                  onClick={handleSubscribe}
+                  disabled={!shareEmail || !shareConsent || shareStatus === 'sending'}
+                  style={{
+                    width: "100%", padding: "9px 14px", borderRadius: 10,
+                    border: "1.5px solid rgba(255,255,255,0.8)",
+                    background: (!shareEmail || !shareConsent) ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.7)",
+                    fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                    color: (!shareEmail || !shareConsent) ? "var(--ink-f)" : "var(--ink)",
+                    cursor: (!shareEmail || !shareConsent) ? "default" : "pointer",
+                    transition: "all .14s",
+                  }}
+                >
+                  {shareStatus === 'sending' ? 'Lähetetään…' : 'Liity listalle'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
             <div className="sec-label">Koulu</div>
             <div style={{ background: "rgba(255,255,255,0.45)", border: "1.5px solid rgba(255,255,255,0.8)", borderRadius: 12, padding: "10px 14px" }}>
               <div style={{ fontSize: 12, color: "var(--ink-s)", padding: "3px 0", display: "flex", justifyContent: "space-between" }}>
@@ -115,6 +212,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
               Ei tiliä. Ei seurantaa.
             </p>
           </div>
+
         </div>
       </div>
     </>
