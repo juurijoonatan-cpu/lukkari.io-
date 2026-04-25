@@ -7,7 +7,6 @@ export const SCHOOLS = [
     rotation: [
       [1,2,3,4,5],[6,7,8,1,2],[3,4,5,6,7],[8,1,2,3,4],[5,6,7,8,null]
     ],
-    note: "Tuntikiertokaavio on likiarvo — tarkista koulusi sivulta"
   },
   {
     id: "espoonlahti", name: "Espoonlahden lukio",
@@ -48,9 +47,9 @@ export const SCHOOLS = [
 ];
 
 export const PTINTS = [
-  { bg: "var(--p1)", b: "var(--p1b)", l: "var(--p1l)" },
-  { bg: "var(--p2)", b: "var(--p2b)", l: "var(--p2l)" },
-  { bg: "var(--p3)", b: "var(--p3b)", l: "var(--p3l)" },
-  { bg: "var(--p4)", b: "var(--p4b)", l: "var(--p4l)" },
-  { bg: "var(--p5)", b: "var(--p5b)", l: "var(--p5l)" },
+  { bg: "var(--p1)", b: "var(--p1b)", l: "var(--p1l)", lRaw: "oklch(0.55 0.13 45)",  glow: "oklch(0.80 0.12 45 / 0.55)",  name: "Orange" },
+  { bg: "var(--p2)", b: "var(--p2b)", l: "var(--p2l)", lRaw: "oklch(0.44 0.10 150)", glow: "oklch(0.78 0.10 150 / 0.45)", name: "Sage"   },
+  { bg: "var(--p3)", b: "var(--p3b)", l: "var(--p3l)", lRaw: "oklch(0.50 0.12 80)",  glow: "oklch(0.79 0.11 80 / 0.45)",  name: "Lime"   },
+  { bg: "var(--p4)", b: "var(--p4b)", l: "var(--p4l)", lRaw: "oklch(0.44 0.10 240)", glow: "oklch(0.78 0.10 240 / 0.45)", name: "Blue"   },
+  { bg: "var(--p5)", b: "var(--p5b)", l: "var(--p5l)", lRaw: "oklch(0.52 0.11 340)", glow: "oklch(0.80 0.11 340 / 0.45)", name: "Pink"   },
 ];
