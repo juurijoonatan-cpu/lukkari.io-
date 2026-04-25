@@ -30,6 +30,8 @@ export default function App() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [wishlist, setWishlist] = useState([]);
 
+  const isPro = tab === "pro";
+
   useEffect(() => {
     const s = loadState();
     if (s) {
@@ -43,6 +45,11 @@ export default function App() {
   useEffect(() => {
     saveState({ schoolId, selections, year, wishlist });
   }, [schoolId, selections, year, wishlist]);
+
+  useEffect(() => {
+    document.body.classList.toggle('pro-dark', isPro);
+    return () => document.body.classList.remove('pro-dark');
+  }, [isPro]);
 
   const onChange = useCallback((k, v) => {
     setSelections(prev => {
@@ -64,8 +71,25 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
-      <Orbs />
-      <Header tab={tab} setTab={setTab} onGear={() => setSettingsOpen(true)}/>
+      {!isPro && <Orbs />}
+
+      {/* Pro wave video background */}
+      {isPro && (
+        <video key="pro-bg" autoPlay loop muted playsInline
+          style={{
+            position: "fixed", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", zIndex: 0, opacity: 0.55, pointerEvents: "none",
+          }}
+          src="/260037_medium.mp4"
+        />
+      )}
+
+      <Header
+        tab={tab} setTab={setTab} onGear={() => setSettingsOpen(true)}
+        schoolId={schoolId} setSchoolId={setSchoolId}
+        isPro={isPro}
+      />
+
       <SettingsPanel
         open={settingsOpen} onClose={() => setSettingsOpen(false)}
         school={school} selections={selections}
@@ -74,12 +98,17 @@ export default function App() {
         filledCount={filledCount}
       />
 
-      {tab === "pro" ? <ProComingSoon/> : (
+      {isPro ? <ProComingSoon/> : (
         <main className="main-pad" style={{ maxWidth: 1120, margin: "0 auto", padding: "36px 24px 80px" }}>
           <div style={{ marginBottom: 36 }}>
-            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px 20px", marginBottom: 14 }}>
+            {/* SchoolPicker visible on mobile only (hidden on desktop where it's in header) */}
+            <div className="school-picker-main" style={{ marginBottom: 14, alignItems: "center", flexWrap: "wrap", gap: "8px 20px" }}>
               <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId}/>
               <div style={{ height: 14, width: 1, background: "rgba(200,195,190,0.45)" }}/>
+              <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ink-f)" }}>{year}</span>
+            </div>
+            {/* Desktop: year label below header (SchoolPicker is in header) */}
+            <div className="school-picker-header" style={{ marginBottom: 14, alignItems: "center", gap: 12 }}>
               <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ink-f)" }}>{year}</span>
             </div>
             <h1 className="fr" style={{ fontSize: 48, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.05, color: "var(--ink)" }}>
@@ -121,7 +150,7 @@ export default function App() {
         </main>
       )}
 
-      {filledCount > 0 && tab === "free" && !settingsOpen && (
+      {filledCount > 0 && !isPro && !settingsOpen && (
         <div style={{
           position: "fixed", bottom: 20, left: 20,
           background: "rgba(255,255,255,0.72)", border: "1.5px solid rgba(255,255,255,0.92)",

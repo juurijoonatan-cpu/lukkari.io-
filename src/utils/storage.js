@@ -15,9 +15,3 @@ export function clearStoredSelections() {
   } catch {}
 }
 
-export function clearStoredWishlist() {
-  try {
-    const r = loadState();
-    if (r) { r.wishlist = []; localStorage.setItem(KEY, JSON.stringify(r)); }
-  } catch {}
-}

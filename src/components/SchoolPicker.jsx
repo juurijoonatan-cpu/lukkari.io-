@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { SCHOOLS } from '../data/schools';
 import { Ico } from './icons';
 
-export function SchoolPicker({ schoolId, setSchoolId }) {
+export function SchoolPicker({ schoolId, setSchoolId, isPro }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
@@ -19,18 +19,22 @@ export function SchoolPicker({ schoolId, setSchoolId }) {
         display: "flex", alignItems: "center", gap: 9,
         padding: "8px 14px 8px 16px", borderRadius: 99, cursor: "pointer",
         fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
-        color: "#1f1d1a",
-        background: open ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.60)",
-        border: open ? "1.5px solid oklch(0.60 0.13 45)" : "1.5px solid rgba(255,255,255,0.90)",
+        color: isPro ? (open ? "#f0ede8" : "#a09c98") : "#1f1d1a",
+        background: isPro
+          ? (open ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.07)")
+          : (open ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.60)"),
+        border: open
+          ? `1.5px solid ${isPro ? "rgba(255,255,255,0.22)" : "oklch(0.60 0.13 45)"}`
+          : `1.5px solid ${isPro ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.90)"}`,
         boxShadow: open
-          ? "0 0 0 4px oklch(0.60 0.13 45 / 0.15), 0 4px 20px rgba(80,40,10,0.12)"
-          : "0 2px 10px rgba(80,40,10,0.07)",
+          ? `0 0 0 4px ${isPro ? "rgba(255,255,255,0.06)" : "oklch(0.60 0.13 45 / 0.15)"}, 0 4px 20px rgba(80,40,10,0.12)`
+          : `0 2px 10px ${isPro ? "rgba(0,0,0,0.3)" : "rgba(80,40,10,0.07)"}`,
         backdropFilter: "blur(20px)",
         transition: "all .2s",
       }}>
         {school.name}
         <span style={{
-          color: open ? "oklch(0.60 0.13 45)" : "#797470",
+          color: open ? (isPro ? "#f0ede8" : "oklch(0.60 0.13 45)") : (isPro ? "#605c58" : "#797470"),
           transition: "transform .2s, color .2s",
           transform: open ? "rotate(180deg)" : "rotate(0deg)",
           display: "flex",
