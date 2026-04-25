@@ -108,8 +108,14 @@ html, body {
 }
 .setting-btn.danger:hover { background: rgba(200,60,40,0.12); }
 
-@media (max-width: 700px) {
-  .mx-scroll { overflow-x: auto; }
+.mx-scroll { overflow-x: auto; }
+
+@media (max-width: 640px) {
+  .main-pad  { padding: 20px 16px 80px !important; }
+  .pro-pad   { padding: 24px 16px 64px !important; }
+  .email-row { flex-direction: column !important; }
+  .email-row button { width: 100% !important; }
+  .pro-flow-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important; }
 }
 
 @keyframes orb-a {
