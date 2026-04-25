@@ -3,7 +3,6 @@
 :root {
   --bg: linear-gradient(140deg, oklch(0.93 0.055 345) 0%, oklch(0.91 0.07 50) 55%, oklch(0.92 0.055 20) 100%);
   --glass: rgba(255,255,255,0.58);
-  --glass-s: rgba(255,255,255,0.75);
   --glass-b: rgba(255,255,255,0.85);
   --shadow: 0 8px 32px rgba(80,40,10,0.10), 0 1.5px 0 rgba(255,255,255,0.7) inset;
   --ink: #1f1d1a;
@@ -15,7 +14,6 @@
   --p3: oklch(0.93 0.05 80);   --p3b: oklch(0.79 0.085 80); --p3l: oklch(0.50 0.12 80);
   --p4: oklch(0.93 0.045 240); --p4b: oklch(0.78 0.08 240); --p4l: oklch(0.44 0.10 240);
   --p5: oklch(0.93 0.05 340);  --p5b: oklch(0.80 0.085 340); --p5l: oklch(0.52 0.11 340);
-  --r-lg: 24px; --r-md: 16px; --r-sm: 10px;
 }
 
 html, body {

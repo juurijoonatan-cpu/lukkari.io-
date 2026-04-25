@@ -7,9 +7,13 @@ export function ChoiceGrid({ school, selections, onChange }) {
   const jump = useCallback((e, pi, bi) => {
     if (e.key !== "Tab") return;
     e.preventDefault();
-    let np = pi, nb = bi + 1;
-    if (nb > school.palkkiCount) { nb = 1; np = pi + 1; }
-    if (np > school.periodCount) { np = 1; nb = 1; }
+    const { palkkiCount, periodCount } = school;
+    const dir = e.shiftKey ? -1 : 1;
+    let np = pi, nb = bi + dir;
+    if (nb > palkkiCount) { nb = 1; np = pi + 1; }
+    else if (nb < 1) { nb = palkkiCount; np = pi - 1; }
+    if (np > periodCount) { np = 1; nb = 1; }
+    else if (np < 1) { np = periodCount; nb = palkkiCount; }
     refs.current[`p${np}-b${nb}`]?.focus();
   }, [school]);
 
@@ -53,7 +57,7 @@ export function ChoiceGrid({ school, selections, onChange }) {
                       display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
                     }}>
                       <input
-                        ref={el => { if (el) refs.current[k] = el; }}
+                        ref={el => { if (el) refs.current[k] = el; else delete refs.current[k]; }}
                         className="ci"
                         type="text" value={v} placeholder="+"
                         maxLength={20}

@@ -89,7 +89,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
             <div style={{ display: "flex", flexDirection: "column", gap: 6, opacity: filledCount === 0 ? 0.45 : 1, pointerEvents: filledCount === 0 ? "none" : "all" }}>
               {settingBtn(Ico.mail, "Lähetä sähköpostiin", handleEmail)}
               {settingBtn(Ico.download, "Lataa tekstitiedostona", handleDownload)}
-              {settingBtn(copied ? Ico.check : "", copied ? "Kopioitu!" : "Kopioi leikepöydälle", handleCopy)}
+              {settingBtn(copied ? Ico.check : Ico.copy, copied ? "Kopioitu!" : "Kopioi leikepöydälle", handleCopy)}
               {settingBtn(Ico.print, "Tulosta / Tallenna PDF:ksi", () => window.print())}
             </div>
           </div>
