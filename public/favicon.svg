@@ -1,14 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#1f1d1a"/>
-  <g fill="#f0d8c2">
-    <rect x="10" y="8" width="8" height="8" rx="1.2"/>
-    <rect x="10" y="18" width="8" height="8" rx="1.2"/>
-    <rect x="10" y="28" width="8" height="8" rx="1.2"/>
-    <rect x="10" y="38" width="8" height="8" rx="1.2"/>
-    <rect x="10" y="48" width="8" height="8" rx="1.2"/>
-    <rect x="20" y="48" width="8" height="8" rx="1.2"/>
-    <rect x="30" y="48" width="8" height="8" rx="1.2"/>
-    <rect x="40" y="48" width="8" height="8" rx="1.2"/>
-  </g>
-  <rect x="50" y="48" width="8" height="8" rx="1.2" fill="#e08a55"/>
+  <defs>
+    <radialGradient id="g" cx="38%" cy="33%" r="70%">
+      <stop offset="0%"   stop-color="#eda870"/>
+      <stop offset="100%" stop-color="#b04a22"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#g)"/>
+  <path d="M20 12 L26 12 L29 50 L46 50 L46 54 L20 54 Z" fill="#fdf2e7"/>
 </svg>

@@ -9,6 +9,17 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ProComingSoon } from './components/ProComingSoon';
 import { ConfirmClear } from './components/ConfirmClear';
 
+function Orbs() {
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
+      <div style={{ position: "absolute", width: 720, height: 720, borderRadius: "50%", top: -260, left: -200, filter: "blur(100px)", background: "radial-gradient(circle, oklch(0.78 0.16 45 / 0.52) 0%, transparent 68%)", animation: "orb-a 20s ease-in-out infinite" }}/>
+      <div style={{ position: "absolute", width: 560, height: 560, borderRadius: "50%", top: -60, right: -140, filter: "blur(85px)", background: "radial-gradient(circle, oklch(0.78 0.13 340 / 0.40) 0%, transparent 68%)", animation: "orb-b 25s ease-in-out infinite" }}/>
+      <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", bottom: -60, left: "38%", filter: "blur(75px)", background: "radial-gradient(circle, oklch(0.80 0.12 80 / 0.34) 0%, transparent 68%)", animation: "orb-c 28s ease-in-out infinite 5s" }}/>
+      <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", bottom: 200, right: 60, filter: "blur(65px)", background: "radial-gradient(circle, oklch(0.80 0.10 240 / 0.28) 0%, transparent 65%)", animation: "orb-a 22s ease-in-out infinite 10s" }}/>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState("free");
   const [schoolId, setSchoolId] = useState("otaniemi");
@@ -49,7 +60,8 @@ export default function App() {
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
 
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
+      <Orbs />
       <Header tab={tab} setTab={setTab} onGear={() => setSettingsOpen(true)}/>
       <SettingsPanel
         open={settingsOpen} onClose={() => setSettingsOpen(false)}
@@ -81,9 +93,6 @@ export default function App() {
                 }}>{filledCount} kurssia kirjattu</span>
               )}
             </div>
-            {school.note && (
-              <p style={{ fontSize: 11, color: "var(--ink-f)", marginTop: 6, fontStyle: "italic" }}>{school.note}</p>
-            )}
           </div>
 
           <div className="glass" style={{ borderRadius: 24, padding: "24px 24px 18px" }}>
