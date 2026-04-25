@@ -9,6 +9,10 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ProComingSoon } from './components/ProComingSoon';
 import { ConfirmClear } from './components/ConfirmClear';
 import { WishlistPanel } from './components/WishlistPanel';
+import { Footer } from './components/Footer';
+import { LegalPanel } from './components/LegalPanel';
+
+const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
 
 function Orbs() {
   return (
@@ -29,8 +33,29 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [wishlist, setWishlist] = useState([]);
+  const [legalDoc, setLegalDoc] = useState(null);
 
   const isPro = tab === "pro";
+
+  // Hash routing for legal pages — keeps URLs shareable & indexable
+  useEffect(() => {
+    const sync = () => {
+      const h = window.location.hash.replace(/^#\/?/, "");
+      setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
+    };
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  const openLegal = useCallback((key) => {
+    window.location.hash = `/${key}`;
+  }, []);
+
+  const closeLegal = useCallback(() => {
+    if (window.location.hash) history.replaceState(null, "", window.location.pathname + window.location.search);
+    setLegalDoc(null);
+  }, []);
 
   useEffect(() => {
     const s = loadState();
@@ -149,6 +174,10 @@ export default function App() {
           <WeekPreview school={school} selections={selections}/>
         </main>
       )}
+
+      <Footer isPro={isPro} onOpenLegal={openLegal}/>
+
+      {legalDoc && <LegalPanel docKey={legalDoc} onClose={closeLegal}/>}
 
       {filledCount > 0 && !isPro && !settingsOpen && (
         <div style={{

@@ -6,19 +6,148 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
   <meta name="theme-color" content="#1f1d1a" />
-  <title>Lukkari.io — lukujärjestys</title>
-  <meta name="description" content="Suunnittele lukuvuotesi kurssit helposti. Lukkari.io näyttää viikottaisen lukujärjestyksesi reaaliajassa — ja Pro-versiolla suoraan Wilma-automaatiolla.">
+
+  <title>Lukkari.io — Lukion lukujärjestyssuunnittelu ja Wilma-automaatio</title>
+
+  <!-- Primary SEO -->
+  <meta name="description" content="Lukkari.io on suomalaisten lukioiden ja korkeakoulujen opiskelijoille suunnattu ilmainen työkalu kurssivalintojen ja lukujärjestyksen suunnitteluun. Visualisoi periodit, tunnista konfliktit ja vie valinnat suoraan Wilmaan Pro-version automaatiolla.">
+  <meta name="keywords" content="lukujärjestys, lukio, kurssivalinta, Wilma, periodit, opiskelija, lukuvuosisuunnittelu, Otaniemen lukio, Suomi, opinto-ohjaus">
+  <meta name="author" content="Lukkari.io">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <link rel="canonical" href="https://lukkari.io/">
-  <meta property="og:title" content="Lukkari.io — lukujärjestys">
-  <meta property="og:description" content="Kurssivalinta automaattisesti Wilmaan. Suunnittele lukuvuotesi helposti.">
+  <link rel="alternate" hreflang="fi" href="https://lukkari.io/">
+  <link rel="alternate" hreflang="x-default" href="https://lukkari.io/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Lukkari.io — Lukion lukujärjestys & Wilma-automaatio">
+  <meta property="og:description" content="Suunnittele lukuvuotesi kurssit visuaalisesti, tunnista konfliktit ja vie valinnat Wilmaan automaattisesti.">
   <meta property="og:url" content="https://lukkari.io/">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Lukkari.io">
+  <meta property="og:locale" content="fi_FI">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lukkari.io — Lukion lukujärjestys">
+  <meta name="twitter:description" content="Suunnittele lukuvuotesi kurssit visuaalisesti ja vie ne Wilmaan automaattisesti.">
+
+  <!-- Geographic targeting (GEO) -->
+  <meta name="geo.region" content="FI">
+  <meta name="geo.placename" content="Suomi">
+  <meta name="ICBM" content="60.1699, 24.9384">
+
+  <!-- Structured data: SoftwareApplication + WebSite + Organization (helps Google + LLM citations) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://lukkari.io/#app",
+        "name": "Lukkari.io",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "description": "Lukion ja korkeakoulun opiskelijoille suunnattu ilmainen lukujärjestyssuunnittelutyökalu, jossa kurssivalinnat järjestetään periodeittain ja palkeittain. Pro-versio sisältää automaation, joka vie valinnat suoraan Wilmaan.",
+        "url": "https://lukkari.io/",
+        "inLanguage": "fi-FI",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        "featureList": [
+          "Visuaalinen periodi-/palkkikurssimatriisi",
+          "Viikkonäkymä lukujärjestyksestä",
+          "Konfliktianalyysi (Pro)",
+          "Wilma-automaatio (Pro)",
+          "Kalenteri-export ICS-muodossa (Pro)",
+          "PDF-tulostus (Pro)",
+          "Pilvitallennus ja varmuuskopiointi (Pro)"
+        ],
+        "audience": {
+          "@type": "EducationalAudience",
+          "educationalRole": "student"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://lukkari.io/#website",
+        "url": "https://lukkari.io/",
+        "name": "Lukkari.io",
+        "inLanguage": "fi-FI",
+        "publisher": { "@id": "https://lukkari.io/#org" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://lukkari.io/#org",
+        "name": "Lukkari.io",
+        "url": "https://lukkari.io/",
+        "logo": "https://lukkari.io/favicon.svg",
+        "areaServed": { "@type": "Country", "name": "Finland" },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "privacy@lukkari.io",
+          "contactType": "Privacy & Legal"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Mikä Lukkari.io on?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Lukkari.io on suomalainen ilmainen lukujärjestyssuunnittelutyökalu lukio- ja korkeakouluopiskelijoille. Se auttaa visualisoimaan periodi- ja palkkijärjestelmää sekä tunnistamaan kurssikonflikteja."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Tallennetaanko kurssivalintani jonnekin?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Valinnat tallentuvat ainoastaan käyttäjän oman selaimen localStorage-muistiin. Mitään tietoja ei lähetetä palvelimelle."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Mitä Pro-versio tekee?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Pro-versio sisältää JavaScript-automaation, joka tekee Wilma-järjestelmässä kurssivalinnat puolestasi suunnittelemasi pohjalta. Lisäksi siihen kuuluu konfliktianalyysi, kalenteri-export, PDF-tulostus ja varmuuskopiointi."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Onko Lukkari.io maksullinen?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Perusversio on täysin ilmainen ja ilman rekisteröitymistä. Pro-versio on tulossa pian."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div id="root"></div>
+  <noscript>
+    <h1>Lukkari.io — Lukion lukujärjestyssuunnittelu</h1>
+    <p>Lukkari.io on suomalaisten lukio- ja korkeakouluopiskelijoiden ilmainen työkalu kurssivalintojen suunnitteluun. Sovellus vaatii JavaScriptin toimiakseen.</p>
+    <p>Ota JavaScript käyttöön selaimessasi, ja jatka osoitteessa <a href="https://lukkari.io/">lukkari.io</a>.</p>
+    <ul>
+      <li><a href="https://lukkari.io/#/tietosuoja">Tietosuojaseloste</a></li>
+      <li><a href="https://lukkari.io/#/kayttoehdot">Käyttöehdot</a></li>
+      <li><a href="https://lukkari.io/#/evasteet">Evästekäytäntö</a></li>
+    </ul>
+  </noscript>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

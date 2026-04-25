@@ -22,14 +22,14 @@ export function ChoiceGrid({ school, selections, onChange }) {
       <table style={{ borderCollapse: "separate", borderSpacing: "5px 4px", width: "100%", minWidth: 560 }}>
         <thead>
           <tr>
-            <th style={{ width: 72 }}></th>
+            <th style={{ width: 44 }}/>
             {Array.from({ length: school.periodCount }, (_, pi) => {
               const t = PTINTS[pi];
               return (
-                <th key={pi} style={{ textAlign: "center", padding: "0 2px 12px" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-                    <span className="fr" style={{ fontSize: 24, fontWeight: 500, color: t.l, fontStyle: "italic", lineHeight: 1 }}>{pi + 1}</span>
-                    <span style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ink-f)" }}>periodi</span>
+                <th key={pi} style={{ textAlign: "center", padding: "0 2px 10px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 18, height: 2, borderRadius: 99, background: t.l, opacity: 0.85 }}/>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-s)", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{pi + 1}</span>
                   </div>
                 </th>
               );
@@ -39,11 +39,8 @@ export function ChoiceGrid({ school, selections, onChange }) {
         <tbody>
           {Array.from({ length: school.palkkiCount }, (_, bi) => (
             <tr key={bi}>
-              <td style={{ padding: "1px 8px 1px 0", verticalAlign: "middle" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", lineHeight: 1 }}>
-                  <span className="fr" style={{ fontSize: 19, fontWeight: 500, color: "var(--ink-s)", fontStyle: "italic" }}>{bi + 1}</span>
-                  <span style={{ fontSize: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-f)", marginTop: 1 }}>palkki</span>
-                </div>
+              <td style={{ padding: "1px 8px 1px 0", verticalAlign: "middle", textAlign: "right" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-s)", fontVariantNumeric: "tabular-nums" }}>{bi + 1}</span>
               </td>
               {Array.from({ length: school.periodCount }, (_, pi) => {
                 const k = `p${pi + 1}-b${bi + 1}`, v = selections[k] || "", filled = v.trim().length > 0, t = PTINTS[pi];
@@ -73,8 +70,9 @@ export function ChoiceGrid({ school, selections, onChange }) {
           ))}
         </tbody>
       </table>
-      <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: "var(--ink-f)" }}>Tab-näppäimellä seuraavaan soluun →</span>
+      <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 10, color: "var(--ink-f)", fontWeight: 500 }}>Sarakkeet = periodit · Rivit = palkit</span>
+        <span style={{ fontSize: 10, color: "var(--ink-f)" }}>Tab → seuraava solu</span>
       </div>
     </div>
   );
