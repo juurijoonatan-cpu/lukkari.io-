@@ -12,8 +12,11 @@ import { WishlistPanel } from './components/WishlistPanel';
 import { Footer } from './components/Footer';
 import { LegalPanel } from './components/LegalPanel';
 import { Ico } from './components/icons';
+import { ProLogin } from './components/pro/ProLogin';
+import { ProApp } from './components/pro/ProApp';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
+const PRO_ROUTES = ["pro-login", "pro-app"];
 
 function Orbs() {
   return (
@@ -68,14 +71,16 @@ export default function App() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [wishlist, setWishlist] = useState([]);
   const [legalDoc, setLegalDoc] = useState(null);
+  const [proRoute, setProRoute] = useState(null);
 
   const isPro = tab === "pro";
 
-  // Hash routing for legal pages — keeps URLs shareable & indexable
+  // Hash routing for legal + pro pages
   useEffect(() => {
     const sync = () => {
       const h = window.location.hash.replace(/^#\/?/, "");
       setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
+      setProRoute(PRO_ROUTES.includes(h) ? h : null);
     };
     sync();
     window.addEventListener("hashchange", sync);
@@ -127,6 +132,10 @@ export default function App() {
 
   const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
+
+  // Pro routes completely replace main UI
+  if (proRoute === "pro-login") return <ProLogin />;
+  if (proRoute === "pro-app")   return <ProApp />;
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
