@@ -12,11 +12,12 @@ import { WishlistPanel } from './components/WishlistPanel';
 import { Footer } from './components/Footer';
 import { LegalPanel } from './components/LegalPanel';
 import { Ico } from './components/icons';
-import { ProLogin } from './components/pro/ProLogin';
+import { ProAuth } from './components/pro/ProAuth';
 import { ProApp } from './components/pro/ProApp';
+import { ProSubscribe } from './components/pro/ProSubscribe';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
-const PRO_ROUTES = ["pro-login", "pro-app"];
+const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe"];
 
 function Orbs() {
   return (
@@ -134,8 +135,10 @@ export default function App() {
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
 
   // Pro routes completely replace main UI
-  if (proRoute === "pro-login") return <ProLogin />;
-  if (proRoute === "pro-app")   return <ProApp />;
+  if (proRoute === "pro-login")     return <ProAuth initialTab="login" />;
+  if (proRoute === "pro-register")  return <ProAuth initialTab="register" />;
+  if (proRoute === "pro-subscribe") return <ProSubscribe />;
+  if (proRoute === "pro-app")       return <ProApp />;
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
