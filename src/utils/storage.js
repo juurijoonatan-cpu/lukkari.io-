@@ -15,3 +15,8 @@ export function clearStoredSelections() {
   } catch {}
 }
 
+const PRO_KEY = "lukkari.pro.key";
+export const getProKey   = () => { try { return localStorage.getItem(PRO_KEY); } catch { return null; } };
+export const setProKey   = (k) => { try { localStorage.setItem(PRO_KEY, k); } catch {} };
+export const clearProKey = () => { try { localStorage.removeItem(PRO_KEY); } catch {} };
+
