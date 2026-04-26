@@ -78,7 +78,7 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
             <span style={{ color: isPro ? "#a09c98" : "var(--ink-s)" }}>io</span>
           </span>
           <div className="school-picker-header">
-            <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId} isPro={isPro}/>
+            <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId} isPro={isPro} dropdownZ={200}/>
           </div>
         </div>
 

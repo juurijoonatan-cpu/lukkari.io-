@@ -11,6 +11,7 @@ import { ConfirmClear } from './components/ConfirmClear';
 import { WishlistPanel } from './components/WishlistPanel';
 import { Footer } from './components/Footer';
 import { LegalPanel } from './components/LegalPanel';
+import { Ico } from './components/icons';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
 
@@ -22,6 +23,39 @@ function Orbs() {
       <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", bottom: -60, left: "38%", filter: "blur(75px)", background: "radial-gradient(circle, oklch(0.80 0.12 80 / 0.34) 0%, transparent 68%)", animation: "orb-c 28s ease-in-out infinite 5s" }}/>
       <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", bottom: 200, right: 60, filter: "blur(65px)", background: "radial-gradient(circle, oklch(0.80 0.10 240 / 0.28) 0%, transparent 65%)", animation: "orb-a 22s ease-in-out infinite 10s" }}/>
     </div>
+  );
+}
+
+function ShareButton() {
+  const [copied, setCopied] = useState(false);
+
+  const share = useCallback(async () => {
+    const url = "https://lukkari.io/";
+    if (navigator.share) {
+      try { await navigator.share({ title: "Lukkari.io", text: "Suunnittele lukuvuotesi kurssit helposti!", url }); }
+      catch (_) {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (_) {}
+    }
+  }, []);
+
+  return (
+    <button onClick={share} style={{
+      display: "flex", alignItems: "center", gap: 5,
+      fontSize: 11, fontWeight: 600,
+      background: "rgba(255,255,255,0.55)", border: "1.5px solid rgba(255,255,255,0.85)",
+      borderRadius: 99, padding: "4px 11px 4px 9px",
+      color: copied ? "oklch(0.52 0.12 150)" : "var(--ink-s)",
+      cursor: "pointer", backdropFilter: "blur(6px)",
+      transition: "color 0.14s",
+    }}>
+      {copied ? Ico.check : Ico.share}
+      <span>{copied ? "Linkki kopioitu!" : "Jaa kaverille"}</span>
+    </button>
   );
 }
 
@@ -139,7 +173,7 @@ export default function App() {
             <h1 className="fr" style={{ fontSize: 48, fontWeight: 500, letterSpacing: "-0.025em", lineHeight: 1.05, color: "var(--ink)" }}>
               {school.name}
             </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
               <p style={{ fontSize: 13, color: "var(--ink-s)" }}>Täytä palkit, näe lukujärjestyksesi</p>
               {filledCount > 0 && (
                 <span style={{
@@ -149,6 +183,7 @@ export default function App() {
                   backdropFilter: "blur(6px)",
                 }}>{filledCount} kurssia kirjattu</span>
               )}
+              <ShareButton />
             </div>
           </div>
 

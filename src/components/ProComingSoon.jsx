@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Ico } from './icons';
 
 const FEATURES = [
-  { icon: Ico.bolt,     label: "Wilma-automaatio",    title: "Wilma-automaatio",     desc: "JavaScript-skripti, jonka voit ajaa selaimen konsolissa. Se navigoi Wilmaan ja klikkaa kurssivalinnat automaattisesti puolestasi — pohjautuen Lukkari.io-suunnittelmaasi.", badge: "Tärkein ominaisuus" },
+  { icon: Ico.sparkle,  label: "Kurssisuosittelija",   title: "Kurssisuosittelija",   desc: "Analysoi kurssivalintasi ja suosittelee sopivia lisäkursseja ylioppilaskirjoitusten ja hakukohteidesi perusteella. Personoitu, älykäs — sinun lukuvuotesi.", badge: "Tärkein ominaisuus" },
   { icon: Ico.conflict, label: "Konfliktianalyysi",    title: "Konfliktianalyysi",    desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla." },
   { icon: Ico.calendar, label: "Kalenteri-synkronointi", title: "Kalenteri-synkronointi", desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona." },
   { icon: Ico.download, label: "PDF-export",           title: "PDF-export",           desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona." },
@@ -190,7 +190,7 @@ function ProFlowDiagram() {
           <div className="fr" style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.02em", color: "#f0ede8" }}>
             Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "#a09c98" }}>io</span>
           </div>
-          <div style={{ fontSize: 11, color: "#605c58", marginTop: 2, fontWeight: 500 }}>Suunnittele kurssisi</div>
+          <div style={{ fontSize: 11, color: "#605c58", marginTop: 2, fontWeight: 500 }}>Suunnitelmasi pohjana</div>
         </div>
       </div>
 
@@ -248,7 +248,7 @@ export function ProComingSoon() {
           Lukkari <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Pro</span>
         </h1>
         <p style={{ fontSize: 15, color: "#a09c98", maxWidth: 400, margin: "0 auto", lineHeight: 1.7 }}>
-          Automaattinen kurssivalinta Wilmaan ja paljon muuta. Lukuvuosisuunnittelu muutamassa minuutissa.
+          Älykäs kurssisuosittelija ja paljon muuta. Lukuvuosisuunnittelu muutamassa minuutissa.
         </p>
       </div>
 
