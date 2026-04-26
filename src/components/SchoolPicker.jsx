@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { SCHOOLS } from '../data/schools';
 import { Ico } from './icons';
 
-export function SchoolPicker({ schoolId, setSchoolId, isPro }) {
+export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
@@ -14,7 +14,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro }) {
   }, []);
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", zIndex: 200 }}>
+    <div ref={wrapRef} style={{ position: "relative", zIndex: dropdownZ }}>
       <button onClick={() => setOpen(o => !o)} style={{
         display: "flex", alignItems: "center", gap: 9,
         padding: "8px 14px 8px 16px", borderRadius: 99, cursor: "pointer",
