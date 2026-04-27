@@ -3,6 +3,9 @@ import { SCHOOLS } from '../data/schools';
 import { Ico } from './icons';
 
 const CUSTOM_KEY = "lukkari.customSchool";
+const DAYS = ["Ma","Ti","Ke","To","Pe"];
+const DEFAULT_TIMES = ["8.30–9.45","10.00–11.15","11.20–13.15","13.30–14.45","15.00–16.15"];
+const DEFAULT_ROTATION = Array.from({length:5}, () => [null,null,null,null,null]);
 
 function loadCustomSchool() {
   try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"); } catch { return {}; }
@@ -18,6 +21,8 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
   const [customName, setCustomName] = useState("");
   const [customPeriods, setCustomPeriods] = useState(4);
   const [customPalkkis, setCustomPalkkis] = useState(6);
+  const [customTimes, setCustomTimes] = useState(DEFAULT_TIMES);
+  const [customRotation, setCustomRotation] = useState(DEFAULT_ROTATION);
   const wrapRef = useRef(null);
 
   const custom = loadCustomSchool();
@@ -41,15 +46,21 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
     setCustomName(c.name || "");
     setCustomPeriods(c.periodCount || 4);
     setCustomPalkkis(c.palkkiCount || 6);
+    setCustomTimes(c.times?.length ? c.times : DEFAULT_TIMES);
+    setCustomRotation(c.rotation?.length ? c.rotation.map(r => [...r]) : DEFAULT_ROTATION.map(r => [...r]));
     setMode("form");
   };
 
   const saveCustom = () => {
     if (!customName.trim()) return;
-    saveCustomSchool({ name: customName.trim(), periodCount: customPeriods, palkkiCount: customPalkkis });
+    saveCustomSchool({ name: customName.trim(), periodCount: customPeriods, palkkiCount: customPalkkis, times: customTimes, days: DAYS, rotation: customRotation });
     setSchoolId("custom");
     setOpen(false);
     setMode("list");
+  };
+
+  const setCell = (ti, di, val) => {
+    setCustomRotation(prev => prev.map((row, r) => r === ti ? row.map((v, c) => c === di ? val : v) : row));
   };
 
   const inputSt = {
@@ -89,7 +100,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 8px)", left: 0,
-          borderRadius: 18, minWidth: 240,
+          borderRadius: 18, minWidth: 240, maxWidth: "90vw",
           background: "rgba(255,255,255,0.72)",
           border: "1.5px solid rgba(255,255,255,0.92)",
           backdropFilter: "blur(32px) saturate(1.8)",
@@ -174,6 +185,46 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
                   />
                 </div>
               </div>
+              {/* Tuntikiertokaavio */}
+              <div>
+                <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 6 }}>Tuntikiertokaavio</label>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th style={{ fontSize: 9, fontWeight: 600, color: "#797470", textAlign: "left", padding: "0 4px 4px 0", whiteSpace: "nowrap" }}>Aika</th>
+                        {DAYS.map(d => (
+                          <th key={d} style={{ fontSize: 9, fontWeight: 600, color: "#797470", textAlign: "center", padding: "0 2px 4px" }}>{d}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {customTimes.map((time, ti) => (
+                        <tr key={ti}>
+                          <td style={{ padding: "2px 4px 2px 0" }}>
+                            <input
+                              value={time}
+                              onChange={e => setCustomTimes(prev => prev.map((t, i) => i === ti ? e.target.value : t))}
+                              style={{ width: 90, fontSize: 10, padding: "3px 5px", borderRadius: 5, border: "1.5px solid rgba(200,195,190,0.5)", background: "rgba(255,255,255,0.88)", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                            />
+                          </td>
+                          {DAYS.map((_, di) => (
+                            <td key={di} style={{ padding: "2px 2px" }}>
+                              <input
+                                type="number" min={1} max={customPalkkis}
+                                value={customRotation[ti]?.[di] ?? ""}
+                                onChange={e => setCell(ti, di, e.target.value === "" ? null : Math.max(1, Math.min(customPalkkis, Number(e.target.value))))}
+                                style={{ width: 30, textAlign: "center", padding: "3px 2px", fontSize: 11, borderRadius: 5, border: "1.5px solid rgba(200,195,190,0.5)", background: "rgba(255,255,255,0.88)", fontFamily: "inherit", outline: "none" }}
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={saveCustom} disabled={!customName.trim()} style={{
                   flex: 1, padding: "9px", borderRadius: 10, border: "none",

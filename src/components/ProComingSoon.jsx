@@ -239,8 +239,7 @@ export function ProComingSoon() {
   const [submitted, setSubmitted] = useState(false);
 
   const tryDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
-    window.location.hash = "/pro-app";
+    window.location.href = "https://lukkari.io/beta.html";
   }, []);
 
   return (

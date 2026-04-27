@@ -80,9 +80,11 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
             Lukkari<span style={{ color: "var(--accent)" }}>.</span>
             <span style={{ color: isPro ? "#a09c98" : "var(--ink-s)" }}>io</span>
           </span>
-          <div className="school-picker-header">
-            <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId} isPro={isPro} dropdownZ={200}/>
-          </div>
+          {!isPro && (
+            <div className="school-picker-header">
+              <SchoolPicker schoolId={schoolId} setSchoolId={setSchoolId} isPro={isPro} dropdownZ={200}/>
+            </div>
+          )}
         </div>
 
         {/* Center: tab pill with chrome "Pro" label */}
