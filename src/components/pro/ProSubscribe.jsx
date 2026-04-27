@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
 
 const FEATURES = [
-  "Älykäs kurssisuosittelija (AI)",
-  "Personoitu analyysi ylioppilaskirjoituksiin",
-  "Konfliktianalyysi — tunnistaa päällekkäisyydet",
+  "Kurssisuosittelija — AI suosittelee kurssit juuri sinulle",
+  "Lukusuunnitelma — AI rakentaa aikataulun opinnoille",
+  "Lukuaikataulu kokeisiin — syötä koepäivä, saat kertausaikataulun",
+  "Konfliktianalyysi — tunnistaa aikatauluristiriidat",
   "Kalenteri-export (Google / Apple)",
   "PDF-tulostus lukujärjestyksestä",
   "Pilvitallennus & varmuuskopiointi",

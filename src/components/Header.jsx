@@ -41,10 +41,13 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
     <header style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "0 24px", height: 60,
-      background: isPro ? "rgba(6,6,18,0.80)" : "rgba(255,255,255,0.42)",
-      borderBottom: isPro ? "1px solid rgba(255,255,255,0.09)" : "1.5px solid rgba(255,255,255,0.72)",
-      backdropFilter: "blur(28px) saturate(1.5)",
-      WebkitBackdropFilter: "blur(28px) saturate(1.5)",
+      background: isPro ? "rgba(6,5,18,0.72)" : "rgba(255,255,255,0.42)",
+      borderBottom: isPro ? "1px solid rgba(255,255,255,0.08)" : "1.5px solid rgba(255,255,255,0.72)",
+      backdropFilter: isPro ? "blur(48px) saturate(1.6)" : "blur(28px) saturate(1.5)",
+      WebkitBackdropFilter: isPro ? "blur(48px) saturate(1.6)" : "blur(28px) saturate(1.5)",
+      boxShadow: isPro
+        ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 40px rgba(0,0,0,0.28), 0 0 80px rgba(100,70,230,0.07)"
+        : undefined,
       position: "sticky", top: 0, zIndex: 100,
       overflow: "visible",
       transition: "background 0.4s ease, border-color 0.4s ease",

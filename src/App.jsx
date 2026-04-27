@@ -131,7 +131,14 @@ export default function App() {
     setSettingsOpen(false);
   }, []);
 
-  const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
+  const school = schoolId === "custom"
+    ? (() => {
+        try {
+          const c = JSON.parse(localStorage.getItem("lukkari.customSchool") || "{}");
+          return { id: "custom", name: c.name || "Oma koulu", palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: [], days: [], rotation: [] };
+        } catch { return { id: "custom", name: "Oma koulu", palkkiCount: 6, periodCount: 4, times: [], days: [], rotation: [] }; }
+      })()
+    : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
 
   // Pro routes completely replace main UI
@@ -240,7 +247,7 @@ export default function App() {
         </div>
       )}
 
-      <WishlistPanel wishlist={wishlist} setWishlist={setWishlist} selections={selections}/>
+      {!isPro && <WishlistPanel wishlist={wishlist} setWishlist={setWishlist} selections={selections}/>}
 
       {confirmClear && <ConfirmClear onConfirm={doClear} onCancel={() => setConfirmClear(false)}/>}
     </div>
