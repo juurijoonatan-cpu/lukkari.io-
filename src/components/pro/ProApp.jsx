@@ -138,9 +138,10 @@ function SpinnerIcon() {
 
 const SUGGESTED = [
   "Mitä kursseja suosittelisit minulle ylioppilaskirjoituksia varten?",
+  "Tee minulle lukusuunnitelma ensi periodin kursseille",
+  "Matematiikan koe on 3 viikon päästä — tee lukuaikataulu",
   "Onko aikataulussani konflikteja tai liian tiivistä rakennetta?",
   "Miten tasapainottaa reaal- ja kieliaineet parhaiten?",
-  "Mitkä kurssit kannattaa ottaa ensin?",
 ];
 
 export function ProApp() {

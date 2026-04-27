@@ -2,8 +2,10 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Ico } from './icons';
 
 const FEATURES = [
-  { icon: Ico.sparkle,  label: "Kurssisuosittelija",   title: "Kurssisuosittelija",   desc: "Analysoi kurssivalintasi ja suosittelee sopivia lisäkursseja ylioppilaskirjoitusten ja hakukohteidesi perusteella. Personoitu, älykäs — sinun lukuvuotesi.", badge: "Tärkein ominaisuus" },
-  { icon: Ico.conflict, label: "Konfliktianalyysi",    title: "Konfliktianalyysi",    desc: "Sovellus tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla." },
+  { icon: Ico.sparkle,  label: "Kurssisuosittelija",   title: "Kurssisuosittelija",   desc: "AI analysoi kurssivalintasi ja suosittelee sopivia kursseja ylioppilaskirjoitusten ja hakukohteidesi perusteella. Personoitu, älykäs — sinun lukuvuotesi.", badge: "Tärkein ominaisuus" },
+  { icon: Ico.book,     label: "Lukusuunnitelma",       title: "Lukusuunnitelma",       desc: "AI rakentaa sinulle selkeän lukusuunnitelman: mitkä aiheet opiskella ensin, paljonko aikaa kuhunkin ja missä järjestyksessä edetä.", badge: "Uusi" },
+  { icon: Ico.timer,    label: "Lukuaikataulu",         title: "Lukuaikataulu kokeisiin", desc: "Syötä koepäivät, niin AI laskee optimaalisen aikataulun kertaukselle — tasainen tahti ilman viime hetken pänttäystä." },
+  { icon: Ico.conflict, label: "Konfliktianalyysi",    title: "Konfliktianalyysi",    desc: "Tunnistaa automaattisesti jos olet valinnut kaksi kurssia samalle palkille samalla periodilla — ei enää aikatauluristiriitoja." },
   { icon: Ico.calendar, label: "Kalenteri-synkronointi", title: "Kalenteri-synkronointi", desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona." },
   { icon: Ico.download, label: "PDF-export",           title: "PDF-export",           desc: "Tulosta tai tallenna lukujärjestyksesi näyttävänä PDF-tiedostona." },
   { icon: Ico.shield,   label: "Varmuuskopiointi",     title: "Varmuuskopiointi",     desc: "Tallenna ja synkronoi lukujärjestyksesi pilvipalveluun — ei enää pelkoa tietojen menettämisestä." },
@@ -195,7 +197,7 @@ function ProFlowDiagram() {
       </div>
 
       <div className="pro-flow-grid" style={{
-        display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, position: "relative", zIndex: 2,
+        display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", gap: 8, position: "relative", zIndex: 2,
       }}>
         {FEATURES.map((f, i) => (
           <div key={i} ref={el => nodeRefs.current[i] = el} style={{

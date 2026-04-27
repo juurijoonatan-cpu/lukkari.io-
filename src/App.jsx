@@ -240,7 +240,7 @@ export default function App() {
         </div>
       )}
 
-      <WishlistPanel wishlist={wishlist} setWishlist={setWishlist} selections={selections}/>
+      {!isPro && <WishlistPanel wishlist={wishlist} setWishlist={setWishlist} selections={selections}/>}
 
       {confirmClear && <ConfirmClear onConfirm={doClear} onCancel={() => setConfirmClear(false)}/>}
     </div>
