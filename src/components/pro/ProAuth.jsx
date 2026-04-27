@@ -113,12 +113,17 @@ export function ProAuth({ initialTab = "login" }) {
     setLoading(true); setError(null);
     const { error: err } = await supabase.auth.signUp({
       email: email.trim(), password,
-      options: { emailRedirectTo: "https://lukkari.io/#/pro-login" },
+      options: { emailRedirectTo: `${window.location.origin}/#/pro-login` },
     });
     if (err) { setError(err.message); setLoading(false); return; }
     setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
     setLoading(false);
   }, [email, password]);
+
+  const previewDemo = useCallback(() => {
+    localStorage.setItem("lukkari.proDemo", "1");
+    window.location.hash = "/pro-app";
+  }, []);
 
   const inputStyle = {
     width: "100%", padding: "12px 14px", borderRadius: 11, boxSizing: "border-box",
@@ -143,6 +148,17 @@ export function ProAuth({ initialTab = "login" }) {
         animation: "pro-fade-in 0.45s cubic-bezier(.4,0,.2,1) forwards",
       }}>
         <GlowingOrb />
+
+        {/* Title */}
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
+          <h1 className="fr" style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.02em", color: "#f0ede8", lineHeight: 1.1, margin: 0 }}>
+            Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "#605c58" }}>io</span>{" "}
+            <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Pro</span>
+          </h1>
+          <p style={{ fontSize: 11, color: "#605c58", marginTop: 5, letterSpacing: "0.02em" }}>
+            AI-pohjainen kurssisuosittelija
+          </p>
+        </div>
 
         {/* Tab switcher */}
         <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, marginBottom: 24 }}>
@@ -188,7 +204,7 @@ export function ProAuth({ initialTab = "login" }) {
               <button type="button" onClick={async () => {
                 if (!email.trim()) { setError("Kirjoita sähköpostiosoitteesi ensin."); return; }
                 setLoading(true);
-                await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: "https://lukkari.io/#/pro-login" });
+                await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/#/pro-login` });
                 setInfo("Salasanan palautuslinkki lähetetty sähköpostiisi.");
                 setLoading(false);
               }} style={{ background: "none", border: "none", fontSize: 11, color: "#605c58", cursor: "pointer", fontFamily: "inherit" }}>
@@ -232,6 +248,20 @@ export function ProAuth({ initialTab = "login" }) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Takaisin etusivulle
           </button>
+        </div>
+
+        <div style={{ marginTop: 12, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+          <button onClick={previewDemo} style={{
+            background: "rgba(120,90,255,0.10)",
+            border: "1px solid rgba(120,90,255,0.28)",
+            color: "rgba(180,160,255,0.95)",
+            fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+            borderRadius: 99, padding: "6px 14px", cursor: "pointer",
+            fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+          >ESIKATSELE PRO DEMONA →</button>
         </div>
 
         <p style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.13)", marginTop: 18, letterSpacing: "0.08em" }}>

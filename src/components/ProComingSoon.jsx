@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Ico } from './icons';
 
 const FEATURES = [
@@ -227,13 +227,15 @@ function ProFlowDiagram() {
 }
 
 export function ProComingSoon() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const previewDemo = useCallback(() => {
+    localStorage.setItem("lukkari.proDemo", "1");
+    window.location.hash = "/pro-app";
+  }, []);
 
   return (
     <div className="pro-pad" style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 80px", position: "relative" }}>
       {/* Hero */}
-      <div style={{ textAlign: "center", marginBottom: 52, position: "relative" }}>
+      <div style={{ textAlign: "center", marginBottom: 48, position: "relative" }}>
         <HeroSparks />
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
@@ -242,13 +244,44 @@ export function ProComingSoon() {
           boxShadow: "0 4px 18px rgba(0,0,0,0.5)",
         }}>
           <span style={{ color: "rgba(20,18,30,0.85)", display: "flex" }}>{Ico.star}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(20,18,30,0.85)", letterSpacing: "0.06em" }}>TULOSSA PIAN</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(20,18,30,0.85)", letterSpacing: "0.06em" }}>BETA SAATAVILLA</span>
         </div>
         <h1 className="fr" style={{ fontSize: 60, fontWeight: 500, letterSpacing: "-0.03em", color: "#f0ede8", marginBottom: 16, lineHeight: 1.02 }}>
           Lukkari <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Pro</span>
         </h1>
-        <p style={{ fontSize: 15, color: "#a09c98", maxWidth: 400, margin: "0 auto", lineHeight: 1.7 }}>
-          Älykäs kurssisuosittelija ja paljon muuta. Lukuvuosisuunnittelu muutamassa minuutissa.
+        <p style={{ fontSize: 15, color: "#a09c98", maxWidth: 420, margin: "0 auto 32px", lineHeight: 1.7 }}>
+          AI analysoi lukujärjestyksesi ja suosittelee kurssit ylioppilaskirjoituksiisi — muutamassa minuutissa.
+        </p>
+
+        {/* Primary CTAs */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          <button onClick={() => { window.location.hash = "/pro-register"; }}
+            style={{
+              padding: "14px 32px", borderRadius: 14, border: "none",
+              background: "linear-gradient(135deg, rgba(240,237,232,0.95), rgba(210,205,225,0.92))",
+              color: "rgba(8,6,22,0.90)", fontSize: 13, fontWeight: 700, letterSpacing: "0.07em",
+              cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 6px 24px rgba(200,180,255,0.28), 0 1px 0 rgba(255,255,255,0.9) inset",
+              transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 32px rgba(200,180,255,0.40), 0 1px 0 rgba(255,255,255,0.9) inset"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(200,180,255,0.28), 0 1px 0 rgba(255,255,255,0.9) inset"; e.currentTarget.style.transform = "none"; }}
+          >LUO TILI — ILMAINEN KOKEILU</button>
+          <button onClick={() => { window.location.hash = "/pro-login"; }}
+            style={{
+              padding: "14px 24px", borderRadius: 14,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.16)",
+              color: "#a09c98", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em",
+              cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.color = "#f0ede8"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#a09c98"; }}
+          >Kirjaudu sisään</button>
+        </div>
+        <p style={{ fontSize: 10, color: "#605c58", marginTop: 12 }}>
+          7 päivän ilmainen kokeilu · ei luottokorttia · 3,99 €/kk sen jälkeen
         </p>
       </div>
 
@@ -271,45 +304,60 @@ export function ProComingSoon() {
         {FEATURES.map((f, i) => <FeatureCard key={i} feature={f} index={i}/>)}
       </div>
 
-      {/* Signup */}
+      {/* Bottom CTA */}
       <div style={{
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.10)",
-        borderRadius: 20, padding: "28px",
+        borderRadius: 20, padding: "32px 28px",
         textAlign: "center",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
       }}>
-        <p className="fr" style={{ fontSize: 22, fontWeight: 500, color: "#f0ede8", marginBottom: 6 }}>Kiinnostuitko?</p>
-        {submitted ? (
-          <p style={{ fontSize: 14, color: "#a09c98", marginTop: 8 }}>Kiitos! Kerromme kun Pro on saatavilla.</p>
-        ) : (
-          <>
-            <p style={{ fontSize: 13, color: "#a09c98", marginBottom: 20 }}>Ilmoita sähköpostisi — kerromme heti kun Pro on saatavilla.</p>
-            <div className="email-row" style={{ display: "flex", gap: 8, maxWidth: 340, margin: "0 auto" }}>
-              <input type="email" placeholder="sinun@email.fi" value={email}
-                onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && email.trim() && setSubmitted(true)}
-                style={{
-                  flex: 1, padding: "10px 16px", borderRadius: 12,
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  background: "rgba(255,255,255,0.06)",
-                  fontSize: 13, outline: "none", color: "#f0ede8", fontFamily: "inherit",
-                }}
-              />
-              <button onClick={() => email.trim() && setSubmitted(true)} disabled={!email.trim()} style={{
-                padding: "10px 18px", borderRadius: 12, border: "none",
-                background: email.trim()
-                  ? "linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20))"
-                  : "rgba(255,255,255,0.08)",
-                color: email.trim() ? "white" : "#605c58",
-                fontSize: 13, fontWeight: 600, cursor: email.trim() ? "pointer" : "default",
-                boxShadow: email.trim() ? "0 4px 16px oklch(0.62 0.13 45 / 0.4)" : "none",
-                opacity: email.trim() ? 1 : 0.6, transition: "all .14s", fontFamily: "inherit", whiteSpace: "nowrap",
-              }}>Ilmoittaudu</button>
-            </div>
-          </>
-        )}
+        <p className="fr" style={{ fontSize: 24, fontWeight: 500, color: "#f0ede8", marginBottom: 6 }}>Valmis aloittamaan?</p>
+        <p style={{ fontSize: 13, color: "#a09c98", marginBottom: 24, lineHeight: 1.6 }}>
+          Luo tili ja aloita 7 päivän ilmainen kokeilu.<br/>
+          <span style={{ color: "#605c58" }}>Ei luottokorttia — peruuta milloin tahansa.</span>
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 18 }}>
+          <button onClick={() => { window.location.hash = "/pro-register"; }}
+            style={{
+              padding: "13px 28px", borderRadius: 13, border: "none",
+              background: "linear-gradient(135deg, rgba(240,237,232,0.95), rgba(210,205,225,0.92))",
+              color: "rgba(8,6,22,0.90)", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em",
+              cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              boxShadow: "0 4px 20px rgba(200,180,255,0.24)",
+              transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
+          >LUO TILI</button>
+          <button onClick={() => { window.location.hash = "/pro-login"; }}
+            style={{
+              padding: "13px 22px", borderRadius: 13,
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.14)",
+              color: "#a09c98", fontSize: 12, fontWeight: 600,
+              cursor: "pointer", fontFamily: "'Inter', sans-serif",
+              transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#f0ede8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.28)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#a09c98"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)"; }}
+          >Kirjaudu sisään</button>
+        </div>
+        <div style={{ paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button onClick={previewDemo}
+            style={{
+              background: "rgba(120,90,255,0.10)",
+              border: "1px solid rgba(120,90,255,0.28)",
+              color: "rgba(180,160,255,0.95)",
+              fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+              borderRadius: 99, padding: "6px 16px", cursor: "pointer",
+              fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+          >ESIKATSELE PRO DEMONA →</button>
+        </div>
       </div>
     </div>
   );
