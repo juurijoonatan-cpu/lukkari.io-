@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lukkari Pro — AI-kurssisuosittelija</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+body {
+  background: #09080f;
+  color: #f0ede8;
+}
+
+/* ── Design tokens ── */
+:root {
+  --accent:     oklch(0.72 0.14 45);
+  --accent-dim: oklch(0.55 0.12 45);
+  --ink:        #f0ede8;
+  --ink-s:      #a09c98;
+  --ink-f:      #605c58;
+  --chrome:     linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%);
+  --glass-bg:   rgba(255,255,255,0.055);
+  --glass-b:    rgba(255,255,255,0.10);
+  --glass-bg2:  rgba(255,255,255,0.08);
+  --glass-b2:   rgba(255,255,255,0.14);
+  --sidebar-w:  220px;
+  --header-h:   54px;
+}
+
+/* ── Background orbs — warm dark, matches video aesthetic ── */
+.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; }
+
+/* ── Layout ── */
+#app { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 1; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,0.035);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+.sidebar-logo {
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.sidebar-nav { flex: 1; padding: 10px 10px; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 12px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--ink-f);
+  transition: all .18s; border: none; background: none; width: 100%;
+  font-family: inherit; text-align: left;
+  position: relative;
+}
+.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--ink-s); }
+.nav-item.active {
+  background: rgba(255,255,255,0.09);
+  color: var(--ink);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 20%; height: 60%; width: 2.5px;
+  background: var(--accent); border-radius: 0 99px 99px 0;
+}
+.nav-section {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; color: rgba(255,255,255,0.18);
+  padding: 14px 12px 6px;
+}
+.sidebar-footer {
+  padding: 14px 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+/* ── Main area ── */
+.main {
+  flex: 1; height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.main-header {
+  height: var(--header-h); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(9,8,15,0.65);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  position: relative; z-index: 5;
+}
+.main-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+}
+
+/* ── Pages ── */
+.page { display: none; padding: 28px 28px 60px; }
+.page.active { display: block; }
+
+/* ── Glass cards ── */
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-b);
+  border-radius: 20px;
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+.card-bright {
+  background: var(--glass-bg2);
+  border: 1px solid var(--glass-b2);
+  border-radius: 20px;
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.40), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+
+/* ── Chrome button ── */
+.btn-chrome {
+  background: var(--chrome);
+  color: rgba(8,6,22,0.88);
+  border: none; cursor: pointer;
+  font-family: inherit; font-weight: 700;
+  border-radius: 12px; padding: 12px 24px;
+  font-size: 12px; letter-spacing: 0.08em;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.9) inset;
+  transition: all .16s;
+}
+.btn-chrome:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.9) inset; }
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.13);
+  color: var(--ink-s); cursor: pointer;
+  font-family: inherit; font-weight: 500;
+  border-radius: 12px; padding: 12px 20px;
+  font-size: 12px; transition: all .16s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--ink); }
+
+/* ── Input ── */
+.input-dark {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px; color: var(--ink); font-size: 13px; font-family: inherit;
+  outline: none; transition: border-color .18s;
+}
+.input-dark::placeholder { color: var(--ink-f); }
+.input-dark:focus { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.07); }
+
+/* ── Tags / chips ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 11px; font-weight: 500;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.11);
+  color: var(--ink-s); cursor: pointer; font-family: inherit;
+  transition: all .14s;
+}
+.chip:hover { background: rgba(255,255,255,0.10); color: var(--ink); }
+
+/* ── Progress ── */
+.prog { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+
+/* ── Animations ── */
+@keyframes orb-a { 0%,100%{transform:translate(0,0) scale(1)} 45%{transform:translate(50px,-60px) scale(1.07)} 75%{transform:translate(-25px,30px) scale(0.95)} }
+@keyframes orb-b { 0%,100%{transform:translate(0,0) scale(1)} 38%{transform:translate(-45px,40px) scale(1.05)} 68%{transform:translate(35px,-20px) scale(0.96)} }
+@keyframes orb-c { 0%,100%{transform:translate(0,0) scale(1)} 55%{transform:translate(30px,50px) scale(1.06)} 80%{transform:translate(-40px,-15px) scale(0.97)} }
+@keyframes pulse-ring { 0%,100%{transform:scale(0.92);opacity:0.45} 50%{transform:scale(1.06);opacity:0.90} }
+@keyframes thinking-dot { 0%,100%{opacity:0.25;transform:scale(0.85)} 50%{opacity:1;transform:scale(1)} }
+@keyframes chat-slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes flow-in { from{stroke-dashoffset:600;opacity:0} to{stroke-dashoffset:0;opacity:1} }
+@keyframes node-in { from{opacity:0;transform:translateY(14px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes center-in { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+@keyframes spark-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes bar-in { from{width:0} }
+
+/* ── Mobile bottom nav ── */
+.mobile-nav { display: none; }
+@media(max-width:800px) {
+  .sidebar { display: none; }
+  .mobile-nav {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(9,8,15,0.88); border-top: 1px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .mob-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; cursor: pointer; padding: 6px 0;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.30); font-family: inherit; transition: color .15s;
+  }
+  .mob-btn svg { width: 20px; height: 20px; }
+  .mob-btn.active { color: var(--ink); }
+  .page { padding: 20px 16px 90px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="bg-orbs">
+  <div class="orb" style="width:900px;height:900px;top:-380px;left:-280px;filter:blur(130px);animation:orb-a 24s ease-in-out infinite;background:radial-gradient(circle,oklch(0.32 0.12 45 / 0.55) 0%,transparent 65%)"></div>
+  <div class="orb" style="width:650px;height:650px;top:60px;right:-180px;filter:blur(110px);animation:orb-b 30s ease-in-out infinite;background:radial-gradient(circle,oklch(0.22 0.08 20 / 0.40) 0%,transparent 65%)"></div>
+  <div class="orb" style="width:500px;height:500px;bottom:-100px;left:40%;filter:blur(95px);animation:orb-c 26s ease-in-out infinite 7s;background:radial-gradient(circle,oklch(0.28 0.10 350 / 0.30) 0%,transparent 65%)"></div>
+  <div class="orb" style="width:350px;height:350px;bottom:160px;right:60px;filter:blur(80px);animation:orb-a 34s ease-in-out infinite 14s;background:radial-gradient(circle,oklch(0.24 0.07 260 / 0.22) 0%,transparent 65%)"></div>
+</div>
+
+<div id="app">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:500;letter-spacing:-0.02em;color:#f0ede8;margin-bottom:3px">
+        Lukkari<span style="color:oklch(0.72 0.14 45)">.</span><span style="color:#605c58">io</span>
+        <span style="font-style:italic;color:oklch(0.72 0.14 45);font-size:17px"> Pro</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(120,90,255,0.12);border:1px solid rgba(120,90,255,0.28);border-radius:99px;padding:2px 9px;margin-top:2px">
+        <div style="width:5px;height:5px;border-radius:50%;background:oklch(0.72 0.14 150);box-shadow:0 0 6px oklch(0.72 0.14 150)"></div>
+        <span style="font-size:9px;font-weight:700;letter-spacing:0.10em;color:rgba(180,160,255,0.90)">BETA</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Päävalikko</div>
+      <button class="nav-item active" onclick="goTo('ai')" id="snav-ai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+        AI-suosittelija
+      </button>
+      <button class="nav-item" onclick="goTo('luku')" id="snav-luku">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Lukujärjestys
+      </button>
+      <button class="nav-item" onclick="goTo('plan')" id="snav-plan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Suunnitelma
+      </button>
+      <button class="nav-item" onclick="goTo('goals')" id="snav-goals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Tavoitteet
+      </button>
+
+      <div class="nav-section" style="margin-top:8px">Asetukset</div>
+      <button class="nav-item" onclick="goTo('settings')" id="snav-settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Asetukset
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,oklch(0.40 0.12 45),oklch(0.28 0.08 20));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f0ede8;flex-shrink:0">J</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:#f0ede8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Joonatan</div>
+          <div style="font-size:10px;color:#605c58">Pro · 287/300 kyselyä</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+    <header class="main-header">
+      <div id="pageTitle" style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:#f0ede8;letter-spacing:-0.01em">AI-suosittelija</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-ghost" style="padding:7px 14px;font-size:11px;border-radius:99px" onclick="goTo('ai')">Vapaa versio</button>
+        <button style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#a09c98;display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-content">
+
+      <!-- ══ PAGE: AI ══ -->
+      <div class="page active" id="page-ai">
+        <div style="max-width:780px;margin:0 auto">
+
+          <!-- Sphere + greeting -->
+          <div style="display:flex;align-items:center;gap:32px;margin-bottom:28px">
+            <div style="position:relative;flex-shrink:0">
+              <canvas id="sphereCanvas" width="280" height="280" style="width:140px;height:140px;display:block"></canvas>
+              <div style="position:absolute;inset:-12px;border-radius:50%;border:1px solid oklch(0.55 0.12 45 / 0.20);animation:pulse-ring 3.2s ease-in-out infinite;pointer-events:none" id="pr1"></div>
+              <div style="position:absolute;inset:-24px;border-radius:50%;border:1px solid oklch(0.55 0.12 45 / 0.10);animation:pulse-ring 3.2s ease-in-out infinite 0.7s;pointer-events:none" id="pr2"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:6px">AI-suosittelija</div>
+              <h1 style="font-family:'Fraunces',serif;font-size:30px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8;line-height:1.1;margin-bottom:8px">
+                Hei, mitä<br>suunnitellaan?
+              </h1>
+              <p style="font-size:13px;color:#605c58;line-height:1.55;max-width:340px">Kerro kurssivalinnoistasi tai kysy suosituksia — analysoin lukujärjestyksesi ja annan personoituja neuvoja.</p>
+            </div>
+          </div>
+
+          <!-- Schedule mini-summary -->
+          <div class="card" style="padding:16px 20px;margin-bottom:16px;border-radius:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <span style="font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:#f0ede8">Otaniemen lukio · 2026–2027</span>
+              <span style="font-size:10px;color:#605c58">12 kurssia · 5 periodia</span>
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P1</div>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.18 0.07 45 / 0.6);border:1px solid oklch(0.45 0.09 45 / 0.5);color:oklch(0.78 0.12 45);white-space:nowrap">MAA3</span>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.18 0.07 45 / 0.6);border:1px solid oklch(0.45 0.09 45 / 0.5);color:oklch(0.78 0.12 45);white-space:nowrap">ENA5</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P2</div>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.06 150 / 0.6);border:1px solid oklch(0.40 0.08 150 / 0.5);color:oklch(0.72 0.10 150);white-space:nowrap">FY4</span>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.06 150 / 0.6);border:1px solid oklch(0.40 0.08 150 / 0.5);color:oklch(0.72 0.10 150);white-space:nowrap">ÄI3</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P3</div>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.17 0.07 80 / 0.6);border:1px solid oklch(0.42 0.09 80 / 0.5);color:oklch(0.75 0.12 80);white-space:nowrap">MAA6</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P4</div>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.07 240 / 0.6);border:1px solid oklch(0.40 0.09 240 / 0.5);color:oklch(0.72 0.12 240);white-space:nowrap">HI2</span>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.07 240 / 0.6);border:1px solid oklch(0.40 0.09 240 / 0.5);color:oklch(0.72 0.12 240);white-space:nowrap">KE3</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P5</div>
+                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.17 0.07 340 / 0.6);border:1px solid oklch(0.42 0.09 340 / 0.5);color:oklch(0.74 0.11 340);white-space:nowrap">BI2</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat messages -->
+          <div id="chatMessages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:20px">
+            <div style="animation:chat-slide .35s ease forwards;max-width:78%">
+              <div class="card" style="border-radius:16px 16px 16px 5px;padding:14px 17px;border-color:rgba(255,255,255,0.10)">
+                <p style="font-size:13px;color:rgba(240,237,232,0.82);line-height:1.62">Näen lukujärjestyksesi — 12 kurssia jakautuu 5 periodille. Matematiikkaa on eniten. Haluatko kurssisuosituksia YO-kirjoituksia varten, vai analysoidaanko rakennetta?</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suggestions -->
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+            <button class="chip" onclick="sendMsg(this.textContent)">Suosittele YO-kursseja</button>
+            <button class="chip" onclick="sendMsg(this.textContent)">Onko konflikteja?</button>
+            <button class="chip" onclick="sendMsg(this.textContent)">Tasapainota aineet</button>
+            <button class="chip" onclick="sendMsg(this.textContent)">Missä järjestyksessä?</button>
+          </div>
+
+          <!-- Input -->
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <textarea id="chatInput" class="input-dark" placeholder="Kysy kurssivalinnoista, aikataulusta, ylioppilaskirjoituksista…" rows="2"
+              style="flex:1;resize:none;line-height:1.5;border-radius:14px"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+            <button onclick="sendChat()" id="sendBtn" style="flex-shrink:0;width:46px;height:46px;border-radius:13px;border:none;background:linear-gradient(135deg,oklch(0.55 0.18 45),oklch(0.45 0.15 20));color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px oklch(0.55 0.18 45 / 0.40);transition:opacity .15s">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+
+          <p style="font-size:9px;color:rgba(255,255,255,0.12);margin-top:10px;text-align:center">GPT-4o-mini via Supabase Edge Functions · Demo-tila</p>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: LUKUJÄRJESTYS ══ -->
+      <div class="page" id="page-luku">
+        <div style="max-width:860px;margin:0 auto">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">2026–2027</div>
+              <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Otaniemen lukio</h1>
+              <p style="font-size:13px;color:#605c58;margin-top:4px">8 palkkia · 5 periodia · tuntikiertokaavio</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-ghost" style="padding:9px 16px;font-size:11px">Vie PDF</button>
+              <button class="btn-ghost" style="padding:9px 16px;font-size:11px">Kalenteri ↗</button>
+            </div>
+          </div>
+
+          <!-- Stats row -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:#f0ede8">12</div>
+              <div style="font-size:10px;color:#605c58;margin-top:2px">Kurssia</div>
+            </div>
+            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.10 150)">0</div>
+              <div style="font-size:10px;color:#605c58;margin-top:2px">Konfliktia</div>
+            </div>
+            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.14 45)">4</div>
+              <div style="font-size:10px;color:#605c58;margin-top:2px">Vapaata</div>
+            </div>
+            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.12 80)">2.4</div>
+              <div style="font-size:10px;color:#605c58;margin-top:2px">Kurssia/periodi</div>
+            </div>
+          </div>
+
+          <!-- Period cards -->
+          <div id="periodRows" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px"></div>
+
+          <!-- AI insight -->
+          <div class="card" style="padding:16px 20px;border-radius:16px;border-left:2px solid oklch(0.55 0.14 45)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <div style="width:22px;height:22px;border-radius:7px;background:oklch(0.22 0.09 45 / 0.8);border:1px solid oklch(0.45 0.10 45 / 0.5);display:flex;align-items:center;justify-content:center">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="oklch(0.75 0.14 45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+              </div>
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:oklch(0.78 0.12 45);text-transform:uppercase">AI-analyysi</span>
+            </div>
+            <p style="font-size:13px;color:#a09c98;line-height:1.6">Lukujärjestyksesi näyttää tasapainoiselta. Matematiikan kursseja on eniten — harkitse hajauttamista useammalle periodille ylikuormituksen välttämiseksi periodeilla 1 ja 3.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: SUUNNITELMA ══ -->
+      <div class="page" id="page-plan">
+        <div style="max-width:780px;margin:0 auto">
+          <div style="margin-bottom:22px">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">AI-suositukset</div>
+            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Opiskelusuunnitelma</h1>
+            <p style="font-size:13px;color:#605c58;margin-top:4px">Personoitu kurssivalintojesi perusteella</p>
+          </div>
+
+          <!-- View tabs -->
+          <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:12px;padding:3px;width:fit-content">
+            <button class="plan-tab active-tab" style="padding:8px 18px;border-radius:10px;border:none;background:rgba(255,255,255,0.10);color:#f0ede8;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Viikko</button>
+            <button class="plan-tab" style="padding:8px 18px;border-radius:10px;border:none;background:transparent;color:#605c58;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Koepäivä</button>
+            <button class="plan-tab" style="padding:8px 18px;border-radius:10px;border:none;background:transparent;color:#605c58;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">YO-valmistelu</button>
+          </div>
+
+          <!-- Week plan -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">28.4–2.5.2026</div>
+          <div id="dayPlan" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
+
+          <!-- Exam cards -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">Tulevat kokeet</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
+              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.18 0.08 45 / 0.7);border:1px solid oklch(0.45 0.10 45 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.78 0.12 45);line-height:1">5</span>
+                <span style="font-size:8px;color:oklch(0.55 0.08 45);font-weight:600">pv</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">MAA6</div>
+                <div style="font-size:11px;color:#605c58">Pe 3.5 · klo 8.15</div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
+              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.16 0.07 150 / 0.7);border:1px solid oklch(0.40 0.08 150 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.72 0.10 150);line-height:1">12</span>
+                <span style="font-size:8px;color:oklch(0.50 0.07 150);font-weight:600">pv</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">FY5</div>
+                <div style="font-size:11px;color:#605c58">Ti 10.5 · klo 10.00</div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
+              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.17 0.07 80 / 0.7);border:1px solid oklch(0.42 0.09 80 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.75 0.12 80);line-height:1">19</span>
+                <span style="font-size:8px;color:oklch(0.52 0.08 80);font-weight:600">pv</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">ENA5</div>
+                <div style="font-size:11px;color:#605c58">Ti 17.5 · klo 8.30</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: TAVOITTEET ══ -->
+      <div class="page" id="page-goals">
+        <div style="max-width:780px;margin:0 auto">
+          <div style="margin-bottom:22px">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">Edistyminen</div>
+            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Tavoitteet</h1>
+            <p style="font-size:13px;color:#605c58;margin-top:4px">Lukuvuosi 2026–2027</p>
+          </div>
+
+          <!-- Ring + summary -->
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;margin-bottom:24px;align-items:center">
+            <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#rg)" stroke-width="8"
+                  stroke-dasharray="263.9" stroke-dashoffset="79.2" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                <defs>
+                  <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="oklch(0.72 0.14 45)"/>
+                    <stop offset="100%" stop-color="oklch(0.60 0.12 20)"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:#f0ede8;line-height:1">70%</span>
+                <span style="font-size:9px;color:#605c58;margin-top:1px">valmis</span>
+              </div>
+            </div>
+            <div>
+              <p style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:#f0ede8;margin-bottom:5px">Hyvää menoa!</p>
+              <p style="font-size:13px;color:#605c58;line-height:1.55;margin-bottom:14px">42/60 tavoitekurssista suoritettu. Jatka samaan tahtiin ja saavutat tavoitteen periodi 5:n loppuun mennessä.</p>
+              <div style="display:flex;gap:8px">
+                <div class="card" style="padding:10px 14px;border-radius:12px;text-align:center">
+                  <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:oklch(0.78 0.12 45)">8</div>
+                  <div style="font-size:9px;color:#605c58;margin-top:1px">Periodeita jäljellä</div>
+                </div>
+                <div class="card" style="padding:10px 14px;border-radius:12px;text-align:center">
+                  <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:oklch(0.72 0.10 150)">3</div>
+                  <div style="font-size:9px;color:#605c58;margin-top:1px">Ainejärjestys ok</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject progress -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">Ainekohtainen</div>
+          <div id="subjectBars" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
+
+          <!-- Leaderboard -->
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">
+            Luokkavertailu <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.15)">· anonymisoitu</span>
+          </div>
+          <div id="leaderboard" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: SETTINGS ══ -->
+      <div class="page" id="page-settings">
+        <div style="max-width:560px;margin:0 auto">
+          <div style="margin-bottom:22px">
+            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Asetukset</h1>
+          </div>
+
+          <div class="card" style="padding:20px;border-radius:18px;margin-bottom:12px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Tili</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,oklch(0.40 0.12 45),oklch(0.28 0.08 20));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#f0ede8">J</div>
+              <div>
+                <div style="font-size:14px;font-weight:500;color:#f0ede8">Joonatan</div>
+                <div style="font-size:12px;color:#605c58"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="97fdf8f8f9f6e3f6f9d7f2faf6fefbb9f1fe">[email&#160;protected]</a> · Pro-tilaus</div>
+              </div>
+            </div>
+            <button class="btn-ghost" style="width:100%;padding:10px;font-size:12px;text-align:center;justify-content:center">Kirjaudu ulos</button>
+          </div>
+
+          <div class="card" style="padding:20px;border-radius:18px;margin-bottom:12px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Tilaus</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#f0ede8">Pro · 3,99 €/kk</div>
+                <div style="font-size:11px;color:#605c58;margin-top:2px">Seuraava laskutus 1.6.2026</div>
+              </div>
+              <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:oklch(0.22 0.09 150 / 0.8);border:1px solid oklch(0.45 0.10 150 / 0.6);border-radius:99px;padding:3px 10px;color:oklch(0.72 0.10 150)">Aktiivinen</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#605c58">
+              <span>287 / 300 kyselyä käytetty</span>
+              <span>palautuu 1.5.</span>
+            </div>
+          </div>
+
+          <div class="card" style="padding:20px;border-radius:18px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Koulu</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:13px;color:#a09c98">Otaniemen lukio</span>
+              <span style="font-size:11px;color:#605c58">8P · 5 periodia</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /main -->
+
+</div><!-- /app -->
+
+<!-- Mobile nav -->
+<nav class="mobile-nav">
+  <button class="mob-btn active" onclick="goTo('ai')" id="mnav-ai">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+    AI
+  </button>
+  <button class="mob-btn" onclick="goTo('luku')" id="mnav-luku">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Lukkari
+  </button>
+  <button class="mob-btn" onclick="goTo('plan')" id="mnav-plan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Suunnitelma
+  </button>
+  <button class="mob-btn" onclick="goTo('goals')" id="mnav-goals">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    Tavoitteet
+  </button>
+</nav>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── Navigation ────────────────────────────────────────────────
+const PAGE_TITLES = { ai:'AI-suosittelija', luku:'Lukujärjestys', plan:'Suunnitelma', goals:'Tavoitteet', settings:'Asetukset' };
+
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mob-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const sn = document.getElementById('snav-' + id);
+  const mn = document.getElementById('mnav-' + id);
+  if (sn) sn.classList.add('active');
+  if (mn) mn.classList.add('active');
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[id] || '';
+}
+
+// ── Particle Sphere ───────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('sphereCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=280,H=280,cx=W/2,cy=H/2,R=110;
+  let thinking=false, t=0;
+  window.setSphereThinking = v => thinking=v;
+
+  const pts = Array.from({length:200},(_,i)=>{
+    const phi   = Math.acos(1-2*(i+.5)/200);
+    const theta = Math.PI*(1+Math.sqrt(5))*i;
+    return { phi, theta, label:Math.random()<0.5?String(Math.floor(Math.random()*10)):null, sz:0.7+Math.random()*1.5 };
+  });
+
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    t += thinking ? 0.022 : 0.007;
+
+    // Glow core
+    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+    g.addColorStop(0,'oklch(0.38 0.12 45 / 0.16)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.1,0,Math.PI*2); ctx.fill();
+
+    const ry = t*0.38;
+    const sorted = pts.map(p=>{
+      const th = p.theta + t*0.0008;
+      const x3 = R*Math.sin(p.phi)*Math.cos(th);
+      const y3 = R*Math.sin(p.phi)*Math.sin(th);
+      const z3 = R*Math.cos(p.phi);
+      const xr = x3*Math.cos(ry)+z3*Math.sin(ry);
+      const zr = -x3*Math.sin(ry)+z3*Math.cos(ry);
+      const depth=(zr+R)/(2*R);
+      return{px:cx+xr,py:cy+y3,depth,label:p.label,sz:p.sz};
+    }).sort((a,b)=>a.depth-b.depth);
+
+    sorted.forEach(p=>{
+      const a=0.12+p.depth*0.88, sz=p.sz*(0.3+p.depth*0.7);
+      // Warm amber to cream gradient by depth
+      const L=0.45+p.depth*0.38, C=0.08+p.depth*0.07, H2=thinking?45+p.depth*10:45;
+      const col=`oklch(${L} ${C} ${H2} / ${a})`;
+      if(p.label&&sz>0.8){
+        ctx.font=`${Math.round(6+sz*3.5)}px 'Inter',monospace`;
+        ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(p.label,p.px,p.py);
+      } else {
+        ctx.beginPath(); ctx.arc(p.px,p.py,Math.max(0.3,sz*0.8),0,Math.PI*2);
+        ctx.fillStyle=col; ctx.fill();
+      }
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// ── Chat ──────────────────────────────────────────────────────
+function sendMsg(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const area = document.getElementById('chatMessages');
+
+  // User bubble
+  const u = document.createElement('div');
+  u.style.cssText='display:flex;justify-content:flex-end;animation:chat-slide .28s ease forwards';
+  u.innerHTML=`<div style="max-width:75%;padding:12px 16px;border-radius:16px 16px 5px 16px;background:linear-gradient(135deg,oklch(0.32 0.10 45 / 0.8),oklch(0.25 0.07 20 / 0.8));border:1px solid oklch(0.45 0.10 45 / 0.4);font-size:13px;color:rgba(240,237,232,0.90);line-height:1.55">${msg}</div>`;
+  area.appendChild(u);
+
+  // Thinking
+  window.setSphereThinking(true);
+  ['pr1','pr2'].forEach((id,i)=>{
+    document.getElementById(id).style.animation=`pulse-ring ${1.2+i*0.2}s ease-in-out infinite ${i*0.25}s`;
+  });
+
+  const dots=document.createElement('div');
+  dots.style.cssText='animation:chat-slide .28s ease forwards;max-width:60%';
+  dots.innerHTML=`<div style="display:inline-flex;gap:5px;align-items:center;padding:12px 16px;border-radius:16px 16px 16px 5px;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10)">
+    ${[0,.22,.44].map(d=>`<span style="width:5px;height:5px;border-radius:50%;background:rgba(240,237,232,0.50);animation:thinking-dot 1.2s ease-in-out infinite ${d}s;display:block"></span>`).join('')}
+  </div>`;
+  area.appendChild(dots);
+  area.closest('.main-content').scrollTop = 99999;
+
+  // AI reply
+  const replies = [
+    "Analysoin kurssivalintojasi. Matematiikan 3 kurssia eri periodeilla on hyvä hajauttaa. Suosittelen lisäämään historian tai biologian periodille 4 — se tasapainottaa kuormitusta.",
+    "Konfliktianalyysi: en havaitse päällekkäisyyksiä nykyisessä lukujärjestyksessäsi. Periodilla 3 on vain yksi kurssi — siellä on hyvin tilaa lisäkursseille.",
+    "Kieli- ja reaaliaineesi ovat tasapainossa. Pitkän matematiikan kurssit kannattaa suorittaa järjestyksessä — MAA3 ennen MAA6:tta, joka on jo oikein.",
+    "YO-kirjoituksiin valmistautumiseksi suosittelen aloittamaan matematiikan kertauksen nyt. MAA6 koe on 5 päivän päässä — keskity integraaleihin ja derivoinnin periaatteisiin.",
+  ];
+  const reply = replies[Math.floor(Math.random()*replies.length)];
+
+  setTimeout(()=>{
+    area.removeChild(dots);
+    window.setSphereThinking(false);
+    ['pr1','pr2'].forEach((id,i)=>{
+      document.getElementById(id).style.animation=`pulse-ring ${3.2+i*0}s ease-in-out infinite ${i*0.7}s`;
+    });
+    const ai=document.createElement('div');
+    ai.style.cssText='animation:chat-slide .35s ease forwards;max-width:80%';
+    ai.innerHTML=`<div style="padding:14px 17px;border-radius:16px 16px 16px 5px;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10);font-size:13px;color:rgba(240,237,232,0.85);line-height:1.62">${reply}</div>`;
+    area.appendChild(ai);
+    area.closest('.main-content').scrollTop = 99999;
+  }, 1600+Math.random()*600);
+}
+
+// ── Render period rows ────────────────────────────────────────
+(function(){
+  const data=[
+    {pi:1,l:"oklch(0.78 0.12 45)",bg:"oklch(0.18 0.07 45/0.6)",b:"oklch(0.45 0.09 45/0.5)",name:"Orange",courses:[["MAA3","ENA5",null,"ÄI3","HI1"]]},
+    {pi:2,l:"oklch(0.72 0.10 150)",bg:"oklch(0.16 0.06 150/0.6)",b:"oklch(0.40 0.08 150/0.5)",name:"Sage",courses:[["FY4",null,"BI2","KE1",null]]},
+    {pi:3,l:"oklch(0.75 0.12 80)",bg:"oklch(0.17 0.07 80/0.6)",b:"oklch(0.42 0.09 80/0.5)",name:"Lime",courses:[["MAA6",null,null,"GE1",null]]},
+    {pi:4,l:"oklch(0.72 0.12 240)",bg:"oklch(0.16 0.07 240/0.6)",b:"oklch(0.40 0.09 240/0.5)",name:"Blue",courses:[["HI2","ENA7","KE3",null,null]]},
+    {pi:5,l:"oklch(0.74 0.11 340)",bg:"oklch(0.17 0.07 340/0.6)",b:"oklch(0.42 0.09 340/0.5)",name:"Pink",courses:[["BI4",null,"ÄI6",null,"MAA9"]]},
+  ];
+  const days=["Ma","Ti","Ke","To","Pe"];
+  const c=document.getElementById('periodRows');
+  data.forEach(d=>{
+    const courses=d.courses[0];
+    const count=courses.filter(Boolean).length;
+    const el=document.createElement('div');
+    el.className='card';
+    el.style.cssText=`border-radius:16px;padding:16px 20px`;
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-family:'Fraunces',serif;font-size:19px;font-weight:500;font-style:italic;color:${d.l}">${d.pi}.</span>
+        <span style="font-family:'Fraunces',serif;font-size:13px;font-weight:500;color:#f0ede8">periodi</span>
+        <div style="flex:1"></div>
+        <span style="background:${d.bg};border:1px solid ${d.b};border-radius:99px;padding:2px 9px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${d.l}">${d.name}</span>
+        <span style="font-size:10px;font-weight:600;color:${d.l}">${count} kurssia</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px">
+        ${days.map((day,di)=>{
+          const course=courses[di];
+          return `<div style="display:flex;flex-direction:column;gap:3px;align-items:center">
+            <span style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#605c58">${day}</span>
+            <div style="width:100%;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+              background:${course?d.bg:'rgba(255,255,255,0.03)'};
+              border:1px solid ${course?d.b:'rgba(255,255,255,0.06)'}">
+              ${course?`<span style="font-family:'Fraunces',serif;font-size:11px;font-weight:500;color:#f0ede8">${course}</span>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    c.appendChild(el);
+  });
+})();
+
+// ── Day plan ──────────────────────────────────────────────────
+(function(){
+  const days=[
+    {d:"Ma",date:"28.4",tasks:[{label:"MAA6 · Integraalit 4–5",mins:45,c:"oklch(0.78 0.12 45)"},{label:"ENA5 · Sanasto",mins:20,c:"oklch(0.72 0.10 150)"}]},
+    {d:"Ti",date:"29.4",tasks:[{label:"FY5 · Sähkömagnetismi",mins:55,c:"oklch(0.75 0.12 80)"}]},
+    {d:"Ke",date:"30.4",tasks:[{label:"MAA6 · Harjoitustehtävät",mins:50,c:"oklch(0.78 0.12 45)"}]},
+    {d:"To",date:"1.5",tasks:[]},
+    {d:"Pe",date:"2.5",tasks:[{label:"MAA6 · KOEPÄIVÄ",mins:null,exam:true,c:"oklch(0.78 0.12 45)"}]},
+  ];
+  const c=document.getElementById('dayPlan');
+  days.forEach(day=>{
+    const el=document.createElement('div');
+    el.className='card';
+    el.style.cssText='border-radius:14px;padding:14px 16px';
+    el.innerHTML=`<div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex-shrink:0;width:40px;text-align:center">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58">${day.d}</div>
+        <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:500;color:#a09c98;line-height:1.3">${day.date}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+        ${day.tasks.length===0
+          ?`<span style="font-size:12px;color:#605c58;font-style:italic">Vapaapäivä</span>`
+          :day.tasks.map(t=>`<div style="display:flex;align-items:center;gap:8px">
+            <div style="width:3px;height:3px;border-radius:50%;background:${t.c};flex-shrink:0"></div>
+            <span style="font-size:13px;color:rgba(240,237,232,${t.exam?'0.95':'0.75'});font-weight:${t.exam?'600':'400'};flex:1">${t.label}</span>
+            ${t.exam?`<span style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:oklch(0.22 0.08 20/0.8);border:1px solid oklch(0.45 0.10 20/0.5);border-radius:99px;padding:2px 7px;color:oklch(0.72 0.12 20)">KOE</span>`
+              :`<span style="font-size:10px;color:#605c58;font-weight:500">${t.mins} min</span>`}
+          </div>`).join('')}
+      </div>
+    </div>`;
+    c.appendChild(el);
+  });
+})();
+
+// ── Subject bars ──────────────────────────────────────────────
+(function(){
+  const subjects=[
+    {name:"Matematiikka",done:8,total:11,c:"oklch(0.78 0.12 45)"},
+    {name:"Äidinkieli",done:6,total:8,c:"oklch(0.74 0.11 340)"},
+    {name:"Englanti",done:7,total:8,c:"oklch(0.72 0.10 150)"},
+    {name:"Fysiikka",done:4,total:7,c:"oklch(0.75 0.12 80)"},
+    {name:"Historia",done:3,total:5,c:"oklch(0.72 0.12 240)"},
+  ];
+  const c=document.getElementById('subjectBars');
+  subjects.forEach((s,i)=>{
+    const pct=Math.round(s.done/s.total*100);
+    const el=document.createElement('div');
+    el.className='card';
+    el.style.cssText='border-radius:14px;padding:14px 16px';
+    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:500;color:#a09c98">${s.name}</span>
+      <span style="font-size:11px;color:#605c58">${s.done}/${s.total}</span>
+    </div>
+    <div class="prog"><div class="prog-fill" data-w="${pct}" style="width:0%;background:${s.c}"></div></div>`;
+    c.appendChild(el);
+    setTimeout(()=>el.querySelector('.prog-fill').style.width=pct+'%', 200+i*80);
+  });
+})();
+
+// ── Leaderboard ───────────────────────────────────────────────
+(function(){
+  const entries=[
+    {rank:1,label:"Opiskelija #1",pct:92,you:false},
+    {rank:2,label:"Opiskelija #2",pct:85,you:false},
+    {rank:3,label:"Sinä",pct:70,you:true},
+    {rank:4,label:"Opiskelija #4",pct:66,you:false},
+    {rank:5,label:"Opiskelija #5",pct:58,you:false},
+  ];
+  const c=document.getElementById('leaderboard');
+  entries.forEach(e=>{
+    const el=document.createElement('div');
+    el.className='card';
+    el.style.cssText=`border-radius:12px;padding:11px 14px;${e.you?'border-color:oklch(0.45 0.10 45/0.5);background:oklch(0.18 0.06 45/0.25)':''}`;
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
+      <span style="font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:${e.you?'oklch(0.78 0.12 45)':'#605c58'};width:18px;text-align:center">${e.rank}</span>
+      <span style="font-size:13px;font-weight:${e.you?'600':'400'};color:${e.you?'#f0ede8':'#605c58'};flex:1">${e.label}</span>
+      <span style="font-size:12px;font-weight:600;color:${e.you?'oklch(0.78 0.12 45)':'#605c58'}">${e.pct}%</span>
+    </div>`;
+    c.appendChild(el);
+  });
+})();
+</script>
+</body>
+</html>
