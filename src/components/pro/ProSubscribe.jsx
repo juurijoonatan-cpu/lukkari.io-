@@ -44,18 +44,31 @@ export function ProSubscribe() {
           body: JSON.stringify({ billing }),
         }
       );
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error || "Virhe kassalle siirryttäessä.");
+      if (!res.ok) {
+        if (res.status === 404 || res.status >= 500) {
+          setError("Maksuintegraatio (Stripe) ei ole vielä otettu käyttöön. Voit kuitenkin esikatsella Pro-näkymää alta.");
+        } else {
+          let msg = `Virhe ${res.status} kassalle siirryttäessä.`;
+          try { const j = await res.json(); if (j.error) msg = j.error; } catch {}
+          setError(msg);
+        }
         setLoading(false);
+        return;
       }
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; return; }
+      setError(data.error || "Virhe kassalle siirryttäessä.");
+      setLoading(false);
     } catch {
-      setError("Verkkovirhe — yritä uudelleen.");
+      setError("Verkkovirhe — Edge Functions ei välttämättä ole vielä otettu käyttöön. Voit kuitenkin esikatsella Pro-näkymää alta.");
       setLoading(false);
     }
   }, [billing]);
+
+  const previewDemo = useCallback(() => {
+    localStorage.setItem("lukkari.proDemo", "1");
+    window.location.hash = "/pro-app";
+  }, []);
 
   const CHROME = "linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%)";
 
@@ -192,6 +205,20 @@ export function ProSubscribe() {
           <p style={{ textAlign: "center", fontSize: 10, color: "#605c58", marginTop: 12 }}>
             Ei luottokorttia kokeilujaksolle · Peruuta milloin tahansa
           </p>
+        </div>
+
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <button onClick={previewDemo} style={{
+            background: "rgba(120,90,255,0.10)",
+            border: "1px solid rgba(120,90,255,0.28)",
+            color: "rgba(180,160,255,0.95)",
+            fontSize: 11, fontWeight: 600, letterSpacing: "0.06em",
+            borderRadius: 99, padding: "8px 18px", cursor: "pointer",
+            fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+          >ESIKATSELE PRO DEMONA →</button>
         </div>
 
         <p style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.15)", letterSpacing: "0.04em" }}>

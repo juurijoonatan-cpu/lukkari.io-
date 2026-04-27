@@ -17,24 +17,57 @@ function buildScheduleContext(school, selections, year) {
   return lines.join("\n");
 }
 
+function demoResponse(prompt, scheduleContext) {
+  const ctx = scheduleContext ? `\n\n*(Analysoin lukujärjestyksesi: näen kurssivalintasi useammasta periodista — hyvä alku!)*` : "";
+  return `**Tämä on demo-vastaus.** Edge Functions -taustaa ei ole vielä otettu käyttöön, joten oikeaa AI-vastausta ei voi vielä antaa.
+
+Kysymyksesi: *"${prompt.slice(0, 140)}${prompt.length > 140 ? "…" : ""}"*${ctx}
+
+Kun taustapalvelu on otettu käyttöön, saat tähän personoidun analyysin lukujärjestyksestäsi:
+- **Kurssisuositukset** ylioppilaskirjoituksia silmällä pitäen
+- **Konfliktianalyysi** — tunnistaa päällekkäiset valinnat ja liian tiiviit periodit
+- **Tasapaino-analyysi** reaal-, kieli- ja taitoaineiden välillä
+- **Aikataulutus**: missä järjestyksessä kurssit kannattaa suorittaa
+
+Kaikki vastaukset perustuvat OpenAI gpt-4o-mini -malliin, ja saat 300 kyselyä kuukaudessa Pro-tilauksella.`;
+}
+
 async function callProxy(prompt, scheduleContext) {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Istunto vanhentunut — kirjaudu uudelleen.");
-  const res = await fetch(
-    `${SUPABASE_FUNCTIONS_URL}/openai-proxy`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`,
-        "apikey": SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ prompt, scheduleContext }),
+  // No session → demo mode (allows preview without registering)
+  if (!session) return { content: demoResponse(prompt, scheduleContext), demo: true };
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_FUNCTIONS_URL}/openai-proxy`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ prompt, scheduleContext }),
+      }
+    );
+    // Backend not deployed yet (404, 5xx, or HTML response) → demo fallback
+    if (!res.ok) {
+      if (res.status === 404 || res.status >= 500) {
+        return { content: demoResponse(prompt, scheduleContext), demo: true };
+      }
+      let msg = `Virhe ${res.status}`;
+      try { const j = await res.json(); if (j.error) msg = j.error; } catch {}
+      throw new Error(msg);
     }
-  );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `Virhe ${res.status}`);
-  return data.content;
+    const data = await res.json();
+    return { content: data.content, demo: false };
+  } catch (err) {
+    // Network error / function not reachable → demo fallback
+    if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+      return { content: demoResponse(prompt, scheduleContext), demo: true };
+    }
+    throw err;
+  }
 }
 
 function ScheduleSummary({ school, selections, year }) {
@@ -119,13 +152,24 @@ export function ProApp() {
   const [aiError, setAiError] = useState(null);
   const [hasResponse, setHasResponse] = useState(false);
   const [requestsUsed, setRequestsUsed] = useState(null);
+  const [demoMode, setDemoMode] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   const intervalRef = useRef(null);
   const responseRef = useRef(null);
 
   useEffect(() => {
     document.body.classList.add("pro-dark");
+    // Demo flag (set by "preview" links in subscribe/auth pages)
+    const isDemo = localStorage.getItem("lukkari.proDemo") === "1";
+    if (isDemo) setDemoMode(true);
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { window.location.hash = "/pro-login"; return; }
+      if (!session) {
+        // Allow demo browsing without login; otherwise route to login
+        if (!isDemo) { window.location.hash = "/pro-login"; return; }
+        return;
+      }
+      setHasSession(true);
       try {
         const { data } = await supabase
           .from("profiles")
@@ -135,9 +179,9 @@ export function ProApp() {
         if (data && !["active", "trialing"].includes(data.subscription_status || "")) {
           window.location.hash = "/pro-subscribe";
         }
-        // if table doesn't exist yet or no data, allow access (beta mode)
-      } catch { /* profiles table not set up yet — allow beta access */ }
+      } catch { /* profiles table not yet set up — allow beta access */ }
     });
+
     const s = loadState();
     setSchedule(s || {});
     const sc = SCHOOLS.find(x => x.id === (s?.schoolId || "otaniemi")) || SCHOOLS[0];
@@ -154,10 +198,11 @@ export function ProApp() {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    if (hasSession) await supabase.auth.signOut();
+    localStorage.removeItem("lukkari.proDemo");
     history.replaceState(null, "", window.location.pathname);
     window.dispatchEvent(new HashChangeEvent("hashchange"));
-  }, []);
+  }, [hasSession]);
 
   const startTypewriter = useCallback((text) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -178,10 +223,11 @@ export function ProApp() {
     setAiLoading(true); setAiError(null); setHasResponse(false); setDisplayedText("");
     try {
       const context = buildScheduleContext(school, schedule?.selections, schedule?.year);
-      const text = await callProxy(q, context);
+      const { content, demo } = await callProxy(q, context);
+      if (demo) setDemoMode(true);
       setHasResponse(true);
-      startTypewriter(text);
-      setRequestsUsed(r => (r || 0) + 1);
+      startTypewriter(content);
+      if (!demo) setRequestsUsed(r => (r || 0) + 1);
     } catch (err) {
       if (err.message?.includes("istunto") || err.message?.includes("Virheellinen")) {
         window.location.hash = "/pro-login";
@@ -211,12 +257,23 @@ export function ProApp() {
         background: "rgba(8,6,22,0.84)", borderBottom: "1px solid rgba(255,255,255,0.07)",
         backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)",
       }}>
-        <span className="fr" style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.02em", color: "#f0ede8" }}>
-          Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "#a09c98" }}>io</span>{" "}
-          <span style={{ color: "var(--accent)", fontStyle: "italic", fontSize: 15 }}>Pro</span>
+        <span className="fr" style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.02em", color: "#f0ede8", display: "flex", alignItems: "center", gap: 10 }}>
+          <span>
+            Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "#a09c98" }}>io</span>{" "}
+            <span style={{ color: "var(--accent)", fontStyle: "italic", fontSize: 15 }}>Pro</span>
+          </span>
+          {demoMode && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: "0.12em",
+              color: "rgba(180,160,255,0.95)",
+              background: "rgba(120,90,255,0.16)", border: "1px solid rgba(120,90,255,0.34)",
+              borderRadius: 99, padding: "2px 8px", textTransform: "uppercase",
+              fontFamily: "'Inter', sans-serif",
+            }}>Demo</span>
+          )}
         </span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {requestsUsed !== null && (
+          {requestsUsed !== null && !demoMode && (
             <span style={{ fontSize: 10, color: "#605c58", fontWeight: 500 }}>{requestsUsed}/300 kyselyä</span>
           )}
           <button onClick={goToFree} style={{
@@ -234,7 +291,7 @@ export function ProApp() {
           }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.color = "#f0ede8"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#a09c98"; }}
-          >Kirjaudu ulos</button>
+          >{demoMode && !hasSession ? "Sulje demo" : "Kirjaudu ulos"}</button>
         </div>
       </header>
 
