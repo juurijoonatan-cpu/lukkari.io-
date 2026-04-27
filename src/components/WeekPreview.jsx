@@ -4,6 +4,7 @@ export function WeekPreview({ school, selections }) {
   const { periodCount, times, days, rotation, palkkiCount } = school;
   const hasAny = Object.values(selections).some(v => v?.trim());
   if (!hasAny) return null;
+  const hasWeekData = rotation?.length && times?.length && days?.length;
 
   return (
     <div style={{ marginTop: 28 }}>
@@ -39,7 +40,7 @@ export function WeekPreview({ school, selections }) {
                 </span>
               </div>
 
-              <div style={{ overflowX: "auto" }}>
+              {hasWeekData && <div style={{ overflowX: "auto" }}>
                 <table style={{ borderCollapse: "separate", borderSpacing: "3px 3px", width: "100%", minWidth: 340 }}>
                   <thead>
                     <tr>
@@ -83,7 +84,7 @@ export function WeekPreview({ school, selections }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div>}
             </div>
           );
         })}
