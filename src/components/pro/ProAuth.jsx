@@ -149,6 +149,17 @@ export function ProAuth({ initialTab = "login" }) {
       }}>
         <GlowingOrb />
 
+        {/* Title */}
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
+          <h1 className="fr" style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.02em", color: "#f0ede8", lineHeight: 1.1, margin: 0 }}>
+            Lukkari<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "#605c58" }}>io</span>{" "}
+            <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Pro</span>
+          </h1>
+          <p style={{ fontSize: 11, color: "#605c58", marginTop: 5, letterSpacing: "0.02em" }}>
+            AI-pohjainen kurssisuosittelija
+          </p>
+        </div>
+
         {/* Tab switcher */}
         <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, marginBottom: 24 }}>
           {[["login","Kirjaudu"], ["register","Luo tili"]].map(([t, label]) => (

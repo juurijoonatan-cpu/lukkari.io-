@@ -297,11 +297,55 @@ export function ProApp() {
 
       <main style={{ maxWidth: 860, margin: "0 auto", padding: "28px 16px 80px", position: "relative", zIndex: 1 }}>
         <div style={{ marginBottom: 22 }}>
-          <h1 className="fr" style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.025em", color: "#f0ede8", lineHeight: 1.1, marginBottom: 5 }}>
-            Kurssi<span style={{ color: "var(--accent)", fontStyle: "italic" }}>suosittelija</span>
-          </h1>
-          <p style={{ fontSize: 12, color: "#605c58" }}>AI analysoi lukujärjestyksesi ja antaa personoituja suosituksia</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+            <h1 className="fr" style={{ fontSize: 32, fontWeight: 500, letterSpacing: "-0.025em", color: "#f0ede8", lineHeight: 1.1, margin: 0 }}>
+              Kurssi<span style={{ color: "var(--accent)", fontStyle: "italic" }}>suosittelija</span>
+            </h1>
+            {demoMode && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: "0.12em",
+                color: "rgba(180,160,255,0.85)",
+                background: "rgba(120,90,255,0.13)", border: "1px solid rgba(120,90,255,0.28)",
+                borderRadius: 99, padding: "3px 9px", textTransform: "uppercase",
+                fontFamily: "'Inter', sans-serif", flexShrink: 0,
+              }}>Demo-tila — kirjaudu käyttääksesi oikeaa AI:ta</span>
+            )}
+          </div>
+          <p style={{ fontSize: 12, color: "#605c58" }}>
+            {demoMode
+              ? "Kokeile toimintoa — kirjaudu sisään käyttääksesi oikeaa GPT-4o-mini-analyysiä"
+              : "AI analysoi lukujärjestyksesi ja antaa personoituja suosituksia"}
+          </p>
         </div>
+
+        {/* Demo mode signup nudge */}
+        {demoMode && !hasSession && (
+          <div style={{
+            background: "linear-gradient(135deg, rgba(120,90,255,0.12), rgba(80,50,200,0.08))",
+            border: "1px solid rgba(120,90,255,0.28)",
+            borderRadius: 16, padding: "14px 18px", marginBottom: 16,
+            display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+          }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(200,180,255,0.95)", margin: 0 }}>Kokeilu käynnissä</p>
+              <p style={{ fontSize: 11, color: "rgba(160,140,220,0.75)", margin: "2px 0 0" }}>Luo tili saadaksesi oikean AI-analyysin ja 300 kyselyä/kk</p>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { window.location.hash = "/pro-register"; }} style={{
+                padding: "7px 16px", borderRadius: 99, border: "none",
+                background: "rgba(240,237,232,0.92)", color: "rgba(8,6,22,0.88)",
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
+                cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.12s",
+              }}>LUO TILI</button>
+              <button onClick={() => { window.location.hash = "/pro-login"; }} style={{
+                padding: "7px 14px", borderRadius: 99,
+                background: "transparent", border: "1px solid rgba(180,160,255,0.35)",
+                color: "rgba(180,160,255,0.85)", fontSize: 11, fontWeight: 600,
+                cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.12s",
+              }}>Kirjaudu</button>
+            </div>
+          </div>
+        )}
 
         <ScheduleSummary school={school} selections={schedule?.selections} year={schedule?.year} />
 
@@ -394,7 +438,7 @@ export function ProApp() {
         </div>
 
         <p style={{ fontSize: 10, color: "rgba(255,255,255,0.10)", textAlign: "center", marginTop: 28, lineHeight: 1.6 }}>
-          Vastauksesi generoidaan OpenAI gpt-4o-mini-mallilla · Tietoja ei lähetetä Lukkari.io:n palvelimille
+          Vastaukset generoidaan OpenAI gpt-4o-mini-mallilla Supabase Edge Functions -palvelun kautta
         </p>
       </main>
     </div>
