@@ -135,7 +135,7 @@ export default function App() {
     ? (() => {
         try {
           const c = JSON.parse(localStorage.getItem("lukkari.customSchool") || "{}");
-          return { id: "custom", name: c.name || "Oma koulu", palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: [], days: [], rotation: [] };
+          return { id: "custom", name: c.name || "Oma koulu", palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: c.times || [], days: c.days || [], rotation: c.rotation || [] };
         } catch { return { id: "custom", name: "Oma koulu", palkkiCount: 6, periodCount: 4, times: [], days: [], rotation: [] }; }
       })()
     : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
