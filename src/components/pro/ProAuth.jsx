@@ -62,13 +62,18 @@ function EyeIcon({ open }) {
 async function checkAndRoute() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("subscription_status")
-    .eq("id", session.user.id)
-    .single();
-  const active = ["active", "trialing"].includes(profile?.subscription_status || "");
-  window.location.hash = active ? "/pro-app" : "/pro-subscribe";
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_status")
+      .eq("id", session.user.id)
+      .single();
+    const active = ["active", "trialing"].includes(profile?.subscription_status || "");
+    window.location.hash = active ? "/pro-app" : "/pro-subscribe";
+  } catch {
+    // profiles table not yet set up — send to subscribe page
+    window.location.hash = "/pro-subscribe";
+  }
 }
 
 export function ProAuth({ initialTab = "login" }) {

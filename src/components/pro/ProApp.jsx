@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { loadState } from '../../utils/storage';
-import { supabase } from '../../utils/supabase';
+import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
 import { SCHOOLS, PTINTS } from '../../data/schools';
 
 function buildScheduleContext(school, selections, year) {
@@ -21,13 +21,13 @@ async function callProxy(prompt, scheduleContext) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Istunto vanhentunut — kirjaudu uudelleen.");
   const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openai-proxy`,
+    `${SUPABASE_FUNCTIONS_URL}/openai-proxy`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${session.access_token}`,
-        "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+        "apikey": SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({ prompt, scheduleContext }),
     }
@@ -124,14 +124,19 @@ export function ProApp() {
 
   useEffect(() => {
     document.body.classList.add("pro-dark");
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { window.location.hash = "/pro-login"; return; }
-      // Check subscription
-      supabase.from("profiles").select("subscription_status").eq("id", session.user.id).single().then(({ data }) => {
-        if (!["active", "trialing"].includes(data?.subscription_status || "")) {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("subscription_status")
+          .eq("id", session.user.id)
+          .single();
+        if (data && !["active", "trialing"].includes(data.subscription_status || "")) {
           window.location.hash = "/pro-subscribe";
         }
-      });
+        // if table doesn't exist yet or no data, allow access (beta mode)
+      } catch { /* profiles table not set up yet — allow beta access */ }
     });
     const s = loadState();
     setSchedule(s || {});

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../utils/supabase';
+import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
 
 const FEATURES = [
   "Älykäs kurssisuosittelija (AI)",
@@ -33,13 +33,13 @@ export function ProSubscribe() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session.access_token}`,
-            "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+            "apikey": SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({ billing }),
         }
