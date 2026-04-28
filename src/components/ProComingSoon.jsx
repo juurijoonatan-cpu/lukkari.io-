@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Ico } from './icons';
 import { ProInfoHero } from './pro/info/ProInfoHero';
+import { ProInfoStats } from './pro/info/ProInfoStats';
 import './pro/info/proInfo.css';
 
 const FEATURES = [
@@ -203,6 +204,8 @@ export function ProComingSoon() {
     <div className="pi pro-pad" style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 80px", position: "relative" }}>
 
       <ProInfoHero onTryDemo={tryDemo} />
+
+      <ProInfoStats />
 
       {/* Flow diagram */}
       <div style={{
