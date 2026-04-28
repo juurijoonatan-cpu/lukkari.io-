@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
+import { safeSetItem } from '../../utils/storage';
 
 function injectProKeyframes() {
   if (document.getElementById("pro-kf")) return;
@@ -60,7 +61,11 @@ function EyeIcon({ open }) {
 }
 
 async function checkAndRoute() {
-  const { data: { session } } = await supabase.auth.getSession();
+  let session = null;
+  try {
+    const r = await supabase.auth.getSession();
+    session = r?.data?.session || null;
+  } catch { return; /* auth offline */ }
   if (!session) return;
   try {
     const { data: profile } = await supabase
@@ -100,10 +105,15 @@ export function ProAuth({ initialTab = "login" }) {
     e.preventDefault();
     if (!email.trim() || !password) return;
     setLoading(true); setError(null);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (err) { setError(err.message); setLoading(false); return; }
-    await checkAndRoute();
-    setLoading(false);
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (err) { setError(err.message); setLoading(false); return; }
+      await checkAndRoute();
+    } catch {
+      setError("Yhteys palveluun epäonnistui. Yritä myöhemmin uudelleen.");
+    } finally {
+      setLoading(false);
+    }
   }, [email, password]);
 
   const handleRegister = useCallback(async (e) => {
@@ -111,17 +121,22 @@ export function ProAuth({ initialTab = "login" }) {
     if (!email.trim() || !password) return;
     if (password.length < 8) { setError("Salasanan tulee olla vähintään 8 merkkiä."); return; }
     setLoading(true); setError(null);
-    const { error: err } = await supabase.auth.signUp({
-      email: email.trim(), password,
-      options: { emailRedirectTo: `${window.location.origin}/#/pro-login` },
-    });
-    if (err) { setError(err.message); setLoading(false); return; }
-    setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
-    setLoading(false);
+    try {
+      const { error: err } = await supabase.auth.signUp({
+        email: email.trim(), password,
+        options: { emailRedirectTo: `${window.location.origin}/#/pro-login` },
+      });
+      if (err) { setError(err.message); setLoading(false); return; }
+      setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
+    } catch {
+      setError("Yhteys palveluun epäonnistui. Yritä myöhemmin uudelleen.");
+    } finally {
+      setLoading(false);
+    }
   }, [email, password]);
 
   const previewDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
+    safeSetItem("lukkari.proDemo", "1");
     window.location.hash = "/pro-app";
   }, []);
 
@@ -203,10 +218,19 @@ export function ProAuth({ initialTab = "login" }) {
             <div style={{ textAlign: "right", marginBottom: 14 }}>
               <button type="button" onClick={async () => {
                 if (!email.trim()) { setError("Kirjoita sähköpostiosoitteesi ensin."); return; }
-                setLoading(true);
-                await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/#/pro-login` });
-                setInfo("Salasanan palautuslinkki lähetetty sähköpostiisi.");
-                setLoading(false);
+                setLoading(true); setError(null); setInfo(null);
+                try {
+                  const { error: err } = await supabase.auth.resetPasswordForEmail(
+                    email.trim(),
+                    { redirectTo: `${window.location.origin}/#/pro-login` }
+                  );
+                  if (err) setError(err.message);
+                  else setInfo("Salasanan palautuslinkki lähetetty sähköpostiisi.");
+                } catch {
+                  setError("Yhteys palveluun epäonnistui. Yritä myöhemmin uudelleen.");
+                } finally {
+                  setLoading(false);
+                }
               }} style={{ background: "none", border: "none", fontSize: 11, color: "#605c58", cursor: "pointer", fontFamily: "inherit" }}>
                 Unohdin salasanani
               </button>

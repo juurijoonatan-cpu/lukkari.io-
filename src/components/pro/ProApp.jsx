@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { loadState } from '../../utils/storage';
+import { loadState, safeGetItem, safeRemoveItem } from '../../utils/storage';
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
 import { SCHOOLS, PTINTS } from '../../data/schools';
 
@@ -60,7 +60,7 @@ async function callProxy(prompt, scheduleContext) {
       throw new Error(msg);
     }
     const data = await res.json();
-    return { content: data.content, demo: false };
+    return { content: data.content, demo: false, requestsUsed: data.requestsUsed ?? null };
   } catch (err) {
     // Network error / function not reachable → demo fallback
     if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
@@ -157,14 +157,17 @@ export function ProApp() {
   const [hasSession, setHasSession] = useState(false);
   const intervalRef = useRef(null);
   const responseRef = useRef(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     document.body.classList.add("pro-dark");
     // Demo flag (set by "preview" links in subscribe/auth pages)
-    const isDemo = localStorage.getItem("lukkari.proDemo") === "1";
+    const isDemo = safeGetItem("lukkari.proDemo") === "1";
     if (isDemo) setDemoMode(true);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mountedRef.current) return;
       if (!session) {
         // Allow demo browsing without login; otherwise route to login
         if (!isDemo) { window.location.hash = "/pro-login"; return; }
@@ -177,19 +180,21 @@ export function ProApp() {
           .select("subscription_status")
           .eq("id", session.user.id)
           .single();
+        if (!mountedRef.current) return;
         if (data && !["active", "trialing"].includes(data.subscription_status || "")) {
           window.location.hash = "/pro-subscribe";
         }
       } catch { /* profiles table not yet set up — allow beta access */ }
-    });
+    }).catch(() => { /* auth offline — stay in demo */ });
 
     const s = loadState();
     setSchedule(s || {});
     const sc = SCHOOLS.find(x => x.id === (s?.schoolId || "otaniemi")) || SCHOOLS[0];
     setSchool(sc);
     return () => {
+      mountedRef.current = false;
       document.body.classList.remove("pro-dark");
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
     };
   }, []);
 
@@ -199,8 +204,10 @@ export function ProApp() {
   }, []);
 
   const signOut = useCallback(async () => {
-    if (hasSession) await supabase.auth.signOut();
-    localStorage.removeItem("lukkari.proDemo");
+    if (hasSession) {
+      try { await supabase.auth.signOut(); } catch { /* offline — clear locally */ }
+    }
+    safeRemoveItem("lukkari.proDemo");
     history.replaceState(null, "", window.location.pathname);
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   }, [hasSession]);
@@ -210,6 +217,9 @@ export function ProApp() {
     let i = 0;
     setDisplayedText("");
     intervalRef.current = setInterval(() => {
+      if (!mountedRef.current) {
+        clearInterval(intervalRef.current); intervalRef.current = null; return;
+      }
       i++;
       setDisplayedText(text.slice(0, i));
       if (i >= text.length) { clearInterval(intervalRef.current); intervalRef.current = null; }
@@ -224,11 +234,14 @@ export function ProApp() {
     setAiLoading(true); setAiError(null); setHasResponse(false); setDisplayedText("");
     try {
       const context = buildScheduleContext(school, schedule?.selections, schedule?.year);
-      const { content, demo } = await callProxy(q, context);
+      const { content, demo, requestsUsed: serverCount } = await callProxy(q, context);
+      if (!mountedRef.current) return;
       if (demo) setDemoMode(true);
       setHasResponse(true);
       startTypewriter(content);
-      if (!demo) setRequestsUsed(r => (r || 0) + 1);
+      if (!demo) {
+        setRequestsUsed(serverCount != null ? serverCount : (r => (r || 0) + 1));
+      }
     } catch (err) {
       if (err.message?.includes("istunto") || err.message?.includes("Virheellinen")) {
         window.location.hash = "/pro-login";

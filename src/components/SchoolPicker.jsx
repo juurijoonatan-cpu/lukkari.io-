@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { SCHOOLS } from '../data/schools';
+import { safeGetJSON, safeSetItem } from '../utils/storage';
 import { Ico } from './icons';
 
 const CUSTOM_KEY = "lukkari.customSchool";
@@ -8,11 +9,11 @@ const DEFAULT_TIMES = ["8.30–9.45","10.00–11.15","11.20–13.15","13.30–14
 const DEFAULT_ROTATION = Array.from({length:5}, () => [null,null,null,null,null]);
 
 function loadCustomSchool() {
-  try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"); } catch { return {}; }
+  return safeGetJSON(CUSTOM_KEY, {}) || {};
 }
 
 function saveCustomSchool(obj) {
-  try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(obj)); } catch {}
+  safeSetItem(CUSTOM_KEY, JSON.stringify(obj));
 }
 
 export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
@@ -25,7 +26,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
   const [customRotation, setCustomRotation] = useState(DEFAULT_ROTATION);
   const wrapRef = useRef(null);
 
-  const custom = loadCustomSchool();
+  const custom = useMemo(() => loadCustomSchool(), [schoolId, mode, open]);
   const school = schoolId === "custom"
     ? { id: "custom", name: custom.name || "Oma koulu" }
     : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
@@ -53,7 +54,9 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
 
   const saveCustom = () => {
     if (!customName.trim()) return;
-    saveCustomSchool({ name: customName.trim(), periodCount: customPeriods, palkkiCount: customPalkkis, times: customTimes, days: DAYS, rotation: customRotation });
+    // Clamp rotation values to current palkki count so UI never shows out-of-range numbers.
+    const clampedRotation = customRotation.map(row => row.map(v => v == null ? null : Math.max(1, Math.min(customPalkkis, v))));
+    saveCustomSchool({ name: customName.trim(), periodCount: customPeriods, palkkiCount: customPalkkis, times: customTimes, days: DAYS, rotation: clampedRotation });
     setSchoolId("custom");
     setOpen(false);
     setMode("list");

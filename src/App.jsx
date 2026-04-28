@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SCHOOLS } from './data/schools';
-import { loadState, saveState, clearStoredSelections } from './utils/storage';
+import { loadState, saveState, clearStoredSelections, safeGetJSON } from './utils/storage';
 import { Header } from './components/Header';
 import { SchoolPicker } from './components/SchoolPicker';
 import { ChoiceGrid } from './components/ChoiceGrid';
@@ -93,7 +93,10 @@ export default function App() {
   }, []);
 
   const closeLegal = useCallback(() => {
-    if (window.location.hash) history.replaceState(null, "", window.location.pathname + window.location.search);
+    if (window.location.hash) {
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    }
     setLegalDoc(null);
   }, []);
 
@@ -131,14 +134,19 @@ export default function App() {
     setSettingsOpen(false);
   }, []);
 
-  const school = schoolId === "custom"
-    ? (() => {
-        try {
-          const c = JSON.parse(localStorage.getItem("lukkari.customSchool") || "{}");
-          return { id: "custom", name: c.name || "Oma koulu", palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: c.times || [], days: c.days || [], rotation: c.rotation || [] };
-        } catch { return { id: "custom", name: "Oma koulu", palkkiCount: 6, periodCount: 4, times: [], days: [], rotation: [] }; }
-      })()
-    : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
+  const school = useMemo(() => {
+    if (schoolId !== "custom") return SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
+    const c = safeGetJSON("lukkari.customSchool", {}) || {};
+    return {
+      id: "custom",
+      name: c.name || "Oma koulu",
+      palkkiCount: c.palkkiCount || 6,
+      periodCount: c.periodCount || 4,
+      times: c.times || [],
+      days: c.days || [],
+      rotation: c.rotation || [],
+    };
+  }, [schoolId]);
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
 
   // Pro routes completely replace main UI

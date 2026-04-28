@@ -30,6 +30,8 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
 
   const handleSubscribe = async () => {
     if (!shareEmail || !shareConsent || shareStatus === 'sending') return;
+    const accessKey = import.meta.env.VITE_WEB3FORMS_KEY;
+    if (!accessKey) { setShareStatus('error'); return; }
     setShareStatus('sending');
     const text = filledCount > 0 ? buildTextExport(school, selections, year) : '';
     try {
@@ -37,7 +39,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+          access_key: accessKey,
           subject: `Lukkari.io — uusi tilaaja: ${shareEmail}`,
           from_name: 'Lukkari.io',
           email: shareEmail,

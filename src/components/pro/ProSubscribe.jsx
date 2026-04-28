@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
+import { safeSetItem } from '../../utils/storage';
 
 const FEATURES = [
   "Kurssisuosittelija — AI suosittelee kurssit juuri sinulle",
@@ -29,7 +30,14 @@ export function ProSubscribe() {
 
   const handleSubscribe = useCallback(async () => {
     setLoading(true); setError(null);
-    const { data: { session } } = await supabase.auth.getSession();
+    let session = null;
+    try {
+      const r = await supabase.auth.getSession();
+      session = r?.data?.session || null;
+    } catch {
+      setError("Yhteys palveluun epäonnistui. Voit kuitenkin esikatsella Pro-näkymää alta.");
+      setLoading(false); return;
+    }
     if (!session) { window.location.hash = "/pro-login"; return; }
 
     try {
@@ -67,7 +75,7 @@ export function ProSubscribe() {
   }, [billing]);
 
   const previewDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
+    safeSetItem("lukkari.proDemo", "1");
     window.location.hash = "/pro-app";
   }, []);
 
