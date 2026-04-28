@@ -13,7 +13,7 @@ import { Footer } from './components/Footer';
 import { LegalPanel } from './components/LegalPanel';
 import { Ico } from './components/icons';
 import { ProAuth } from './components/pro/ProAuth';
-import { ProApp } from './components/pro/ProApp';
+import { ProBeta } from './components/pro/beta/ProBeta';
 import { ProSubscribe } from './components/pro/ProSubscribe';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
@@ -145,7 +145,7 @@ export default function App() {
   if (proRoute === "pro-login")     return <ProAuth initialTab="login" />;
   if (proRoute === "pro-register")  return <ProAuth initialTab="register" />;
   if (proRoute === "pro-subscribe") return <ProSubscribe />;
-  if (proRoute === "pro-app")       return <ProApp />;
+  if (proRoute === "pro-app")       return <ProBeta />;
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
