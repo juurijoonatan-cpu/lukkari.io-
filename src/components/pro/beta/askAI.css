@@ -1,0 +1,73 @@
+.pb-w-ask {
+  display: flex; flex-direction: column;
+  padding: 22px 22px 20px;
+}
+.pb-w-ask-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--pb-ink-s); font-weight: 600;
+}
+.pb-w-ask-title {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500;
+  margin-top: 2px; letter-spacing: -0.01em; line-height: 1.15;
+  color: var(--pb-ink);
+}
+.pb-w-ask-title em { font-style: italic; color: var(--pb-accent); font-weight: 400; }
+
+.pb-suggest {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 14px; flex: 1;
+}
+.pb-sugg-chip {
+  font-size: 12px; color: var(--pb-ink); padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.45);
+  cursor: pointer; transition: background .18s; text-align: left;
+  font-family: inherit;
+}
+.pro-beta[data-theme="dark"] .pb-sugg-chip {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.10);
+}
+.pb-sugg-chip:hover { background: rgba(255,255,255,0.40); }
+.pro-beta[data-theme="dark"] .pb-sugg-chip:hover { background: rgba(255,255,255,0.10); }
+
+.pb-ask-input {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(255,255,255,0.55);
+  margin-top: 12px;
+}
+.pro-beta[data-theme="dark"] .pb-ask-input {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.14);
+}
+.pb-ask-input input {
+  flex: 1; min-width: 0;
+  border: none; background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px; /* prevents iOS auto-zoom on focus */
+  color: var(--pb-ink); outline: none;
+  padding: 4px 0;
+}
+@media (min-width: 721px) {
+  .pb-ask-input input { font-size: 13px; }
+}
+.pb-ask-input input::placeholder { color: var(--pb-ink-f); }
+.pb-ask-send {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--pb-ink); color: var(--pb-glass-bg);
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; flex-shrink: 0;
+}
+.pro-beta[data-theme="dark"] .pb-ask-send {
+  background: var(--pb-ink); color: #1a1814;
+}
+.pb-ask-send svg { width: 13px; height: 13px; }
+
+@media (max-width: 720px) {
+  .pb-w-ask { padding: 18px; }
+  .pb-w-ask-title { font-size: 18px; }
+}
