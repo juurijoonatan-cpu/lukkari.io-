@@ -3,864 +3,1072 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lukkari Pro — AI-kurssisuosittelija</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Lukkari Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
 
-body {
-  background: #09080f;
-  color: #f0ede8;
-}
-
-/* ── Design tokens ── */
 :root {
-  --accent:     oklch(0.72 0.14 45);
-  --accent-dim: oklch(0.55 0.12 45);
-  --ink:        #f0ede8;
-  --ink-s:      #a09c98;
-  --ink-f:      #605c58;
-  --chrome:     linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%);
-  --glass-bg:   rgba(255,255,255,0.055);
-  --glass-b:    rgba(255,255,255,0.10);
-  --glass-bg2:  rgba(255,255,255,0.08);
-  --glass-b2:   rgba(255,255,255,0.14);
-  --sidebar-w:  220px;
-  --header-h:   54px;
+  --ink:        #1a1814;
+  --ink-s:      #5a544e;
+  --ink-f:      #8a847e;
+  --accent:     oklch(0.60 0.13 45);
+
+  /* LIGHT theme glass */
+  --glass-bg:   rgba(255,255,255,0.32);
+  --glass-bg-h: rgba(255,255,255,0.42);
+  --glass-bd:   rgba(255,255,255,0.55);
+  --glass-bd-i: rgba(255,255,255,0.85);
+  --glass-shadow: 0 20px 60px -10px rgba(40,30,20,0.25), 0 1px 0 rgba(255,255,255,0.6) inset, 0 -1px 0 rgba(255,255,255,0.15) inset;
+
+  --tint-overlay: rgba(255,245,235,0.12);
+}
+body[data-theme="dark"] {
+  --ink:        #f5f2ec;
+  --ink-s:      #b5afa6;
+  --ink-f:      #807a72;
+  --glass-bg:   rgba(20,18,24,0.28);
+  --glass-bg-h: rgba(30,28,38,0.40);
+  --glass-bd:   rgba(255,255,255,0.12);
+  --glass-bd-i: rgba(255,255,255,0.22);
+  --glass-shadow: 0 24px 70px -10px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.10) inset, 0 -1px 0 rgba(0,0,0,0.4) inset;
+  --tint-overlay: rgba(10,8,16,0.10);
 }
 
-/* ── Background orbs — warm dark, matches video aesthetic ── */
-.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; }
+body { background: #0a0810; color: var(--ink); }
 
-/* ── Layout ── */
-#app { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 1; }
+/* ── Video background ── */
+.bg-video {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  object-fit: cover; z-index: 0;
+  transition: opacity 0.6s ease;
+}
+.bg-tint {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: var(--tint-overlay);
+}
+/* extra wash to lift glass legibility */
+body[data-theme="light"] .bg-tint::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.10), transparent 60%);
+}
+body[data-theme="dark"] .bg-tint::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 100%, rgba(0,0,0,0.45), transparent 60%);
+}
 
-/* ── Sidebar ── */
-.sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: rgba(255,255,255,0.035);
-  border-right: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+/* ── Liquid Glass primitive ── */
+.lg {
   position: relative;
-  z-index: 10;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-bd);
+  border-radius: 28px;
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  box-shadow: var(--glass-shadow);
   overflow: hidden;
 }
-.sidebar-logo {
-  padding: 20px 20px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  flex-shrink: 0;
+.lg::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 30%, transparent 60%, rgba(255,255,255,0.08) 100%);
+  mix-blend-mode: overlay;
+  opacity: 0.9;
 }
-.sidebar-nav { flex: 1; padding: 10px 10px; overflow-y: auto; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 12px; cursor: pointer;
-  font-size: 13px; font-weight: 500; color: var(--ink-f);
-  transition: all .18s; border: none; background: none; width: 100%;
-  font-family: inherit; text-align: left;
-  position: relative;
+.lg::after {
+  content: ""; position: absolute; inset: 1px; pointer-events: none; border-radius: inherit;
+  border: 1px solid var(--glass-bd-i);
+  opacity: 0.5;
 }
-.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
-.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--ink-s); }
-.nav-item.active {
-  background: rgba(255,255,255,0.09);
-  color: var(--ink);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
-}
-.nav-item.active::before {
-  content: '';
-  position: absolute; left: 0; top: 20%; height: 60%; width: 2.5px;
-  background: var(--accent); border-radius: 0 99px 99px 0;
-}
-.nav-section {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.14em; color: rgba(255,255,255,0.18);
-  padding: 14px 12px 6px;
-}
-.sidebar-footer {
-  padding: 14px 14px 20px;
-  border-top: 1px solid rgba(255,255,255,0.07);
-  flex-shrink: 0;
+body[data-theme="dark"] .lg::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 30%, transparent 60%, rgba(255,255,255,0.04) 100%);
 }
 
-/* ── Main area ── */
-.main {
-  flex: 1; height: 100vh; overflow: hidden;
+/* ── Layout ── */
+#app { position: relative; z-index: 2; height: 100vh; width: 100vw; }
+
+/* Top bar with greeting + small actions */
+.topbar {
+  position: absolute; top: 28px; left: 32px; right: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 5;
+}
+.greet {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.greet .hello {
+  font-family: 'Fraunces', serif;
+  font-size: 30px; font-weight: 500; letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.10);
+}
+.greet .hello em { font-style: italic; font-weight: 400; }
+.greet .sub {
+  font-size: 12px; color: var(--ink-s); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.icon-pill {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass-bg); border: 1px solid var(--glass-bd);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  cursor: pointer; color: var(--ink);
+  transition: background .18s, transform .18s;
+  box-shadow: 0 8px 22px -6px rgba(0,0,0,0.20);
+}
+.icon-pill:hover { background: var(--glass-bg-h); transform: translateY(-1px); }
+.icon-pill svg { width: 18px; height: 18px; }
+
+/* ── Widgets canvas ── */
+.canvas {
+  position: absolute; inset: 110px 32px 40px 32px;
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 22px;
+}
+
+/* ── AI Orb widget (large, spans 2 rows on left) ── */
+.w-ai {
+  grid-column: 1 / 2; grid-row: 1 / 3;
+  display: flex; flex-direction: column;
+  padding: 26px;
+  cursor: pointer;
+}
+.w-ai .label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-s); font-weight: 600;
+}
+.w-ai .title {
+  font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+  margin-top: 4px; letter-spacing: -0.015em;
+}
+.orb-stage {
+  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+  margin: 14px 0 18px;
+}
+.orb {
+  width: 78%; aspect-ratio: 1 / 0.92; position: relative;
+  filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35));
+  animation: orbBreath 5s ease-in-out infinite;
+}
+@keyframes orbBreath {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+/* Layered ellipses to mimic the reference image */
+.orb-layer {
+  position: absolute; inset: 0; border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(0.5px);
+}
+.orb-l1 {
+  background: radial-gradient(circle at 50% 50%, transparent 32%, oklch(0.62 0.18 280 / 0.85) 48%, oklch(0.55 0.20 290 / 0.6) 60%, transparent 75%);
+  transform: scale(1, 0.95);
+}
+.orb-l2 {
+  background: radial-gradient(circle at 50% 50%, transparent 38%, oklch(0.70 0.16 320 / 0.7) 52%, oklch(0.65 0.20 350 / 0.5) 65%, transparent 78%);
+  transform: rotate(-8deg) scale(1.08, 0.94);
+}
+.orb-l3 {
+  background: radial-gradient(circle at 50% 50%, transparent 42%, oklch(0.72 0.17 30 / 0.55) 56%, oklch(0.65 0.22 15 / 0.35) 68%, transparent 80%);
+  transform: rotate(12deg) scale(1.05, 0.96);
+}
+.orb-l4 {
+  background: radial-gradient(circle at 50% 50%, transparent 30%, oklch(0.75 0.14 260 / 0.5) 45%, transparent 65%);
+  transform: rotate(-22deg) scale(0.92, 1.05);
+}
+.orb-core {
+  position: absolute; left: 50%; top: 50%;
+  width: 30%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 40% 35%, rgba(20,15,45,0.95), rgba(8,5,20,1));
+  box-shadow: inset 0 -8px 20px rgba(120,80,200,0.4), inset 0 8px 18px rgba(255,200,220,0.15);
+}
+body[data-theme="light"] .orb { filter: drop-shadow(0 24px 50px rgba(120,80,180,0.30)) drop-shadow(0 4px 12px rgba(255,160,160,0.25)); }
+
+.w-ai .ai-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid var(--glass-bd-i);
+}
+body[data-theme="dark"] .w-ai .ai-foot { background: rgba(255,255,255,0.06); }
+.ai-foot .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: oklch(0.70 0.18 145); box-shadow: 0 0 10px oklch(0.72 0.20 145 / 0.7);
+}
+.ai-foot .txt { font-size: 12px; color: var(--ink-s); flex: 1; }
+.ai-foot .txt strong { color: var(--ink); font-weight: 600; }
+
+/* ── Today's schedule (large center) ── */
+.w-today {
+  grid-column: 2 / 3; grid-row: 1 / 3;
+  padding: 26px 26px 22px;
   display: flex; flex-direction: column;
 }
-.main-header {
-  height: var(--header-h); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px;
-  background: rgba(9,8,15,0.65);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  position: relative; z-index: 5;
+.w-today .head { display: flex; justify-content: space-between; align-items: flex-start; }
+.w-today .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-today .date {
+  font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.02em;
+  margin-top: 2px;
 }
-.main-content {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
+.w-today .date em { font-style: italic; font-weight: 400; color: var(--accent); }
+.w-today .day-pill {
+  font-size: 11px; padding: 5px 12px; border-radius: 99px;
+  background: rgba(255,255,255,0.30); border: 1px solid var(--glass-bd-i);
+  font-weight: 600; color: var(--ink); letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body[data-theme="dark"] .w-today .day-pill { background: rgba(255,255,255,0.08); }
+
+.timeline { flex: 1; margin-top: 22px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 4px; }
+.timeline::-webkit-scrollbar { width: 4px; }
+.timeline::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
+
+.lesson {
+  display: grid; grid-template-columns: 56px 1fr auto;
+  align-items: center; gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.45);
+  position: relative;
+  transition: background .18s;
+}
+body[data-theme="dark"] .lesson { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
+.lesson:hover { background: rgba(255,255,255,0.36); }
+body[data-theme="dark"] .lesson:hover { background: rgba(255,255,255,0.09); }
+.lesson .time {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 18px; line-height: 1; color: var(--ink);
+}
+.lesson .time small { display: block; font-size: 10px; font-style: normal; color: var(--ink-f); margin-top: 3px; letter-spacing: 0.05em; font-family: 'Inter', sans-serif; }
+.lesson .body .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+.lesson .body .meta { font-size: 11px; color: var(--ink-s); margin-top: 2px; }
+.lesson .swatch { width: 10px; height: 28px; border-radius: 5px; }
+.lesson.now {
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 28px -6px rgba(0,0,0,0.18);
+}
+body[data-theme="dark"] .lesson.now { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.28); }
+.lesson .live {
+  position: absolute; top: 10px; right: 14px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+  color: var(--accent); text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.lesson .live::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 0 var(--accent);
+  animation: pulse 1.6s ease-out infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 oklch(0.62 0.13 45 / 0.6); }
+  100% { box-shadow: 0 0 0 10px oklch(0.62 0.13 45 / 0); }
 }
 
-/* ── Pages ── */
-.page { display: none; padding: 28px 28px 60px; }
-.page.active { display: block; }
+/* swatches per period */
+.sw-p1 { background: oklch(0.65 0.16 45); }
+.sw-p2 { background: oklch(0.60 0.13 150); }
+.sw-p3 { background: oklch(0.66 0.15 80); }
+.sw-p4 { background: oklch(0.58 0.13 240); }
+.sw-p5 { background: oklch(0.65 0.14 340); }
 
-/* ── Glass cards ── */
-.card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-b);
-  border-radius: 20px;
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
+/* ── Progress widget (top right) ── */
+.w-progress {
+  grid-column: 3 / 4; grid-row: 1 / 2;
+  padding: 22px 24px;
+  display: flex; flex-direction: column;
 }
-.card-bright {
-  background: var(--glass-bg2);
-  border: 1px solid var(--glass-b2);
-  border-radius: 20px;
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.40), 0 1px 0 rgba(255,255,255,0.06) inset;
+.w-progress .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-progress .title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; margin-top: 2px; letter-spacing: -0.01em; }
+.ring-row { display: flex; align-items: center; gap: 18px; margin-top: 16px; flex: 1; }
+.ring {
+  --pct: 72;
+  --c: oklch(0.62 0.13 45);
+  width: 86px; height: 86px; flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(var(--c) calc(var(--pct) * 1%), rgba(255,255,255,0.18) 0);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
 }
+body[data-theme="dark"] .ring { background: conic-gradient(var(--c) calc(var(--pct) * 1%), rgba(255,255,255,0.08) 0); }
+.ring::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  background: var(--glass-bg); backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-bd);
+}
+.ring .num {
+  position: relative; z-index: 1;
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 24px; font-weight: 500; color: var(--ink);
+}
+.ring .num small { font-size: 12px; font-style: normal; color: var(--ink-s); font-family: 'Inter', sans-serif; font-weight: 500; }
+.ring-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.ring-info .ri-line { display: flex; justify-content: space-between; font-size: 11px; }
+.ring-info .ri-line span:first-child { color: var(--ink-s); }
+.ring-info .ri-line span:last-child { color: var(--ink); font-weight: 600; font-feature-settings: "tnum"; }
 
-/* ── Chrome button ── */
-.btn-chrome {
-  background: var(--chrome);
-  color: rgba(8,6,22,0.88);
+/* ── Ask AI bottom widget ── */
+.w-ask {
+  grid-column: 3 / 4; grid-row: 2 / 3;
+  padding: 22px 24px;
+  display: flex; flex-direction: column;
+}
+.w-ask .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-ask .title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; margin-top: 2px; letter-spacing: -0.01em; line-height: 1.15; }
+.w-ask .title em { font-style: italic; color: var(--accent); }
+.suggest { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; flex: 1; }
+.sugg-chip {
+  font-size: 12px; color: var(--ink); padding: 8px 12px;
+  border-radius: 12px; background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.45);
+  cursor: pointer; transition: background .18s; text-align: left;
+  font-family: inherit;
+}
+body[data-theme="dark"] .sugg-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); color: var(--ink); }
+.sugg-chip:hover { background: rgba(255,255,255,0.40); }
+body[data-theme="dark"] .sugg-chip:hover { background: rgba(255,255,255,0.10); }
+.ask-input {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(255,255,255,0.55);
+  margin-top: 12px;
+}
+body[data-theme="dark"] .ask-input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); }
+.ask-input input {
+  flex: 1; border: none; background: transparent;
+  font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink); outline: none;
+}
+.ask-input input::placeholder { color: var(--ink-f); }
+.ask-input .send {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink); color: var(--glass-bg);
+  display: flex; align-items: center; justify-content: center;
   border: none; cursor: pointer;
-  font-family: inherit; font-weight: 700;
-  border-radius: 12px; padding: 12px 24px;
-  font-size: 12px; letter-spacing: 0.08em;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.9) inset;
-  transition: all .16s;
 }
-.btn-chrome:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.9) inset; }
-.btn-ghost {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.13);
-  color: var(--ink-s); cursor: pointer;
-  font-family: inherit; font-weight: 500;
-  border-radius: 12px; padding: 12px 20px;
-  font-size: 12px; transition: all .16s;
+body[data-theme="dark"] .ask-input .send { background: var(--ink); color: #1a1814; }
+.ask-input .send svg { width: 12px; height: 12px; }
+
+/* ── Side panel ── */
+.side-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 420px; z-index: 50;
+  transform: translateX(110%);
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  padding: 20px 20px 20px 0;
 }
-.btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--ink); }
-
-/* ── Input ── */
-.input-dark {
-  width: 100%; padding: 12px 16px;
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 14px; color: var(--ink); font-size: 13px; font-family: inherit;
-  outline: none; transition: border-color .18s;
+.side-panel.open { transform: translateX(0); }
+.side-inner {
+  height: 100%;
+  border-radius: 30px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-bd);
+  backdrop-filter: blur(40px) saturate(1.7);
+  -webkit-backdrop-filter: blur(40px) saturate(1.7);
+  box-shadow: -30px 0 80px -20px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.5) inset;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
 }
-.input-dark::placeholder { color: var(--ink-f); }
-.input-dark:focus { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.07); }
-
-/* ── Tags / chips ── */
-.chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 12px; border-radius: 99px;
-  font-size: 11px; font-weight: 500;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.11);
-  color: var(--ink-s); cursor: pointer; font-family: inherit;
-  transition: all .14s;
+.side-inner::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 30%);
+  mix-blend-mode: overlay;
 }
-.chip:hover { background: rgba(255,255,255,0.10); color: var(--ink); }
+body[data-theme="dark"] .side-inner::before { background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 30%); }
 
-/* ── Progress ── */
-.prog { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
-.prog-fill { height: 100%; border-radius: 99px; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
+.side-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 24px 6px; position: relative; z-index: 1;
+}
+.side-head .ttl { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; letter-spacing: -0.015em; }
+.side-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.30); border: 1px solid rgba(255,255,255,0.55);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+}
+body[data-theme="dark"] .side-close { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.side-close svg { width: 14px; height: 14px; }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+.side-tabs {
+  display: flex; gap: 4px; padding: 12px 18px 16px;
+  position: relative; z-index: 1;
+}
+.tab {
+  flex: 1; padding: 9px 8px; border-radius: 12px;
+  background: transparent; border: 1px solid transparent;
+  font-family: 'Inter'; font-size: 12px; font-weight: 600; cursor: pointer;
+  color: var(--ink-s); display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all .18s;
+}
+.tab svg { width: 13px; height: 13px; }
+.tab.active {
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.7);
+  color: var(--ink);
+  box-shadow: 0 4px 14px -4px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] .tab.active { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.16); }
 
-/* ── Animations ── */
-@keyframes orb-a { 0%,100%{transform:translate(0,0) scale(1)} 45%{transform:translate(50px,-60px) scale(1.07)} 75%{transform:translate(-25px,30px) scale(0.95)} }
-@keyframes orb-b { 0%,100%{transform:translate(0,0) scale(1)} 38%{transform:translate(-45px,40px) scale(1.05)} 68%{transform:translate(35px,-20px) scale(0.96)} }
-@keyframes orb-c { 0%,100%{transform:translate(0,0) scale(1)} 55%{transform:translate(30px,50px) scale(1.06)} 80%{transform:translate(-40px,-15px) scale(0.97)} }
-@keyframes pulse-ring { 0%,100%{transform:scale(0.92);opacity:0.45} 50%{transform:scale(1.06);opacity:0.90} }
-@keyframes thinking-dot { 0%,100%{opacity:0.25;transform:scale(0.85)} 50%{opacity:1;transform:scale(1)} }
-@keyframes chat-slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-@keyframes flow-in { from{stroke-dashoffset:600;opacity:0} to{stroke-dashoffset:0;opacity:1} }
-@keyframes node-in { from{opacity:0;transform:translateY(14px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
-@keyframes center-in { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
-@keyframes spark-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes bar-in { from{width:0} }
+.side-body {
+  flex: 1; overflow-y: auto; padding: 4px 22px 24px; position: relative; z-index: 1;
+}
+.side-body::-webkit-scrollbar { width: 4px; }
+.side-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
 
-/* ── Mobile bottom nav ── */
-.mobile-nav { display: none; }
-@media(max-width:800px) {
-  .sidebar { display: none; }
-  .mobile-nav {
-    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: rgba(9,8,15,0.88); border-top: 1px solid rgba(255,255,255,0.09);
-    backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
-    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  }
-  .mob-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    background: none; border: none; cursor: pointer; padding: 6px 0;
-    font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.30); font-family: inherit; transition: color .15s;
-  }
-  .mob-btn svg { width: 20px; height: 20px; }
-  .mob-btn.active { color: var(--ink); }
-  .page { padding: 20px 16px 90px; }
+/* === Calendar tab === */
+.cal-month {
+  font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.cal-month em { font-style: italic; color: var(--accent); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-grid .dn {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.10em;
+  color: var(--ink-f); text-align: center; font-weight: 600; padding: 6px 0;
+}
+.cal-grid .dt {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; border-radius: 10px; font-weight: 500;
+  position: relative; cursor: pointer; color: var(--ink);
+}
+.cal-grid .dt:hover { background: rgba(255,255,255,0.30); }
+body[data-theme="dark"] .cal-grid .dt:hover { background: rgba(255,255,255,0.07); }
+.cal-grid .dt.muted { color: var(--ink-f); }
+.cal-grid .dt.today {
+  background: var(--ink); color: var(--glass-bd);
+}
+body[data-theme="dark"] .cal-grid .dt.today { background: #f5f2ec; color: #1a1814; }
+.cal-grid .dt.exam::after {
+  content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+}
+.cal-grid .dt.task::after {
+  content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: oklch(0.65 0.14 240);
+}
+
+.integ {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.25);
+}
+body[data-theme="dark"] .integ { border-top-color: rgba(255,255,255,0.10); }
+.integ-ttl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin-bottom: 10px; }
+.integ-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.40);
+  margin-bottom: 8px; cursor: pointer; transition: background .18s;
+}
+body[data-theme="dark"] .integ-row { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.integ-row:hover { background: rgba(255,255,255,0.32); }
+body[data-theme="dark"] .integ-row:hover { background: rgba(255,255,255,0.08); }
+.integ-row .ico {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600;
+  background: linear-gradient(135deg, oklch(0.7 0.18 250), oklch(0.6 0.18 280));
+  color: white;
+}
+.integ-row .ico.gcal { background: linear-gradient(135deg, #4285F4, #1a73e8); }
+.integ-row .ico.icloud { background: linear-gradient(135deg, #5e5ce6, #007aff); }
+.integ-row .meta { flex: 1; }
+.integ-row .meta .name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.integ-row .meta .desc { font-size: 11px; color: var(--ink-s); margin-top: 1px; }
+.integ-row .status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 99px; letter-spacing: 0.06em; text-transform: uppercase; }
+.integ-row .status.on { background: oklch(0.72 0.16 145 / 0.30); color: oklch(0.40 0.13 150); }
+body[data-theme="dark"] .integ-row .status.on { background: oklch(0.72 0.16 145 / 0.20); color: oklch(0.78 0.14 150); }
+.integ-row .status.off { background: rgba(255,255,255,0.30); color: var(--ink-s); }
+body[data-theme="dark"] .integ-row .status.off { background: rgba(255,255,255,0.05); }
+
+/* === Mentor tab === */
+.mentor-hello {
+  padding: 16px 18px; border-radius: 18px;
+  background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.45);
+  margin-bottom: 14px;
+}
+body[data-theme="dark"] .mentor-hello { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.mentor-hello .role { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 700; }
+.mentor-hello .msg { font-family: 'Fraunces', serif; font-size: 16px; line-height: 1.4; margin-top: 4px; color: var(--ink); }
+.mentor-hello .msg em { font-style: italic; color: var(--accent); }
+
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.bub {
+  max-width: 92%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.45;
+}
+.bub.me {
+  align-self: flex-end;
+  background: var(--ink); color: #f5f2ec;
+  border-bottom-right-radius: 6px;
+}
+body[data-theme="dark"] .bub.me { background: #f5f2ec; color: #1a1814; }
+.bub.ai {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.30); border: 1px solid rgba(255,255,255,0.50); color: var(--ink);
+  border-bottom-left-radius: 6px;
+}
+body[data-theme="dark"] .bub.ai { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+.bub small { display: block; font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 0.04em; }
+
+.mentor-input {
+  position: sticky; bottom: 0;
+  margin: 14px -2px 0;
+  padding: 10px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.40);
+  border: 1px solid rgba(255,255,255,0.65);
+  display: flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(20px);
+}
+body[data-theme="dark"] .mentor-input { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+.mentor-input input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: 'Inter'; font-size: 13px; color: var(--ink);
+}
+.mentor-input input::placeholder { color: var(--ink-f); }
+.mentor-input button.send {
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+}
+.mentor-input button.send svg { width: 13px; height: 13px; }
+
+/* === Plan tab === */
+.plan-add {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.45);
+  margin-bottom: 14px;
+}
+body[data-theme="dark"] .plan-add { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.plan-add .label-h { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin-bottom: 8px; }
+.plan-add .row { display: flex; gap: 6px; margin-bottom: 8px; }
+.plan-add input, .plan-add select {
+  flex: 1; padding: 8px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.40); border: 1px solid rgba(255,255,255,0.55);
+  font-family: 'Inter'; font-size: 12px; color: var(--ink); outline: none;
+}
+body[data-theme="dark"] .plan-add input, body[data-theme="dark"] .plan-add select { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: var(--ink); }
+.plan-add .submit {
+  width: 100%; padding: 10px; border-radius: 12px; border: none;
+  background: var(--accent); color: white; font-family: 'Inter';
+  font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.plan-ttl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin: 4px 0 10px; }
+.plan-item {
+  display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.20); border: 1px solid rgba(255,255,255,0.40);
+  margin-bottom: 8px;
+}
+body[data-theme="dark"] .plan-item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.plan-item .when {
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
+  font-size: 16px; line-height: 1; text-align: center;
+}
+.plan-item .when small { display: block; font-size: 9px; font-style: normal; color: var(--ink-f); margin-top: 3px; font-family: 'Inter'; letter-spacing: 0.06em; text-transform: uppercase; }
+.plan-item .ttl-line { font-size: 13px; font-weight: 600; color: var(--ink); }
+.plan-item .desc { font-size: 11px; color: var(--ink-s); margin-top: 2px; }
+.plan-item .badge {
+  font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.plan-item .badge.exam { background: oklch(0.65 0.16 25 / 0.25); color: oklch(0.45 0.18 25); }
+body[data-theme="dark"] .plan-item .badge.exam { background: oklch(0.65 0.16 25 / 0.20); color: oklch(0.78 0.14 25); }
+.plan-item .badge.hw { background: oklch(0.65 0.13 240 / 0.25); color: oklch(0.40 0.13 240); }
+body[data-theme="dark"] .plan-item .badge.hw { background: oklch(0.65 0.13 240 / 0.20); color: oklch(0.78 0.12 240); }
+
+/* Backdrop */
+.scrim {
+  position: fixed; inset: 0; z-index: 49;
+  background: rgba(0,0,0,0.06);
+  backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity .35s;
+}
+.scrim.show { opacity: 1; pointer-events: auto; }
+body[data-theme="dark"] .scrim { background: rgba(0,0,0,0.20); }
+
+/* Tweaks panel positioning won't collide */
+
+/* Dock at bottom — only shown if no panel open, just the menu trigger */
+@media (max-width: 1100px) {
+  .canvas { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; }
+  .w-ai { grid-column: 1 / 3; grid-row: 1 / 2; min-height: 320px; }
+  .w-today { grid-column: 1 / 2; grid-row: 2 / 3; min-height: 380px; }
+  .w-progress { grid-column: 2 / 3; grid-row: 2 / 3; }
+  .w-ask { grid-column: 1 / 3; grid-row: 3 / 4; }
 }
 </style>
 </head>
-<body>
+<body data-theme="light">
 
-<!-- Background orbs -->
-<div class="bg-orbs">
-  <div class="orb" style="width:900px;height:900px;top:-380px;left:-280px;filter:blur(130px);animation:orb-a 24s ease-in-out infinite;background:radial-gradient(circle,oklch(0.32 0.12 45 / 0.55) 0%,transparent 65%)"></div>
-  <div class="orb" style="width:650px;height:650px;top:60px;right:-180px;filter:blur(110px);animation:orb-b 30s ease-in-out infinite;background:radial-gradient(circle,oklch(0.22 0.08 20 / 0.40) 0%,transparent 65%)"></div>
-  <div class="orb" style="width:500px;height:500px;bottom:-100px;left:40%;filter:blur(95px);animation:orb-c 26s ease-in-out infinite 7s;background:radial-gradient(circle,oklch(0.28 0.10 350 / 0.30) 0%,transparent 65%)"></div>
-  <div class="orb" style="width:350px;height:350px;bottom:160px;right:60px;filter:blur(80px);animation:orb-a 34s ease-in-out infinite 14s;background:radial-gradient(circle,oklch(0.24 0.07 260 / 0.22) 0%,transparent 65%)"></div>
-</div>
+<!-- Background videos: light + dark, swap by data-theme -->
+<video class="bg-video" id="vidLight" autoplay loop muted playsinline>
+  <source src="bg-light.mp4" type="video/mp4">
+</video>
+<video class="bg-video" id="vidDark" autoplay loop muted playsinline style="opacity:0">
+  <source src="bg-dark.mp4" type="video/mp4">
+</video>
+<div class="bg-tint"></div>
 
 <div id="app">
 
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:500;letter-spacing:-0.02em;color:#f0ede8;margin-bottom:3px">
-        Lukkari<span style="color:oklch(0.72 0.14 45)">.</span><span style="color:#605c58">io</span>
-        <span style="font-style:italic;color:oklch(0.72 0.14 45);font-size:17px"> Pro</span>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="greet">
+      <div class="hello">Hyvää <em>iltapäivää</em>, Joonatan.</div>
+      <div class="sub">tiistai · viikko 18 · jakso 5</div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-pill" id="themeBtn" title="Vaihda teema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="icon-pill" id="menuBtn" title="Avaa paneeli">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Widgets canvas -->
+  <div class="canvas">
+
+    <!-- AI Orb (large) -->
+    <div class="lg w-ai" id="aiOrbCard">
+      <div class="label">Mentor · AI</div>
+      <div class="title">Tänään keskittyisin <em>matikkaan</em>.</div>
+      <div class="orb-stage">
+        <div class="orb">
+          <div class="orb-layer orb-l1"></div>
+          <div class="orb-layer orb-l2"></div>
+          <div class="orb-layer orb-l3"></div>
+          <div class="orb-layer orb-l4"></div>
+          <div class="orb-core"></div>
+        </div>
       </div>
-      <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(120,90,255,0.12);border:1px solid rgba(120,90,255,0.28);border-radius:99px;padding:2px 9px;margin-top:2px">
-        <div style="width:5px;height:5px;border-radius:50%;background:oklch(0.72 0.14 150);box-shadow:0 0 6px oklch(0.72 0.14 150)"></div>
-        <span style="font-size:9px;font-weight:700;letter-spacing:0.10em;color:rgba(180,160,255,0.90)">BETA</span>
+      <div class="ai-foot">
+        <div class="dot"></div>
+        <div class="txt"><strong>2 t 30 min</strong> ehdotettua opiskelua jäljellä tänään</div>
       </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="nav-section">Päävalikko</div>
-      <button class="nav-item active" onclick="goTo('ai')" id="snav-ai">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-        AI-suosittelija
-      </button>
-      <button class="nav-item" onclick="goTo('luku')" id="snav-luku">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Lukujärjestys
-      </button>
-      <button class="nav-item" onclick="goTo('plan')" id="snav-plan">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        Suunnitelma
-      </button>
-      <button class="nav-item" onclick="goTo('goals')" id="snav-goals">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        Tavoitteet
-      </button>
-
-      <div class="nav-section" style="margin-top:8px">Asetukset</div>
-      <button class="nav-item" onclick="goTo('settings')" id="snav-settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Asetukset
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div style="display:flex;align-items:center;gap:9px">
-        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,oklch(0.40 0.12 45),oklch(0.28 0.08 20));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f0ede8;flex-shrink:0">J</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;color:#f0ede8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Joonatan</div>
-          <div style="font-size:10px;color:#605c58">Pro · 287/300 kyselyä</div>
+    <!-- Today's schedule -->
+    <div class="lg w-today">
+      <div class="head">
+        <div>
+          <div class="label">Tänään</div>
+          <div class="date">28. <em>huhtikuuta</em></div>
         </div>
+        <div class="day-pill">5 tuntia · 4 tehtävää</div>
+      </div>
+      <div class="timeline" id="timeline">
+        <div class="lesson">
+          <div class="time">08:15<small>– 09:30</small></div>
+          <div class="body">
+            <div class="name">MAA09 — Trigonometria</div>
+            <div class="meta">Sali 214 · Mäkinen</div>
+          </div>
+          <div class="swatch sw-p3"></div>
+        </div>
+        <div class="lesson now">
+          <div class="time">09:45<small>– 11:00</small></div>
+          <div class="body">
+            <div class="name">ENA08 — Reading skills</div>
+            <div class="meta">Sali 108 · Lindberg</div>
+          </div>
+          <div class="swatch sw-p4"></div>
+          <div class="live">Käynnissä</div>
+        </div>
+        <div class="lesson">
+          <div class="time">11:45<small>– 13:00</small></div>
+          <div class="body">
+            <div class="name">FY07 — Sähkömagnetismi</div>
+            <div class="meta">Sali F2 · Aalto</div>
+          </div>
+          <div class="swatch sw-p1"></div>
+        </div>
+        <div class="lesson">
+          <div class="time">13:15<small>– 14:30</small></div>
+          <div class="body">
+            <div class="name">HI04 — Suomen historia</div>
+            <div class="meta">Sali 305 · Virtanen</div>
+          </div>
+          <div class="swatch sw-p5"></div>
+        </div>
+        <div class="lesson">
+          <div class="time">15:00<small>opisk.</small></div>
+          <div class="body">
+            <div class="name">MAA09 koe pe — luku 5–6</div>
+            <div class="meta">Mentor varasi 90 min · kotona</div>
+          </div>
+          <div class="swatch sw-p3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="lg w-progress">
+      <div class="label">Kurssin eteneminen</div>
+      <div class="title">MAA09</div>
+      <div class="ring-row">
+        <div class="ring" style="--pct:72">
+          <div class="num">72<small>%</small></div>
+        </div>
+        <div class="ring-info">
+          <div class="ri-line"><span>Tehtäviä tehty</span><span>34 / 47</span></div>
+          <div class="ri-line"><span>Koe</span><span>pe 2.5.</span></div>
+          <div class="ri-line"><span>Tavoite</span><span>9</span></div>
+          <div class="ri-line"><span>Mentor-arvio</span><span style="color:var(--accent)">8½</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ask AI -->
+    <div class="lg w-ask">
+      <div class="label">Kysy mentorilta</div>
+      <div class="title">Mitä teen ennen <em>perjantain koetta?</em></div>
+      <div class="suggest">
+        <button class="sugg-chip">Tee mulle lukusuunnitelma viikoks</button>
+        <button class="sugg-chip">Selitä derivaatan ketjusääntö</button>
+      </div>
+      <div class="ask-input">
+        <input placeholder="Kysy mitä tahansa…" id="askInput">
+        <button class="send" id="askSend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /canvas -->
+
+  <!-- Backdrop scrim -->
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Side panel -->
+  <aside class="side-panel" id="side">
+    <div class="side-inner">
+      <div class="side-head">
+        <div class="ttl">Mentor</div>
+        <button class="side-close" id="closeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="side-tabs">
+        <button class="tab active" data-tab="mentor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+          Mentor
+        </button>
+        <button class="tab" data-tab="cal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalenteri
+        </button>
+        <button class="tab" data-tab="plan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Suunnitelma
+        </button>
+      </div>
+
+      <div class="side-body">
+
+        <!-- MENTOR TAB -->
+        <div data-pane="mentor">
+          <div class="mentor-hello">
+            <div class="role">Mentor</div>
+            <div class="msg">Hei Joonatan. Sulla on <em>MAA09 koe perjantaina</em>. Tehdään yhdessä lukusuunnitelma.</div>
+          </div>
+          <div class="chat" id="chat">
+            <div class="bub me">Opettaja antoi MAA09 läksyt: kpl 5.4 tehtävät 1–18.</div>
+            <div class="bub ai">
+              Selvä. Varaan ne huomiselle (ke) klo 16:30, n. 60 min — koska torstaina sulla on jo ENA-essee. Lisäsin Suunnitelmaan.
+              <small>2 minuuttia sitten</small>
+            </div>
+            <div class="bub me">Entäs koe perjantaina?</div>
+            <div class="bub ai">
+              Ehdotan: ke iltana läksyt, to klo 17–19 kokoava kertaus (luku 5–6), pe aamulla 30 min nopea koevihjelista. Painotetaan trigonometriaa — siellä menee nyt 3/5.
+              <small>juuri nyt</small>
+            </div>
+          </div>
+          <div class="mentor-input">
+            <input id="mentorInput" placeholder="Kysy tai kerro tehtävistä…">
+            <button class="send" title="Lähetä">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- CAL TAB -->
+        <div data-pane="cal" hidden>
+          <div class="cal-month">
+            <span>Huhtikuu <em>2026</em></span>
+            <span style="font-size:11px; font-family:'Inter'; font-weight:500; color:var(--ink-s); letter-spacing:0.04em;">vk 18</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+
+          <div class="integ">
+            <div class="integ-ttl">Yhdistetyt kalenterit</div>
+            <div class="integ-row">
+              <div class="ico gcal">G</div>
+              <div class="meta">
+                <div class="name">Google Kalenteri</div>
+                <div class="desc">joonatan@gmail.com</div>
+              </div>
+              <div class="status on">Yhdistetty</div>
+            </div>
+            <div class="integ-row">
+              <div class="ico icloud">i</div>
+              <div class="meta">
+                <div class="name">iCloud · iPhone</div>
+                <div class="desc">Synkronoidaan automaattisesti</div>
+              </div>
+              <div class="status on">Yhdistetty</div>
+            </div>
+            <div class="integ-row">
+              <div class="ico" style="background:linear-gradient(135deg,#0078d4,#106ebe)">M</div>
+              <div class="meta">
+                <div class="name">Microsoft Outlook</div>
+                <div class="desc">Ei yhdistetty</div>
+              </div>
+              <div class="status off">Yhdistä</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAN TAB -->
+        <div data-pane="plan" hidden>
+          <div class="plan-add">
+            <div class="label-h">Kerro mentorille</div>
+            <div class="row">
+              <select>
+                <option>MAA09 — Pitkä matematiikka</option>
+                <option>ENA08 — Englanti</option>
+                <option>FY07 — Fysiikka</option>
+                <option>HI04 — Historia</option>
+              </select>
+            </div>
+            <div class="row">
+              <select>
+                <option>Läksyt — kpl…</option>
+                <option>Koe</option>
+                <option>Essee</option>
+                <option>Muu tehtävä</option>
+              </select>
+              <input placeholder="esim. 5.4 / 1–18" style="flex:0.7">
+            </div>
+            <div class="row">
+              <input placeholder="Deadline: pe 2.5." type="text">
+            </div>
+            <button class="submit">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+              Anna mentorin suunnitella
+            </button>
+          </div>
+
+          <div class="plan-ttl">Tämän viikon suunnitelma</div>
+
+          <div class="plan-item">
+            <div class="when">ke<small>16:30</small></div>
+            <div>
+              <div class="ttl-line">MAA09 läksyt — 5.4 / 1–18</div>
+              <div class="desc">Mentor varasi 60 min ennen torstain ENA-esseetä</div>
+            </div>
+            <div class="badge hw">Läksy</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">to<small>17:00</small></div>
+            <div>
+              <div class="ttl-line">MAA09 kertaus — luku 5–6</div>
+              <div class="desc">Trigonometria painotuksessa · 90 min</div>
+            </div>
+            <div class="badge exam">Koe</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">pe<small>07:30</small></div>
+            <div>
+              <div class="ttl-line">MAA09 koevihjelista</div>
+              <div class="desc">Nopea 30 min kertaus ennen koetta</div>
+            </div>
+            <div class="badge exam">Koe</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">la<small>10:00</small></div>
+            <div>
+              <div class="ttl-line">YO kesäsuunnittelu — kemia</div>
+              <div class="desc">Mentor laati 6 vk ohjelman · 1. sessio</div>
+            </div>
+            <div class="badge hw">Pitkä</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </aside>
 
-  <!-- ══ MAIN ══ -->
-  <div class="main">
-    <header class="main-header">
-      <div id="pageTitle" style="font-family:'Fraunces',serif;font-size:15px;font-weight:500;color:#f0ede8;letter-spacing:-0.01em">AI-suosittelija</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn-ghost" style="padding:7px 14px;font-size:11px;border-radius:99px" onclick="goTo('ai')">Vapaa versio</button>
-        <button style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#a09c98;display:flex;align-items:center;justify-content:center;cursor:pointer">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </button>
-      </div>
-    </header>
+</div>
 
-    <div class="main-content">
+<script>
+// ── Theme toggle ─────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light"
+}/*EDITMODE-END*/;
 
-      <!-- ══ PAGE: AI ══ -->
-      <div class="page active" id="page-ai">
-        <div style="max-width:780px;margin:0 auto">
+const body = document.body;
+const vidLight = document.getElementById('vidLight');
+const vidDark = document.getElementById('vidDark');
 
-          <!-- Sphere + greeting -->
-          <div style="display:flex;align-items:center;gap:32px;margin-bottom:28px">
-            <div style="position:relative;flex-shrink:0">
-              <canvas id="sphereCanvas" width="280" height="280" style="width:140px;height:140px;display:block"></canvas>
-              <div style="position:absolute;inset:-12px;border-radius:50%;border:1px solid oklch(0.55 0.12 45 / 0.20);animation:pulse-ring 3.2s ease-in-out infinite;pointer-events:none" id="pr1"></div>
-              <div style="position:absolute;inset:-24px;border-radius:50%;border:1px solid oklch(0.55 0.12 45 / 0.10);animation:pulse-ring 3.2s ease-in-out infinite 0.7s;pointer-events:none" id="pr2"></div>
-            </div>
-            <div>
-              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:6px">AI-suosittelija</div>
-              <h1 style="font-family:'Fraunces',serif;font-size:30px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8;line-height:1.1;margin-bottom:8px">
-                Hei, mitä<br>suunnitellaan?
-              </h1>
-              <p style="font-size:13px;color:#605c58;line-height:1.55;max-width:340px">Kerro kurssivalinnoistasi tai kysy suosituksia — analysoin lukujärjestyksesi ja annan personoituja neuvoja.</p>
-            </div>
-          </div>
-
-          <!-- Schedule mini-summary -->
-          <div class="card" style="padding:16px 20px;margin-bottom:16px;border-radius:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-              <span style="font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:#f0ede8">Otaniemen lukio · 2026–2027</span>
-              <span style="font-size:10px;color:#605c58">12 kurssia · 5 periodia</span>
-            </div>
-            <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">
-              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
-                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P1</div>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.18 0.07 45 / 0.6);border:1px solid oklch(0.45 0.09 45 / 0.5);color:oklch(0.78 0.12 45);white-space:nowrap">MAA3</span>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.18 0.07 45 / 0.6);border:1px solid oklch(0.45 0.09 45 / 0.5);color:oklch(0.78 0.12 45);white-space:nowrap">ENA5</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
-                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P2</div>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.06 150 / 0.6);border:1px solid oklch(0.40 0.08 150 / 0.5);color:oklch(0.72 0.10 150);white-space:nowrap">FY4</span>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.06 150 / 0.6);border:1px solid oklch(0.40 0.08 150 / 0.5);color:oklch(0.72 0.10 150);white-space:nowrap">ÄI3</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
-                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P3</div>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.17 0.07 80 / 0.6);border:1px solid oklch(0.42 0.09 80 / 0.5);color:oklch(0.75 0.12 80);white-space:nowrap">MAA6</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
-                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P4</div>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.07 240 / 0.6);border:1px solid oklch(0.40 0.09 240 / 0.5);color:oklch(0.72 0.12 240);white-space:nowrap">HI2</span>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.16 0.07 240 / 0.6);border:1px solid oklch(0.40 0.09 240 / 0.5);color:oklch(0.72 0.12 240);white-space:nowrap">KE3</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:3px;min-width:80px">
-                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58;margin-bottom:2px">P5</div>
-                <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:6px;background:oklch(0.17 0.07 340 / 0.6);border:1px solid oklch(0.42 0.09 340 / 0.5);color:oklch(0.74 0.11 340);white-space:nowrap">BI2</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chat messages -->
-          <div id="chatMessages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:20px">
-            <div style="animation:chat-slide .35s ease forwards;max-width:78%">
-              <div class="card" style="border-radius:16px 16px 16px 5px;padding:14px 17px;border-color:rgba(255,255,255,0.10)">
-                <p style="font-size:13px;color:rgba(240,237,232,0.82);line-height:1.62">Näen lukujärjestyksesi — 12 kurssia jakautuu 5 periodille. Matematiikkaa on eniten. Haluatko kurssisuosituksia YO-kirjoituksia varten, vai analysoidaanko rakennetta?</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Suggestions -->
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-            <button class="chip" onclick="sendMsg(this.textContent)">Suosittele YO-kursseja</button>
-            <button class="chip" onclick="sendMsg(this.textContent)">Onko konflikteja?</button>
-            <button class="chip" onclick="sendMsg(this.textContent)">Tasapainota aineet</button>
-            <button class="chip" onclick="sendMsg(this.textContent)">Missä järjestyksessä?</button>
-          </div>
-
-          <!-- Input -->
-          <div style="display:flex;gap:8px;align-items:flex-end">
-            <textarea id="chatInput" class="input-dark" placeholder="Kysy kurssivalinnoista, aikataulusta, ylioppilaskirjoituksista…" rows="2"
-              style="flex:1;resize:none;line-height:1.5;border-radius:14px"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
-            <button onclick="sendChat()" id="sendBtn" style="flex-shrink:0;width:46px;height:46px;border-radius:13px;border:none;background:linear-gradient(135deg,oklch(0.55 0.18 45),oklch(0.45 0.15 20));color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px oklch(0.55 0.18 45 / 0.40);transition:opacity .15s">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </div>
-
-          <p style="font-size:9px;color:rgba(255,255,255,0.12);margin-top:10px;text-align:center">GPT-4o-mini via Supabase Edge Functions · Demo-tila</p>
-        </div>
-      </div>
-
-      <!-- ══ PAGE: LUKUJÄRJESTYS ══ -->
-      <div class="page" id="page-luku">
-        <div style="max-width:860px;margin:0 auto">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-            <div>
-              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">2026–2027</div>
-              <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Otaniemen lukio</h1>
-              <p style="font-size:13px;color:#605c58;margin-top:4px">8 palkkia · 5 periodia · tuntikiertokaavio</p>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-ghost" style="padding:9px 16px;font-size:11px">Vie PDF</button>
-              <button class="btn-ghost" style="padding:9px 16px;font-size:11px">Kalenteri ↗</button>
-            </div>
-          </div>
-
-          <!-- Stats row -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
-            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:#f0ede8">12</div>
-              <div style="font-size:10px;color:#605c58;margin-top:2px">Kurssia</div>
-            </div>
-            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.10 150)">0</div>
-              <div style="font-size:10px;color:#605c58;margin-top:2px">Konfliktia</div>
-            </div>
-            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.14 45)">4</div>
-              <div style="font-size:10px;color:#605c58;margin-top:2px">Vapaata</div>
-            </div>
-            <div class="card" style="padding:16px;border-radius:16px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:oklch(0.72 0.12 80)">2.4</div>
-              <div style="font-size:10px;color:#605c58;margin-top:2px">Kurssia/periodi</div>
-            </div>
-          </div>
-
-          <!-- Period cards -->
-          <div id="periodRows" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px"></div>
-
-          <!-- AI insight -->
-          <div class="card" style="padding:16px 20px;border-radius:16px;border-left:2px solid oklch(0.55 0.14 45)">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <div style="width:22px;height:22px;border-radius:7px;background:oklch(0.22 0.09 45 / 0.8);border:1px solid oklch(0.45 0.10 45 / 0.5);display:flex;align-items:center;justify-content:center">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="oklch(0.75 0.14 45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-              </div>
-              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:oklch(0.78 0.12 45);text-transform:uppercase">AI-analyysi</span>
-            </div>
-            <p style="font-size:13px;color:#a09c98;line-height:1.6">Lukujärjestyksesi näyttää tasapainoiselta. Matematiikan kursseja on eniten — harkitse hajauttamista useammalle periodille ylikuormituksen välttämiseksi periodeilla 1 ja 3.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ PAGE: SUUNNITELMA ══ -->
-      <div class="page" id="page-plan">
-        <div style="max-width:780px;margin:0 auto">
-          <div style="margin-bottom:22px">
-            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">AI-suositukset</div>
-            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Opiskelusuunnitelma</h1>
-            <p style="font-size:13px;color:#605c58;margin-top:4px">Personoitu kurssivalintojesi perusteella</p>
-          </div>
-
-          <!-- View tabs -->
-          <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:12px;padding:3px;width:fit-content">
-            <button class="plan-tab active-tab" style="padding:8px 18px;border-radius:10px;border:none;background:rgba(255,255,255,0.10);color:#f0ede8;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Viikko</button>
-            <button class="plan-tab" style="padding:8px 18px;border-radius:10px;border:none;background:transparent;color:#605c58;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">Koepäivä</button>
-            <button class="plan-tab" style="padding:8px 18px;border-radius:10px;border:none;background:transparent;color:#605c58;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">YO-valmistelu</button>
-          </div>
-
-          <!-- Week plan -->
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">28.4–2.5.2026</div>
-          <div id="dayPlan" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
-
-          <!-- Exam cards -->
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">Tulevat kokeet</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
-            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
-              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.18 0.08 45 / 0.7);border:1px solid oklch(0.45 0.10 45 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.78 0.12 45);line-height:1">5</span>
-                <span style="font-size:8px;color:oklch(0.55 0.08 45);font-weight:600">pv</span>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">MAA6</div>
-                <div style="font-size:11px;color:#605c58">Pe 3.5 · klo 8.15</div>
-              </div>
-            </div>
-            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
-              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.16 0.07 150 / 0.7);border:1px solid oklch(0.40 0.08 150 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.72 0.10 150);line-height:1">12</span>
-                <span style="font-size:8px;color:oklch(0.50 0.07 150);font-weight:600">pv</span>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">FY5</div>
-                <div style="font-size:11px;color:#605c58">Ti 10.5 · klo 10.00</div>
-              </div>
-            </div>
-            <div class="card" style="padding:16px;border-radius:16px;display:flex;align-items:center;gap:12px">
-              <div style="width:46px;height:46px;border-radius:13px;background:oklch(0.17 0.07 80 / 0.7);border:1px solid oklch(0.42 0.09 80 / 0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-                <span style="font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:oklch(0.75 0.12 80);line-height:1">19</span>
-                <span style="font-size:8px;color:oklch(0.52 0.08 80);font-weight:600">pv</span>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:2px">ENA5</div>
-                <div style="font-size:11px;color:#605c58">Ti 17.5 · klo 8.30</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ PAGE: TAVOITTEET ══ -->
-      <div class="page" id="page-goals">
-        <div style="max-width:780px;margin:0 auto">
-          <div style="margin-bottom:22px">
-            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:5px">Edistyminen</div>
-            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Tavoitteet</h1>
-            <p style="font-size:13px;color:#605c58;margin-top:4px">Lukuvuosi 2026–2027</p>
-          </div>
-
-          <!-- Ring + summary -->
-          <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;margin-bottom:24px;align-items:center">
-            <div style="position:relative;width:100px;height:100px;flex-shrink:0">
-              <svg width="100" height="100" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
-                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#rg)" stroke-width="8"
-                  stroke-dasharray="263.9" stroke-dashoffset="79.2" stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                <defs>
-                  <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="oklch(0.72 0.14 45)"/>
-                    <stop offset="100%" stop-color="oklch(0.60 0.12 20)"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:#f0ede8;line-height:1">70%</span>
-                <span style="font-size:9px;color:#605c58;margin-top:1px">valmis</span>
-              </div>
-            </div>
-            <div>
-              <p style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:#f0ede8;margin-bottom:5px">Hyvää menoa!</p>
-              <p style="font-size:13px;color:#605c58;line-height:1.55;margin-bottom:14px">42/60 tavoitekurssista suoritettu. Jatka samaan tahtiin ja saavutat tavoitteen periodi 5:n loppuun mennessä.</p>
-              <div style="display:flex;gap:8px">
-                <div class="card" style="padding:10px 14px;border-radius:12px;text-align:center">
-                  <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:oklch(0.78 0.12 45)">8</div>
-                  <div style="font-size:9px;color:#605c58;margin-top:1px">Periodeita jäljellä</div>
-                </div>
-                <div class="card" style="padding:10px 14px;border-radius:12px;text-align:center">
-                  <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:500;color:oklch(0.72 0.10 150)">3</div>
-                  <div style="font-size:9px;color:#605c58;margin-top:1px">Ainejärjestys ok</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Subject progress -->
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">Ainekohtainen</div>
-          <div id="subjectBars" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
-
-          <!-- Leaderboard -->
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:12px">
-            Luokkavertailu <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.15)">· anonymisoitu</span>
-          </div>
-          <div id="leaderboard" style="display:flex;flex-direction:column;gap:6px"></div>
-        </div>
-      </div>
-
-      <!-- ══ PAGE: SETTINGS ══ -->
-      <div class="page" id="page-settings">
-        <div style="max-width:560px;margin:0 auto">
-          <div style="margin-bottom:22px">
-            <h1 style="font-family:'Fraunces',serif;font-size:28px;font-weight:500;letter-spacing:-0.025em;color:#f0ede8">Asetukset</h1>
-          </div>
-
-          <div class="card" style="padding:20px;border-radius:18px;margin-bottom:12px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Tili</div>
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,oklch(0.40 0.12 45),oklch(0.28 0.08 20));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#f0ede8">J</div>
-              <div>
-                <div style="font-size:14px;font-weight:500;color:#f0ede8">Joonatan</div>
-                <div style="font-size:12px;color:#605c58"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="97fdf8f8f9f6e3f6f9d7f2faf6fefbb9f1fe">[email&#160;protected]</a> · Pro-tilaus</div>
-              </div>
-            </div>
-            <button class="btn-ghost" style="width:100%;padding:10px;font-size:12px;text-align:center;justify-content:center">Kirjaudu ulos</button>
-          </div>
-
-          <div class="card" style="padding:20px;border-radius:18px;margin-bottom:12px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Tilaus</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div>
-                <div style="font-size:13px;font-weight:500;color:#f0ede8">Pro · 3,99 €/kk</div>
-                <div style="font-size:11px;color:#605c58;margin-top:2px">Seuraava laskutus 1.6.2026</div>
-              </div>
-              <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:oklch(0.22 0.09 150 / 0.8);border:1px solid oklch(0.45 0.10 150 / 0.6);border-radius:99px;padding:3px 10px;color:oklch(0.72 0.10 150)">Aktiivinen</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;color:#605c58">
-              <span>287 / 300 kyselyä käytetty</span>
-              <span>palautuu 1.5.</span>
-            </div>
-          </div>
-
-          <div class="card" style="padding:20px;border-radius:18px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#605c58;margin-bottom:14px">Koulu</div>
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:13px;color:#a09c98">Otaniemen lukio</span>
-              <span style="font-size:11px;color:#605c58">8P · 5 periodia</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /main-content -->
-  </div><!-- /main -->
-
-</div><!-- /app -->
-
-<!-- Mobile nav -->
-<nav class="mobile-nav">
-  <button class="mob-btn active" onclick="goTo('ai')" id="mnav-ai">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-    AI
-  </button>
-  <button class="mob-btn" onclick="goTo('luku')" id="mnav-luku">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Lukkari
-  </button>
-  <button class="mob-btn" onclick="goTo('plan')" id="mnav-plan">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-    Suunnitelma
-  </button>
-  <button class="mob-btn" onclick="goTo('goals')" id="mnav-goals">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-    Tavoitteet
-  </button>
-</nav>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ── Navigation ────────────────────────────────────────────────
-const PAGE_TITLES = { ai:'AI-suosittelija', luku:'Lukujärjestys', plan:'Suunnitelma', goals:'Tavoitteet', settings:'Asetukset' };
-
-function goTo(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.mob-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  const sn = document.getElementById('snav-' + id);
-  const mn = document.getElementById('mnav-' + id);
-  if (sn) sn.classList.add('active');
-  if (mn) mn.classList.add('active');
-  document.getElementById('pageTitle').textContent = PAGE_TITLES[id] || '';
-}
-
-// ── Particle Sphere ───────────────────────────────────────────
-(function() {
-  const canvas = document.getElementById('sphereCanvas');
-  const ctx = canvas.getContext('2d');
-  const W=280,H=280,cx=W/2,cy=H/2,R=110;
-  let thinking=false, t=0;
-  window.setSphereThinking = v => thinking=v;
-
-  const pts = Array.from({length:200},(_,i)=>{
-    const phi   = Math.acos(1-2*(i+.5)/200);
-    const theta = Math.PI*(1+Math.sqrt(5))*i;
-    return { phi, theta, label:Math.random()<0.5?String(Math.floor(Math.random()*10)):null, sz:0.7+Math.random()*1.5 };
-  });
-
-  function frame(){
-    ctx.clearRect(0,0,W,H);
-    t += thinking ? 0.022 : 0.007;
-
-    // Glow core
-    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,R);
-    g.addColorStop(0,'oklch(0.38 0.12 45 / 0.16)');
-    g.addColorStop(1,'transparent');
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.1,0,Math.PI*2); ctx.fill();
-
-    const ry = t*0.38;
-    const sorted = pts.map(p=>{
-      const th = p.theta + t*0.0008;
-      const x3 = R*Math.sin(p.phi)*Math.cos(th);
-      const y3 = R*Math.sin(p.phi)*Math.sin(th);
-      const z3 = R*Math.cos(p.phi);
-      const xr = x3*Math.cos(ry)+z3*Math.sin(ry);
-      const zr = -x3*Math.sin(ry)+z3*Math.cos(ry);
-      const depth=(zr+R)/(2*R);
-      return{px:cx+xr,py:cy+y3,depth,label:p.label,sz:p.sz};
-    }).sort((a,b)=>a.depth-b.depth);
-
-    sorted.forEach(p=>{
-      const a=0.12+p.depth*0.88, sz=p.sz*(0.3+p.depth*0.7);
-      // Warm amber to cream gradient by depth
-      const L=0.45+p.depth*0.38, C=0.08+p.depth*0.07, H2=thinking?45+p.depth*10:45;
-      const col=`oklch(${L} ${C} ${H2} / ${a})`;
-      if(p.label&&sz>0.8){
-        ctx.font=`${Math.round(6+sz*3.5)}px 'Inter',monospace`;
-        ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(p.label,p.px,p.py);
-      } else {
-        ctx.beginPath(); ctx.arc(p.px,p.py,Math.max(0.3,sz*0.8),0,Math.PI*2);
-        ctx.fillStyle=col; ctx.fill();
-      }
-    });
-    requestAnimationFrame(frame);
+function setTheme(t) {
+  body.setAttribute('data-theme', t);
+  if (t === 'dark') {
+    vidLight.style.opacity = 0;
+    vidDark.style.opacity = 1;
+  } else {
+    vidLight.style.opacity = 1;
+    vidDark.style.opacity = 0;
   }
-  frame();
-})();
+}
+setTheme(TWEAK_DEFAULTS.theme);
 
-// ── Chat ──────────────────────────────────────────────────────
-function sendMsg(text) {
-  document.getElementById('chatInput').value = text;
-  sendChat();
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const cur = body.getAttribute('data-theme');
+  setTheme(cur === 'light' ? 'dark' : 'light');
+});
+
+// ── Side panel ────────────────────────────────────────────────
+const side = document.getElementById('side');
+const scrim = document.getElementById('scrim');
+const menuBtn = document.getElementById('menuBtn');
+const closeBtn = document.getElementById('closeBtn');
+
+function openSide() { side.classList.add('open'); scrim.classList.add('show'); }
+function closeSide() { side.classList.remove('open'); scrim.classList.remove('show'); }
+menuBtn.addEventListener('click', openSide);
+closeBtn.addEventListener('click', closeSide);
+scrim.addEventListener('click', closeSide);
+
+// AI orb card opens mentor tab
+document.getElementById('aiOrbCard').addEventListener('click', () => {
+  switchTab('mentor');
+  openSide();
+});
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== name);
+}
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+
+// ── Calendar grid ─────────────────────────────────────────────
+function buildCal() {
+  const grid = document.getElementById('calGrid');
+  const days = ['ma','ti','ke','to','pe','la','su'];
+  days.forEach(d => {
+    const el = document.createElement('div'); el.className = 'dn'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  // April 2026: Apr 1 is a Wednesday → ma=offset 2 (we render mon-first)
+  // We'll just hardcode a 5-row grid showing Apr w/ sample marks.
+  // Layout: leading muted Mar 30, 31; Apr 1..30; trailing muted May 1..3
+  const cells = [];
+  // mar 30, 31
+  cells.push({d: 30, muted: true});
+  cells.push({d: 31, muted: true});
+  for (let i = 1; i <= 30; i++) cells.push({d: i});
+  // may 1..3
+  cells.push({d: 1, muted: true});
+  cells.push({d: 2, muted: true});
+  cells.push({d: 3, muted: true});
+
+  // Marks (Apr only)
+  const exams = new Set([2]); // showing May 2 (Friday) in trailing? no — exam is in May, but for visual put on Apr 28 today's pill
+  const tasks = new Set([29, 30]); // ke/to läksyt
+  const today = 28;
+
+  cells.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'dt' + (c.muted ? ' muted' : '');
+    if (!c.muted && c.d === today) el.classList.add('today');
+    if (!c.muted && tasks.has(c.d)) el.classList.add('task');
+    el.textContent = c.d;
+    grid.appendChild(el);
+  });
+  // mark trailing May 1 (which is Friday) as exam
+  const trailingMay1 = grid.querySelectorAll('.dt.muted');
+  if (trailingMay1.length >= 3) {
+    // 4th-to-last is mar30, 3rd mar31, then last 3 are may1,2,3
+    const may2 = grid.children[grid.children.length - 2];
+    may2.classList.add('exam');
+  }
+}
+buildCal();
+
+// ── Ask AI submit ─────────────────────────────────────────────
+document.getElementById('askSend').addEventListener('click', () => {
+  switchTab('mentor');
+  openSide();
+});
+document.getElementById('askInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { switchTab('mentor'); openSide(); }
+});
+
+// ── Tweaks integration ────────────────────────────────────────
+let tweakState = { ...TWEAK_DEFAULTS };
+
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+  if (e.data.type === '__activate_edit_mode') showTweaks();
+  if (e.data.type === '__deactivate_edit_mode') hideTweaks();
+});
+
+function showTweaks() {
+  document.getElementById('tweakPanel').style.display = 'block';
+}
+function hideTweaks() {
+  document.getElementById('tweakPanel').style.display = 'none';
+}
+function pushTweak(patch) {
+  tweakState = { ...tweakState, ...patch };
+  window.parent.postMessage({type: '__edit_mode_set_keys', edits: patch}, '*');
 }
 
-function sendChat() {
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-
-  const area = document.getElementById('chatMessages');
-
-  // User bubble
-  const u = document.createElement('div');
-  u.style.cssText='display:flex;justify-content:flex-end;animation:chat-slide .28s ease forwards';
-  u.innerHTML=`<div style="max-width:75%;padding:12px 16px;border-radius:16px 16px 5px 16px;background:linear-gradient(135deg,oklch(0.32 0.10 45 / 0.8),oklch(0.25 0.07 20 / 0.8));border:1px solid oklch(0.45 0.10 45 / 0.4);font-size:13px;color:rgba(240,237,232,0.90);line-height:1.55">${msg}</div>`;
-  area.appendChild(u);
-
-  // Thinking
-  window.setSphereThinking(true);
-  ['pr1','pr2'].forEach((id,i)=>{
-    document.getElementById(id).style.animation=`pulse-ring ${1.2+i*0.2}s ease-in-out infinite ${i*0.25}s`;
-  });
-
-  const dots=document.createElement('div');
-  dots.style.cssText='animation:chat-slide .28s ease forwards;max-width:60%';
-  dots.innerHTML=`<div style="display:inline-flex;gap:5px;align-items:center;padding:12px 16px;border-radius:16px 16px 16px 5px;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10)">
-    ${[0,.22,.44].map(d=>`<span style="width:5px;height:5px;border-radius:50%;background:rgba(240,237,232,0.50);animation:thinking-dot 1.2s ease-in-out infinite ${d}s;display:block"></span>`).join('')}
-  </div>`;
-  area.appendChild(dots);
-  area.closest('.main-content').scrollTop = 99999;
-
-  // AI reply
-  const replies = [
-    "Analysoin kurssivalintojasi. Matematiikan 3 kurssia eri periodeilla on hyvä hajauttaa. Suosittelen lisäämään historian tai biologian periodille 4 — se tasapainottaa kuormitusta.",
-    "Konfliktianalyysi: en havaitse päällekkäisyyksiä nykyisessä lukujärjestyksessäsi. Periodilla 3 on vain yksi kurssi — siellä on hyvin tilaa lisäkursseille.",
-    "Kieli- ja reaaliaineesi ovat tasapainossa. Pitkän matematiikan kurssit kannattaa suorittaa järjestyksessä — MAA3 ennen MAA6:tta, joka on jo oikein.",
-    "YO-kirjoituksiin valmistautumiseksi suosittelen aloittamaan matematiikan kertauksen nyt. MAA6 koe on 5 päivän päässä — keskity integraaleihin ja derivoinnin periaatteisiin.",
-  ];
-  const reply = replies[Math.floor(Math.random()*replies.length)];
-
-  setTimeout(()=>{
-    area.removeChild(dots);
-    window.setSphereThinking(false);
-    ['pr1','pr2'].forEach((id,i)=>{
-      document.getElementById(id).style.animation=`pulse-ring ${3.2+i*0}s ease-in-out infinite ${i*0.7}s`;
-    });
-    const ai=document.createElement('div');
-    ai.style.cssText='animation:chat-slide .35s ease forwards;max-width:80%';
-    ai.innerHTML=`<div style="padding:14px 17px;border-radius:16px 16px 16px 5px;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.10);font-size:13px;color:rgba(240,237,232,0.85);line-height:1.62">${reply}</div>`;
-    area.appendChild(ai);
-    area.closest('.main-content').scrollTop = 99999;
-  }, 1600+Math.random()*600);
-}
-
-// ── Render period rows ────────────────────────────────────────
-(function(){
-  const data=[
-    {pi:1,l:"oklch(0.78 0.12 45)",bg:"oklch(0.18 0.07 45/0.6)",b:"oklch(0.45 0.09 45/0.5)",name:"Orange",courses:[["MAA3","ENA5",null,"ÄI3","HI1"]]},
-    {pi:2,l:"oklch(0.72 0.10 150)",bg:"oklch(0.16 0.06 150/0.6)",b:"oklch(0.40 0.08 150/0.5)",name:"Sage",courses:[["FY4",null,"BI2","KE1",null]]},
-    {pi:3,l:"oklch(0.75 0.12 80)",bg:"oklch(0.17 0.07 80/0.6)",b:"oklch(0.42 0.09 80/0.5)",name:"Lime",courses:[["MAA6",null,null,"GE1",null]]},
-    {pi:4,l:"oklch(0.72 0.12 240)",bg:"oklch(0.16 0.07 240/0.6)",b:"oklch(0.40 0.09 240/0.5)",name:"Blue",courses:[["HI2","ENA7","KE3",null,null]]},
-    {pi:5,l:"oklch(0.74 0.11 340)",bg:"oklch(0.17 0.07 340/0.6)",b:"oklch(0.42 0.09 340/0.5)",name:"Pink",courses:[["BI4",null,"ÄI6",null,"MAA9"]]},
-  ];
-  const days=["Ma","Ti","Ke","To","Pe"];
-  const c=document.getElementById('periodRows');
-  data.forEach(d=>{
-    const courses=d.courses[0];
-    const count=courses.filter(Boolean).length;
-    const el=document.createElement('div');
-    el.className='card';
-    el.style.cssText=`border-radius:16px;padding:16px 20px`;
-    el.innerHTML=`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-family:'Fraunces',serif;font-size:19px;font-weight:500;font-style:italic;color:${d.l}">${d.pi}.</span>
-        <span style="font-family:'Fraunces',serif;font-size:13px;font-weight:500;color:#f0ede8">periodi</span>
-        <div style="flex:1"></div>
-        <span style="background:${d.bg};border:1px solid ${d.b};border-radius:99px;padding:2px 9px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:${d.l}">${d.name}</span>
-        <span style="font-size:10px;font-weight:600;color:${d.l}">${count} kurssia</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px">
-        ${days.map((day,di)=>{
-          const course=courses[di];
-          return `<div style="display:flex;flex-direction:column;gap:3px;align-items:center">
-            <span style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#605c58">${day}</span>
-            <div style="width:100%;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-              background:${course?d.bg:'rgba(255,255,255,0.03)'};
-              border:1px solid ${course?d.b:'rgba(255,255,255,0.06)'}">
-              ${course?`<span style="font-family:'Fraunces',serif;font-size:11px;font-weight:500;color:#f0ede8">${course}</span>`:''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    c.appendChild(el);
-  });
-})();
-
-// ── Day plan ──────────────────────────────────────────────────
-(function(){
-  const days=[
-    {d:"Ma",date:"28.4",tasks:[{label:"MAA6 · Integraalit 4–5",mins:45,c:"oklch(0.78 0.12 45)"},{label:"ENA5 · Sanasto",mins:20,c:"oklch(0.72 0.10 150)"}]},
-    {d:"Ti",date:"29.4",tasks:[{label:"FY5 · Sähkömagnetismi",mins:55,c:"oklch(0.75 0.12 80)"}]},
-    {d:"Ke",date:"30.4",tasks:[{label:"MAA6 · Harjoitustehtävät",mins:50,c:"oklch(0.78 0.12 45)"}]},
-    {d:"To",date:"1.5",tasks:[]},
-    {d:"Pe",date:"2.5",tasks:[{label:"MAA6 · KOEPÄIVÄ",mins:null,exam:true,c:"oklch(0.78 0.12 45)"}]},
-  ];
-  const c=document.getElementById('dayPlan');
-  days.forEach(day=>{
-    const el=document.createElement('div');
-    el.className='card';
-    el.style.cssText='border-radius:14px;padding:14px 16px';
-    el.innerHTML=`<div style="display:flex;gap:14px;align-items:flex-start">
-      <div style="flex-shrink:0;width:40px;text-align:center">
-        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#605c58">${day.d}</div>
-        <div style="font-family:'Fraunces',serif;font-size:16px;font-weight:500;color:#a09c98;line-height:1.3">${day.date}</div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:5px">
-        ${day.tasks.length===0
-          ?`<span style="font-size:12px;color:#605c58;font-style:italic">Vapaapäivä</span>`
-          :day.tasks.map(t=>`<div style="display:flex;align-items:center;gap:8px">
-            <div style="width:3px;height:3px;border-radius:50%;background:${t.c};flex-shrink:0"></div>
-            <span style="font-size:13px;color:rgba(240,237,232,${t.exam?'0.95':'0.75'});font-weight:${t.exam?'600':'400'};flex:1">${t.label}</span>
-            ${t.exam?`<span style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:oklch(0.22 0.08 20/0.8);border:1px solid oklch(0.45 0.10 20/0.5);border-radius:99px;padding:2px 7px;color:oklch(0.72 0.12 20)">KOE</span>`
-              :`<span style="font-size:10px;color:#605c58;font-weight:500">${t.mins} min</span>`}
-          </div>`).join('')}
-      </div>
-    </div>`;
-    c.appendChild(el);
-  });
-})();
-
-// ── Subject bars ──────────────────────────────────────────────
-(function(){
-  const subjects=[
-    {name:"Matematiikka",done:8,total:11,c:"oklch(0.78 0.12 45)"},
-    {name:"Äidinkieli",done:6,total:8,c:"oklch(0.74 0.11 340)"},
-    {name:"Englanti",done:7,total:8,c:"oklch(0.72 0.10 150)"},
-    {name:"Fysiikka",done:4,total:7,c:"oklch(0.75 0.12 80)"},
-    {name:"Historia",done:3,total:5,c:"oklch(0.72 0.12 240)"},
-  ];
-  const c=document.getElementById('subjectBars');
-  subjects.forEach((s,i)=>{
-    const pct=Math.round(s.done/s.total*100);
-    const el=document.createElement('div');
-    el.className='card';
-    el.style.cssText='border-radius:14px;padding:14px 16px';
-    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:13px;font-weight:500;color:#a09c98">${s.name}</span>
-      <span style="font-size:11px;color:#605c58">${s.done}/${s.total}</span>
-    </div>
-    <div class="prog"><div class="prog-fill" data-w="${pct}" style="width:0%;background:${s.c}"></div></div>`;
-    c.appendChild(el);
-    setTimeout(()=>el.querySelector('.prog-fill').style.width=pct+'%', 200+i*80);
-  });
-})();
-
-// ── Leaderboard ───────────────────────────────────────────────
-(function(){
-  const entries=[
-    {rank:1,label:"Opiskelija #1",pct:92,you:false},
-    {rank:2,label:"Opiskelija #2",pct:85,you:false},
-    {rank:3,label:"Sinä",pct:70,you:true},
-    {rank:4,label:"Opiskelija #4",pct:66,you:false},
-    {rank:5,label:"Opiskelija #5",pct:58,you:false},
-  ];
-  const c=document.getElementById('leaderboard');
-  entries.forEach(e=>{
-    const el=document.createElement('div');
-    el.className='card';
-    el.style.cssText=`border-radius:12px;padding:11px 14px;${e.you?'border-color:oklch(0.45 0.10 45/0.5);background:oklch(0.18 0.06 45/0.25)':''}`;
-    el.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
-      <span style="font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:${e.you?'oklch(0.78 0.12 45)':'#605c58'};width:18px;text-align:center">${e.rank}</span>
-      <span style="font-size:13px;font-weight:${e.you?'600':'400'};color:${e.you?'#f0ede8':'#605c58'};flex:1">${e.label}</span>
-      <span style="font-size:12px;font-weight:600;color:${e.you?'oklch(0.78 0.12 45)':'#605c58'}">${e.pct}%</span>
-    </div>`;
-    c.appendChild(el);
-  });
-})();
+// Listener registered, then announce
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
 </script>
+
+<!-- Tweaks panel -->
+<div id="tweakPanel" style="display:none; position:fixed; bottom:20px; left:20px; z-index:200; width:240px; padding:18px; border-radius:20px; background:rgba(255,255,255,0.92); border:1px solid rgba(0,0,0,0.06); box-shadow:0 20px 50px -10px rgba(0,0,0,0.20); font-family:'Inter',sans-serif; backdrop-filter:blur(20px);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:500;">Tweaks</div>
+    <button onclick="hideTweaks(); window.parent.postMessage({type:'__edit_mode_dismissed'}, '*')" style="border:none; background:rgba(0,0,0,0.05); width:24px; height:24px; border-radius:50%; cursor:pointer;">×</button>
+  </div>
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:#797470; font-weight:600; margin-bottom:8px;">Teema</div>
+  <div style="display:flex; gap:6px;">
+    <button onclick="setTheme('light'); pushTweak({theme:'light'})" style="flex:1; padding:8px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); background:white; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;">Vaalea</button>
+    <button onclick="setTheme('dark'); pushTweak({theme:'dark'})" style="flex:1; padding:8px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); background:#1a1814; color:white; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;">Tumma</button>
+  </div>
+  <div style="font-size:11px; color:#8a847e; margin-top:14px; line-height:1.45;">Vaihda video-tausta ja liquid glass -widgettien sävy.</div>
+</div>
+
 </body>
 </html>
