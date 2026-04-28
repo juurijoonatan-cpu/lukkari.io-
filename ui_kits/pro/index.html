@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lukkari Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+:root {
+  --ink:        #1a1814;
+  --ink-s:      #5a544e;
+  --ink-f:      #8a847e;
+  --accent:     oklch(0.60 0.13 45);
+
+  /* LIGHT theme glass */
+  --glass-bg:   rgba(255,255,255,0.32);
+  --glass-bg-h: rgba(255,255,255,0.42);
+  --glass-bd:   rgba(255,255,255,0.55);
+  --glass-bd-i: rgba(255,255,255,0.85);
+  --glass-shadow: 0 20px 60px -10px rgba(40,30,20,0.25), 0 1px 0 rgba(255,255,255,0.6) inset, 0 -1px 0 rgba(255,255,255,0.15) inset;
+
+  --tint-overlay: rgba(255,245,235,0.12);
+}
+body[data-theme="dark"] {
+  --ink:        #f5f2ec;
+  --ink-s:      #b5afa6;
+  --ink-f:      #807a72;
+  --glass-bg:   rgba(20,18,24,0.28);
+  --glass-bg-h: rgba(30,28,38,0.40);
+  --glass-bd:   rgba(255,255,255,0.12);
+  --glass-bd-i: rgba(255,255,255,0.22);
+  --glass-shadow: 0 24px 70px -10px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.10) inset, 0 -1px 0 rgba(0,0,0,0.4) inset;
+  --tint-overlay: rgba(10,8,16,0.10);
+}
+
+body { background: #0a0810; color: var(--ink); }
+
+/* ── Video background ── */
+.bg-video {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  object-fit: cover; z-index: 0;
+  transition: opacity 0.6s ease;
+}
+.bg-tint {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: var(--tint-overlay);
+}
+/* extra wash to lift glass legibility */
+body[data-theme="light"] .bg-tint::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.10), transparent 60%);
+}
+body[data-theme="dark"] .bg-tint::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 100%, rgba(0,0,0,0.45), transparent 60%);
+}
+
+/* ── Liquid Glass primitive ── */
+.lg {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-bd);
+  border-radius: 28px;
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+}
+.lg::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 30%, transparent 60%, rgba(255,255,255,0.08) 100%);
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+}
+.lg::after {
+  content: ""; position: absolute; inset: 1px; pointer-events: none; border-radius: inherit;
+  border: 1px solid var(--glass-bd-i);
+  opacity: 0.5;
+}
+body[data-theme="dark"] .lg::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 30%, transparent 60%, rgba(255,255,255,0.04) 100%);
+}
+
+/* ── Layout ── */
+#app { position: relative; z-index: 2; height: 100vh; width: 100vw; }
+
+/* Top bar with greeting + small actions */
+.topbar {
+  position: absolute; top: 28px; left: 32px; right: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 5;
+}
+.greet {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.greet .hello {
+  font-family: 'Fraunces', serif;
+  font-size: 30px; font-weight: 500; letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.10);
+}
+.greet .hello em { font-style: italic; font-weight: 400; }
+.greet .sub {
+  font-size: 12px; color: var(--ink-s); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.icon-pill {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass-bg); border: 1px solid var(--glass-bd);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  cursor: pointer; color: var(--ink);
+  transition: background .18s, transform .18s;
+  box-shadow: 0 8px 22px -6px rgba(0,0,0,0.20);
+}
+.icon-pill:hover { background: var(--glass-bg-h); transform: translateY(-1px); }
+.icon-pill svg { width: 18px; height: 18px; }
+
+/* ── Widgets canvas ── */
+.canvas {
+  position: absolute; inset: 110px 32px 40px 32px;
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 22px;
+}
+
+/* ── AI Orb widget (large, spans 2 rows on left) ── */
+.w-ai {
+  grid-column: 1 / 2; grid-row: 1 / 3;
+  display: flex; flex-direction: column;
+  padding: 26px;
+  cursor: pointer;
+}
+.w-ai .label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-s); font-weight: 600;
+}
+.w-ai .title {
+  font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500;
+  margin-top: 4px; letter-spacing: -0.015em;
+}
+.orb-stage {
+  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+  margin: 14px 0 18px;
+}
+.orb {
+  width: 78%; aspect-ratio: 1 / 0.92; position: relative;
+  filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35));
+  animation: orbBreath 5s ease-in-out infinite;
+}
+@keyframes orbBreath {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+/* Layered ellipses to mimic the reference image */
+.orb-layer {
+  position: absolute; inset: 0; border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(0.5px);
+}
+.orb-l1 {
+  background: radial-gradient(circle at 50% 50%, transparent 32%, oklch(0.62 0.18 280 / 0.85) 48%, oklch(0.55 0.20 290 / 0.6) 60%, transparent 75%);
+  transform: scale(1, 0.95);
+}
+.orb-l2 {
+  background: radial-gradient(circle at 50% 50%, transparent 38%, oklch(0.70 0.16 320 / 0.7) 52%, oklch(0.65 0.20 350 / 0.5) 65%, transparent 78%);
+  transform: rotate(-8deg) scale(1.08, 0.94);
+}
+.orb-l3 {
+  background: radial-gradient(circle at 50% 50%, transparent 42%, oklch(0.72 0.17 30 / 0.55) 56%, oklch(0.65 0.22 15 / 0.35) 68%, transparent 80%);
+  transform: rotate(12deg) scale(1.05, 0.96);
+}
+.orb-l4 {
+  background: radial-gradient(circle at 50% 50%, transparent 30%, oklch(0.75 0.14 260 / 0.5) 45%, transparent 65%);
+  transform: rotate(-22deg) scale(0.92, 1.05);
+}
+.orb-core {
+  position: absolute; left: 50%; top: 50%;
+  width: 30%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 40% 35%, rgba(20,15,45,0.95), rgba(8,5,20,1));
+  box-shadow: inset 0 -8px 20px rgba(120,80,200,0.4), inset 0 8px 18px rgba(255,200,220,0.15);
+}
+body[data-theme="light"] .orb { filter: drop-shadow(0 24px 50px rgba(120,80,180,0.30)) drop-shadow(0 4px 12px rgba(255,160,160,0.25)); }
+
+.w-ai .ai-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid var(--glass-bd-i);
+}
+body[data-theme="dark"] .w-ai .ai-foot { background: rgba(255,255,255,0.06); }
+.ai-foot .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: oklch(0.70 0.18 145); box-shadow: 0 0 10px oklch(0.72 0.20 145 / 0.7);
+}
+.ai-foot .txt { font-size: 12px; color: var(--ink-s); flex: 1; }
+.ai-foot .txt strong { color: var(--ink); font-weight: 600; }
+
+/* ── Today's schedule (large center) ── */
+.w-today {
+  grid-column: 2 / 3; grid-row: 1 / 3;
+  padding: 26px 26px 22px;
+  display: flex; flex-direction: column;
+}
+.w-today .head { display: flex; justify-content: space-between; align-items: flex-start; }
+.w-today .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-today .date {
+  font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.w-today .date em { font-style: italic; font-weight: 400; color: var(--accent); }
+.w-today .day-pill {
+  font-size: 11px; padding: 5px 12px; border-radius: 99px;
+  background: rgba(255,255,255,0.30); border: 1px solid var(--glass-bd-i);
+  font-weight: 600; color: var(--ink); letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body[data-theme="dark"] .w-today .day-pill { background: rgba(255,255,255,0.08); }
+
+.timeline { flex: 1; margin-top: 22px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 4px; }
+.timeline::-webkit-scrollbar { width: 4px; }
+.timeline::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
+
+.lesson {
+  display: grid; grid-template-columns: 56px 1fr auto;
+  align-items: center; gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.45);
+  position: relative;
+  transition: background .18s;
+}
+body[data-theme="dark"] .lesson { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
+.lesson:hover { background: rgba(255,255,255,0.36); }
+body[data-theme="dark"] .lesson:hover { background: rgba(255,255,255,0.09); }
+.lesson .time {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 18px; line-height: 1; color: var(--ink);
+}
+.lesson .time small { display: block; font-size: 10px; font-style: normal; color: var(--ink-f); margin-top: 3px; letter-spacing: 0.05em; font-family: 'Inter', sans-serif; }
+.lesson .body .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+.lesson .body .meta { font-size: 11px; color: var(--ink-s); margin-top: 2px; }
+.lesson .swatch { width: 10px; height: 28px; border-radius: 5px; }
+.lesson.now {
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 28px -6px rgba(0,0,0,0.18);
+}
+body[data-theme="dark"] .lesson.now { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.28); }
+.lesson .live {
+  position: absolute; top: 10px; right: 14px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+  color: var(--accent); text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.lesson .live::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 0 var(--accent);
+  animation: pulse 1.6s ease-out infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 oklch(0.62 0.13 45 / 0.6); }
+  100% { box-shadow: 0 0 0 10px oklch(0.62 0.13 45 / 0); }
+}
+
+/* swatches per period */
+.sw-p1 { background: oklch(0.65 0.16 45); }
+.sw-p2 { background: oklch(0.60 0.13 150); }
+.sw-p3 { background: oklch(0.66 0.15 80); }
+.sw-p4 { background: oklch(0.58 0.13 240); }
+.sw-p5 { background: oklch(0.65 0.14 340); }
+
+/* ── Progress widget (top right) ── */
+.w-progress {
+  grid-column: 3 / 4; grid-row: 1 / 2;
+  padding: 22px 24px;
+  display: flex; flex-direction: column;
+}
+.w-progress .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-progress .title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; margin-top: 2px; letter-spacing: -0.01em; }
+.ring-row { display: flex; align-items: center; gap: 18px; margin-top: 16px; flex: 1; }
+.ring {
+  --pct: 72;
+  --c: oklch(0.62 0.13 45);
+  width: 86px; height: 86px; flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(var(--c) calc(var(--pct) * 1%), rgba(255,255,255,0.18) 0);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+body[data-theme="dark"] .ring { background: conic-gradient(var(--c) calc(var(--pct) * 1%), rgba(255,255,255,0.08) 0); }
+.ring::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  background: var(--glass-bg); backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-bd);
+}
+.ring .num {
+  position: relative; z-index: 1;
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 24px; font-weight: 500; color: var(--ink);
+}
+.ring .num small { font-size: 12px; font-style: normal; color: var(--ink-s); font-family: 'Inter', sans-serif; font-weight: 500; }
+.ring-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.ring-info .ri-line { display: flex; justify-content: space-between; font-size: 11px; }
+.ring-info .ri-line span:first-child { color: var(--ink-s); }
+.ring-info .ri-line span:last-child { color: var(--ink); font-weight: 600; font-feature-settings: "tnum"; }
+
+/* ── Ask AI bottom widget ── */
+.w-ask {
+  grid-column: 3 / 4; grid-row: 2 / 3;
+  padding: 22px 24px;
+  display: flex; flex-direction: column;
+}
+.w-ask .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-s); font-weight: 600; }
+.w-ask .title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; margin-top: 2px; letter-spacing: -0.01em; line-height: 1.15; }
+.w-ask .title em { font-style: italic; color: var(--accent); }
+.suggest { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; flex: 1; }
+.sugg-chip {
+  font-size: 12px; color: var(--ink); padding: 8px 12px;
+  border-radius: 12px; background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.45);
+  cursor: pointer; transition: background .18s; text-align: left;
+  font-family: inherit;
+}
+body[data-theme="dark"] .sugg-chip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); color: var(--ink); }
+.sugg-chip:hover { background: rgba(255,255,255,0.40); }
+body[data-theme="dark"] .sugg-chip:hover { background: rgba(255,255,255,0.10); }
+.ask-input {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(255,255,255,0.55);
+  margin-top: 12px;
+}
+body[data-theme="dark"] .ask-input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); }
+.ask-input input {
+  flex: 1; border: none; background: transparent;
+  font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink); outline: none;
+}
+.ask-input input::placeholder { color: var(--ink-f); }
+.ask-input .send {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink); color: var(--glass-bg);
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer;
+}
+body[data-theme="dark"] .ask-input .send { background: var(--ink); color: #1a1814; }
+.ask-input .send svg { width: 12px; height: 12px; }
+
+/* ── Side panel ── */
+.side-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 420px; z-index: 50;
+  transform: translateX(110%);
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  padding: 20px 20px 20px 0;
+}
+.side-panel.open { transform: translateX(0); }
+.side-inner {
+  height: 100%;
+  border-radius: 30px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-bd);
+  backdrop-filter: blur(40px) saturate(1.7);
+  -webkit-backdrop-filter: blur(40px) saturate(1.7);
+  box-shadow: -30px 0 80px -20px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.5) inset;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.side-inner::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.30) 0%, transparent 30%);
+  mix-blend-mode: overlay;
+}
+body[data-theme="dark"] .side-inner::before { background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 30%); }
+
+.side-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 24px 6px; position: relative; z-index: 1;
+}
+.side-head .ttl { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; letter-spacing: -0.015em; }
+.side-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.30); border: 1px solid rgba(255,255,255,0.55);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+}
+body[data-theme="dark"] .side-close { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.side-close svg { width: 14px; height: 14px; }
+
+.side-tabs {
+  display: flex; gap: 4px; padding: 12px 18px 16px;
+  position: relative; z-index: 1;
+}
+.tab {
+  flex: 1; padding: 9px 8px; border-radius: 12px;
+  background: transparent; border: 1px solid transparent;
+  font-family: 'Inter'; font-size: 12px; font-weight: 600; cursor: pointer;
+  color: var(--ink-s); display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all .18s;
+}
+.tab svg { width: 13px; height: 13px; }
+.tab.active {
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.7);
+  color: var(--ink);
+  box-shadow: 0 4px 14px -4px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] .tab.active { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.16); }
+
+.side-body {
+  flex: 1; overflow-y: auto; padding: 4px 22px 24px; position: relative; z-index: 1;
+}
+.side-body::-webkit-scrollbar { width: 4px; }
+.side-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
+
+/* === Calendar tab === */
+.cal-month {
+  font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.cal-month em { font-style: italic; color: var(--accent); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-grid .dn {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.10em;
+  color: var(--ink-f); text-align: center; font-weight: 600; padding: 6px 0;
+}
+.cal-grid .dt {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; border-radius: 10px; font-weight: 500;
+  position: relative; cursor: pointer; color: var(--ink);
+}
+.cal-grid .dt:hover { background: rgba(255,255,255,0.30); }
+body[data-theme="dark"] .cal-grid .dt:hover { background: rgba(255,255,255,0.07); }
+.cal-grid .dt.muted { color: var(--ink-f); }
+.cal-grid .dt.today {
+  background: var(--ink); color: var(--glass-bd);
+}
+body[data-theme="dark"] .cal-grid .dt.today { background: #f5f2ec; color: #1a1814; }
+.cal-grid .dt.exam::after {
+  content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+}
+.cal-grid .dt.task::after {
+  content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: oklch(0.65 0.14 240);
+}
+
+.integ {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.25);
+}
+body[data-theme="dark"] .integ { border-top-color: rgba(255,255,255,0.10); }
+.integ-ttl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin-bottom: 10px; }
+.integ-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.40);
+  margin-bottom: 8px; cursor: pointer; transition: background .18s;
+}
+body[data-theme="dark"] .integ-row { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.integ-row:hover { background: rgba(255,255,255,0.32); }
+body[data-theme="dark"] .integ-row:hover { background: rgba(255,255,255,0.08); }
+.integ-row .ico {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600;
+  background: linear-gradient(135deg, oklch(0.7 0.18 250), oklch(0.6 0.18 280));
+  color: white;
+}
+.integ-row .ico.gcal { background: linear-gradient(135deg, #4285F4, #1a73e8); }
+.integ-row .ico.icloud { background: linear-gradient(135deg, #5e5ce6, #007aff); }
+.integ-row .meta { flex: 1; }
+.integ-row .meta .name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.integ-row .meta .desc { font-size: 11px; color: var(--ink-s); margin-top: 1px; }
+.integ-row .status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 99px; letter-spacing: 0.06em; text-transform: uppercase; }
+.integ-row .status.on { background: oklch(0.72 0.16 145 / 0.30); color: oklch(0.40 0.13 150); }
+body[data-theme="dark"] .integ-row .status.on { background: oklch(0.72 0.16 145 / 0.20); color: oklch(0.78 0.14 150); }
+.integ-row .status.off { background: rgba(255,255,255,0.30); color: var(--ink-s); }
+body[data-theme="dark"] .integ-row .status.off { background: rgba(255,255,255,0.05); }
+
+/* === Mentor tab === */
+.mentor-hello {
+  padding: 16px 18px; border-radius: 18px;
+  background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.45);
+  margin-bottom: 14px;
+}
+body[data-theme="dark"] .mentor-hello { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.mentor-hello .role { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 700; }
+.mentor-hello .msg { font-family: 'Fraunces', serif; font-size: 16px; line-height: 1.4; margin-top: 4px; color: var(--ink); }
+.mentor-hello .msg em { font-style: italic; color: var(--accent); }
+
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.bub {
+  max-width: 92%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.45;
+}
+.bub.me {
+  align-self: flex-end;
+  background: var(--ink); color: #f5f2ec;
+  border-bottom-right-radius: 6px;
+}
+body[data-theme="dark"] .bub.me { background: #f5f2ec; color: #1a1814; }
+.bub.ai {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.30); border: 1px solid rgba(255,255,255,0.50); color: var(--ink);
+  border-bottom-left-radius: 6px;
+}
+body[data-theme="dark"] .bub.ai { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+.bub small { display: block; font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 0.04em; }
+
+.mentor-input {
+  position: sticky; bottom: 0;
+  margin: 14px -2px 0;
+  padding: 10px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.40);
+  border: 1px solid rgba(255,255,255,0.65);
+  display: flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(20px);
+}
+body[data-theme="dark"] .mentor-input { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); }
+.mentor-input input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: 'Inter'; font-size: 13px; color: var(--ink);
+}
+.mentor-input input::placeholder { color: var(--ink-f); }
+.mentor-input button.send {
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+}
+.mentor-input button.send svg { width: 13px; height: 13px; }
+
+/* === Plan tab === */
+.plan-add {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.45);
+  margin-bottom: 14px;
+}
+body[data-theme="dark"] .plan-add { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.plan-add .label-h { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin-bottom: 8px; }
+.plan-add .row { display: flex; gap: 6px; margin-bottom: 8px; }
+.plan-add input, .plan-add select {
+  flex: 1; padding: 8px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.40); border: 1px solid rgba(255,255,255,0.55);
+  font-family: 'Inter'; font-size: 12px; color: var(--ink); outline: none;
+}
+body[data-theme="dark"] .plan-add input, body[data-theme="dark"] .plan-add select { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: var(--ink); }
+.plan-add .submit {
+  width: 100%; padding: 10px; border-radius: 12px; border: none;
+  background: var(--accent); color: white; font-family: 'Inter';
+  font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.plan-ttl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-s); font-weight: 600; margin: 4px 0 10px; }
+.plan-item {
+  display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.20); border: 1px solid rgba(255,255,255,0.40);
+  margin-bottom: 8px;
+}
+body[data-theme="dark"] .plan-item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); }
+.plan-item .when {
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
+  font-size: 16px; line-height: 1; text-align: center;
+}
+.plan-item .when small { display: block; font-size: 9px; font-style: normal; color: var(--ink-f); margin-top: 3px; font-family: 'Inter'; letter-spacing: 0.06em; text-transform: uppercase; }
+.plan-item .ttl-line { font-size: 13px; font-weight: 600; color: var(--ink); }
+.plan-item .desc { font-size: 11px; color: var(--ink-s); margin-top: 2px; }
+.plan-item .badge {
+  font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.plan-item .badge.exam { background: oklch(0.65 0.16 25 / 0.25); color: oklch(0.45 0.18 25); }
+body[data-theme="dark"] .plan-item .badge.exam { background: oklch(0.65 0.16 25 / 0.20); color: oklch(0.78 0.14 25); }
+.plan-item .badge.hw { background: oklch(0.65 0.13 240 / 0.25); color: oklch(0.40 0.13 240); }
+body[data-theme="dark"] .plan-item .badge.hw { background: oklch(0.65 0.13 240 / 0.20); color: oklch(0.78 0.12 240); }
+
+/* Backdrop */
+.scrim {
+  position: fixed; inset: 0; z-index: 49;
+  background: rgba(0,0,0,0.06);
+  backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity .35s;
+}
+.scrim.show { opacity: 1; pointer-events: auto; }
+body[data-theme="dark"] .scrim { background: rgba(0,0,0,0.20); }
+
+/* Tweaks panel positioning won't collide */
+
+/* Dock at bottom — only shown if no panel open, just the menu trigger */
+@media (max-width: 1100px) {
+  .canvas { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; }
+  .w-ai { grid-column: 1 / 3; grid-row: 1 / 2; min-height: 320px; }
+  .w-today { grid-column: 1 / 2; grid-row: 2 / 3; min-height: 380px; }
+  .w-progress { grid-column: 2 / 3; grid-row: 2 / 3; }
+  .w-ask { grid-column: 1 / 3; grid-row: 3 / 4; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Background videos: light + dark, swap by data-theme -->
+<video class="bg-video" id="vidLight" autoplay loop muted playsinline>
+  <source src="bg-light.mp4" type="video/mp4">
+</video>
+<video class="bg-video" id="vidDark" autoplay loop muted playsinline style="opacity:0">
+  <source src="bg-dark.mp4" type="video/mp4">
+</video>
+<div class="bg-tint"></div>
+
+<div id="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="greet">
+      <div class="hello">Hyvää <em>iltapäivää</em>, Joonatan.</div>
+      <div class="sub">tiistai · viikko 18 · jakso 5</div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-pill" id="themeBtn" title="Vaihda teema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="icon-pill" id="menuBtn" title="Avaa paneeli">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Widgets canvas -->
+  <div class="canvas">
+
+    <!-- AI Orb (large) -->
+    <div class="lg w-ai" id="aiOrbCard">
+      <div class="label">Mentor · AI</div>
+      <div class="title">Tänään keskittyisin <em>matikkaan</em>.</div>
+      <div class="orb-stage">
+        <div class="orb">
+          <div class="orb-layer orb-l1"></div>
+          <div class="orb-layer orb-l2"></div>
+          <div class="orb-layer orb-l3"></div>
+          <div class="orb-layer orb-l4"></div>
+          <div class="orb-core"></div>
+        </div>
+      </div>
+      <div class="ai-foot">
+        <div class="dot"></div>
+        <div class="txt"><strong>2 t 30 min</strong> ehdotettua opiskelua jäljellä tänään</div>
+      </div>
+    </div>
+
+    <!-- Today's schedule -->
+    <div class="lg w-today">
+      <div class="head">
+        <div>
+          <div class="label">Tänään</div>
+          <div class="date">28. <em>huhtikuuta</em></div>
+        </div>
+        <div class="day-pill">5 tuntia · 4 tehtävää</div>
+      </div>
+      <div class="timeline" id="timeline">
+        <div class="lesson">
+          <div class="time">08:15<small>– 09:30</small></div>
+          <div class="body">
+            <div class="name">MAA09 — Trigonometria</div>
+            <div class="meta">Sali 214 · Mäkinen</div>
+          </div>
+          <div class="swatch sw-p3"></div>
+        </div>
+        <div class="lesson now">
+          <div class="time">09:45<small>– 11:00</small></div>
+          <div class="body">
+            <div class="name">ENA08 — Reading skills</div>
+            <div class="meta">Sali 108 · Lindberg</div>
+          </div>
+          <div class="swatch sw-p4"></div>
+          <div class="live">Käynnissä</div>
+        </div>
+        <div class="lesson">
+          <div class="time">11:45<small>– 13:00</small></div>
+          <div class="body">
+            <div class="name">FY07 — Sähkömagnetismi</div>
+            <div class="meta">Sali F2 · Aalto</div>
+          </div>
+          <div class="swatch sw-p1"></div>
+        </div>
+        <div class="lesson">
+          <div class="time">13:15<small>– 14:30</small></div>
+          <div class="body">
+            <div class="name">HI04 — Suomen historia</div>
+            <div class="meta">Sali 305 · Virtanen</div>
+          </div>
+          <div class="swatch sw-p5"></div>
+        </div>
+        <div class="lesson">
+          <div class="time">15:00<small>opisk.</small></div>
+          <div class="body">
+            <div class="name">MAA09 koe pe — luku 5–6</div>
+            <div class="meta">Mentor varasi 90 min · kotona</div>
+          </div>
+          <div class="swatch sw-p3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="lg w-progress">
+      <div class="label">Kurssin eteneminen</div>
+      <div class="title">MAA09</div>
+      <div class="ring-row">
+        <div class="ring" style="--pct:72">
+          <div class="num">72<small>%</small></div>
+        </div>
+        <div class="ring-info">
+          <div class="ri-line"><span>Tehtäviä tehty</span><span>34 / 47</span></div>
+          <div class="ri-line"><span>Koe</span><span>pe 2.5.</span></div>
+          <div class="ri-line"><span>Tavoite</span><span>9</span></div>
+          <div class="ri-line"><span>Mentor-arvio</span><span style="color:var(--accent)">8½</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ask AI -->
+    <div class="lg w-ask">
+      <div class="label">Kysy mentorilta</div>
+      <div class="title">Mitä teen ennen <em>perjantain koetta?</em></div>
+      <div class="suggest">
+        <button class="sugg-chip">Tee mulle lukusuunnitelma viikoks</button>
+        <button class="sugg-chip">Selitä derivaatan ketjusääntö</button>
+      </div>
+      <div class="ask-input">
+        <input placeholder="Kysy mitä tahansa…" id="askInput">
+        <button class="send" id="askSend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /canvas -->
+
+  <!-- Backdrop scrim -->
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Side panel -->
+  <aside class="side-panel" id="side">
+    <div class="side-inner">
+      <div class="side-head">
+        <div class="ttl">Mentor</div>
+        <button class="side-close" id="closeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="side-tabs">
+        <button class="tab active" data-tab="mentor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+          Mentor
+        </button>
+        <button class="tab" data-tab="cal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalenteri
+        </button>
+        <button class="tab" data-tab="plan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Suunnitelma
+        </button>
+      </div>
+
+      <div class="side-body">
+
+        <!-- MENTOR TAB -->
+        <div data-pane="mentor">
+          <div class="mentor-hello">
+            <div class="role">Mentor</div>
+            <div class="msg">Hei Joonatan. Sulla on <em>MAA09 koe perjantaina</em>. Tehdään yhdessä lukusuunnitelma.</div>
+          </div>
+          <div class="chat" id="chat">
+            <div class="bub me">Opettaja antoi MAA09 läksyt: kpl 5.4 tehtävät 1–18.</div>
+            <div class="bub ai">
+              Selvä. Varaan ne huomiselle (ke) klo 16:30, n. 60 min — koska torstaina sulla on jo ENA-essee. Lisäsin Suunnitelmaan.
+              <small>2 minuuttia sitten</small>
+            </div>
+            <div class="bub me">Entäs koe perjantaina?</div>
+            <div class="bub ai">
+              Ehdotan: ke iltana läksyt, to klo 17–19 kokoava kertaus (luku 5–6), pe aamulla 30 min nopea koevihjelista. Painotetaan trigonometriaa — siellä menee nyt 3/5.
+              <small>juuri nyt</small>
+            </div>
+          </div>
+          <div class="mentor-input">
+            <input id="mentorInput" placeholder="Kysy tai kerro tehtävistä…">
+            <button class="send" title="Lähetä">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- CAL TAB -->
+        <div data-pane="cal" hidden>
+          <div class="cal-month">
+            <span>Huhtikuu <em>2026</em></span>
+            <span style="font-size:11px; font-family:'Inter'; font-weight:500; color:var(--ink-s); letter-spacing:0.04em;">vk 18</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+
+          <div class="integ">
+            <div class="integ-ttl">Yhdistetyt kalenterit</div>
+            <div class="integ-row">
+              <div class="ico gcal">G</div>
+              <div class="meta">
+                <div class="name">Google Kalenteri</div>
+                <div class="desc">joonatan@gmail.com</div>
+              </div>
+              <div class="status on">Yhdistetty</div>
+            </div>
+            <div class="integ-row">
+              <div class="ico icloud">i</div>
+              <div class="meta">
+                <div class="name">iCloud · iPhone</div>
+                <div class="desc">Synkronoidaan automaattisesti</div>
+              </div>
+              <div class="status on">Yhdistetty</div>
+            </div>
+            <div class="integ-row">
+              <div class="ico" style="background:linear-gradient(135deg,#0078d4,#106ebe)">M</div>
+              <div class="meta">
+                <div class="name">Microsoft Outlook</div>
+                <div class="desc">Ei yhdistetty</div>
+              </div>
+              <div class="status off">Yhdistä</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAN TAB -->
+        <div data-pane="plan" hidden>
+          <div class="plan-add">
+            <div class="label-h">Kerro mentorille</div>
+            <div class="row">
+              <select>
+                <option>MAA09 — Pitkä matematiikka</option>
+                <option>ENA08 — Englanti</option>
+                <option>FY07 — Fysiikka</option>
+                <option>HI04 — Historia</option>
+              </select>
+            </div>
+            <div class="row">
+              <select>
+                <option>Läksyt — kpl…</option>
+                <option>Koe</option>
+                <option>Essee</option>
+                <option>Muu tehtävä</option>
+              </select>
+              <input placeholder="esim. 5.4 / 1–18" style="flex:0.7">
+            </div>
+            <div class="row">
+              <input placeholder="Deadline: pe 2.5." type="text">
+            </div>
+            <button class="submit">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+              Anna mentorin suunnitella
+            </button>
+          </div>
+
+          <div class="plan-ttl">Tämän viikon suunnitelma</div>
+
+          <div class="plan-item">
+            <div class="when">ke<small>16:30</small></div>
+            <div>
+              <div class="ttl-line">MAA09 läksyt — 5.4 / 1–18</div>
+              <div class="desc">Mentor varasi 60 min ennen torstain ENA-esseetä</div>
+            </div>
+            <div class="badge hw">Läksy</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">to<small>17:00</small></div>
+            <div>
+              <div class="ttl-line">MAA09 kertaus — luku 5–6</div>
+              <div class="desc">Trigonometria painotuksessa · 90 min</div>
+            </div>
+            <div class="badge exam">Koe</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">pe<small>07:30</small></div>
+            <div>
+              <div class="ttl-line">MAA09 koevihjelista</div>
+              <div class="desc">Nopea 30 min kertaus ennen koetta</div>
+            </div>
+            <div class="badge exam">Koe</div>
+          </div>
+
+          <div class="plan-item">
+            <div class="when">la<small>10:00</small></div>
+            <div>
+              <div class="ttl-line">YO kesäsuunnittelu — kemia</div>
+              <div class="desc">Mentor laati 6 vk ohjelman · 1. sessio</div>
+            </div>
+            <div class="badge hw">Pitkä</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ── Theme toggle ─────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light"
+}/*EDITMODE-END*/;
+
+const body = document.body;
+const vidLight = document.getElementById('vidLight');
+const vidDark = document.getElementById('vidDark');
+
+function setTheme(t) {
+  body.setAttribute('data-theme', t);
+  if (t === 'dark') {
+    vidLight.style.opacity = 0;
+    vidDark.style.opacity = 1;
+  } else {
+    vidLight.style.opacity = 1;
+    vidDark.style.opacity = 0;
+  }
+}
+setTheme(TWEAK_DEFAULTS.theme);
+
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const cur = body.getAttribute('data-theme');
+  setTheme(cur === 'light' ? 'dark' : 'light');
+});
+
+// ── Side panel ────────────────────────────────────────────────
+const side = document.getElementById('side');
+const scrim = document.getElementById('scrim');
+const menuBtn = document.getElementById('menuBtn');
+const closeBtn = document.getElementById('closeBtn');
+
+function openSide() { side.classList.add('open'); scrim.classList.add('show'); }
+function closeSide() { side.classList.remove('open'); scrim.classList.remove('show'); }
+menuBtn.addEventListener('click', openSide);
+closeBtn.addEventListener('click', closeSide);
+scrim.addEventListener('click', closeSide);
+
+// AI orb card opens mentor tab
+document.getElementById('aiOrbCard').addEventListener('click', () => {
+  switchTab('mentor');
+  openSide();
+});
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== name);
+}
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+
+// ── Calendar grid ─────────────────────────────────────────────
+function buildCal() {
+  const grid = document.getElementById('calGrid');
+  const days = ['ma','ti','ke','to','pe','la','su'];
+  days.forEach(d => {
+    const el = document.createElement('div'); el.className = 'dn'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  // April 2026: Apr 1 is a Wednesday → ma=offset 2 (we render mon-first)
+  // We'll just hardcode a 5-row grid showing Apr w/ sample marks.
+  // Layout: leading muted Mar 30, 31; Apr 1..30; trailing muted May 1..3
+  const cells = [];
+  // mar 30, 31
+  cells.push({d: 30, muted: true});
+  cells.push({d: 31, muted: true});
+  for (let i = 1; i <= 30; i++) cells.push({d: i});
+  // may 1..3
+  cells.push({d: 1, muted: true});
+  cells.push({d: 2, muted: true});
+  cells.push({d: 3, muted: true});
+
+  // Marks (Apr only)
+  const exams = new Set([2]); // showing May 2 (Friday) in trailing? no — exam is in May, but for visual put on Apr 28 today's pill
+  const tasks = new Set([29, 30]); // ke/to läksyt
+  const today = 28;
+
+  cells.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'dt' + (c.muted ? ' muted' : '');
+    if (!c.muted && c.d === today) el.classList.add('today');
+    if (!c.muted && tasks.has(c.d)) el.classList.add('task');
+    el.textContent = c.d;
+    grid.appendChild(el);
+  });
+  // mark trailing May 1 (which is Friday) as exam
+  const trailingMay1 = grid.querySelectorAll('.dt.muted');
+  if (trailingMay1.length >= 3) {
+    // 4th-to-last is mar30, 3rd mar31, then last 3 are may1,2,3
+    const may2 = grid.children[grid.children.length - 2];
+    may2.classList.add('exam');
+  }
+}
+buildCal();
+
+// ── Ask AI submit ─────────────────────────────────────────────
+document.getElementById('askSend').addEventListener('click', () => {
+  switchTab('mentor');
+  openSide();
+});
+document.getElementById('askInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { switchTab('mentor'); openSide(); }
+});
+
+// ── Tweaks integration ────────────────────────────────────────
+let tweakState = { ...TWEAK_DEFAULTS };
+
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+  if (e.data.type === '__activate_edit_mode') showTweaks();
+  if (e.data.type === '__deactivate_edit_mode') hideTweaks();
+});
+
+function showTweaks() {
+  document.getElementById('tweakPanel').style.display = 'block';
+}
+function hideTweaks() {
+  document.getElementById('tweakPanel').style.display = 'none';
+}
+function pushTweak(patch) {
+  tweakState = { ...tweakState, ...patch };
+  window.parent.postMessage({type: '__edit_mode_set_keys', edits: patch}, '*');
+}
+
+// Listener registered, then announce
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
+</script>
+
+<!-- Tweaks panel -->
+<div id="tweakPanel" style="display:none; position:fixed; bottom:20px; left:20px; z-index:200; width:240px; padding:18px; border-radius:20px; background:rgba(255,255,255,0.92); border:1px solid rgba(0,0,0,0.06); box-shadow:0 20px 50px -10px rgba(0,0,0,0.20); font-family:'Inter',sans-serif; backdrop-filter:blur(20px);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:500;">Tweaks</div>
+    <button onclick="hideTweaks(); window.parent.postMessage({type:'__edit_mode_dismissed'}, '*')" style="border:none; background:rgba(0,0,0,0.05); width:24px; height:24px; border-radius:50%; cursor:pointer;">×</button>
+  </div>
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:#797470; font-weight:600; margin-bottom:8px;">Teema</div>
+  <div style="display:flex; gap:6px;">
+    <button onclick="setTheme('light'); pushTweak({theme:'light'})" style="flex:1; padding:8px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); background:white; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;">Vaalea</button>
+    <button onclick="setTheme('dark'); pushTweak({theme:'dark'})" style="flex:1; padding:8px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); background:#1a1814; color:white; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;">Tumma</button>
+  </div>
+  <div style="font-size:11px; color:#8a847e; margin-top:14px; line-height:1.45;">Vaihda video-tausta ja liquid glass -widgettien sävy.</div>
+</div>
+
+</body>
+</html>
