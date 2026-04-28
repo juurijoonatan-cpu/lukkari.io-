@@ -1,63 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Ico } from './icons';
+import { ProInfoHero } from './pro/info/ProInfoHero';
+import './pro/info/proInfo.css';
 
 const FEATURES = [
-  { icon: Ico.sparkle, label: "Kurssisuosittelija",     title: "Kurssisuosittelija",        desc: "AI suosittelee kurssit juuri sinulle — ylioppilaskirjoitukset ja hakukohteet huomioiden.", badge: "Tärkein" },
-  { icon: Ico.book,    label: "Lukusuunnitelma",         title: "Lukusuunnitelma",            desc: "AI rakentaa selkeän suunnitelman: mitä opiskella ensin ja kuinka paljon aikaa kuhunkin." },
-  { icon: Ico.timer,   label: "Lukuaikataulu kokeisiin", title: "Lukuaikataulu kokeisiin",    desc: "Syötä koepäivä, saat optimaalisen kertausaikataulun — tasainen tahti, ei viime hetken pänttäystä." },
-  { icon: Ico.conflict, label: "Konfliktianalyysi",      title: "Konfliktianalyysi",          desc: "Tunnistaa automaattisesti aikatauluristiriidat ennen kuin ne aiheuttavat ongelmia." },
-  { icon: Ico.calendar, label: "Kalenteri-export",       title: "Kalenteri-synkronointi",     desc: "Vie lukujärjestyksesi suoraan Google- tai Apple-kalenteriin ICS-tiedostona." },
-  { icon: Ico.download, label: "PDF-export",             title: "PDF-export",                 desc: "Tallenna tai tulosta lukujärjestyksesi näyttävänä PDF:nä." },
-  { icon: Ico.shield,   label: "Pilvivarmuuskopio",      title: "Pilvivarmuuskopio",          desc: "Kurssivalintasi tallessa pilvipalvelussa — vaihda laitetta huoletta." },
+  { icon: Ico.sparkle, label: "Kurssisuosittelija",     title: "Kurssisuosittelija",        desc: "Tekoäly ehdottaa juuri sinulle sopivat kurssit. Ehdotukset huomioivat ylioppilaskirjoitukset, hakukohteet ja oman painotuksesi.", badge: "Tärkein" },
+  { icon: Ico.book,    label: "Lukusuunnitelma",         title: "Lukusuunnitelma",            desc: "Selkeä viikkosuunnitelma kursseittain. Tekoäly kertoo mitä opiskella ensin ja kuinka kauan." },
+  { icon: Ico.timer,   label: "Lukuaikataulu kokeisiin", title: "Lukuaikataulu kokeisiin",    desc: "Syötä koepäivä, saat kertausaikataulun. Tasainen tahti, ei viime hetken pänttäämistä." },
+  { icon: Ico.conflict, label: "Konfliktianalyysi",      title: "Konfliktianalyysi",          desc: "Tunnistaa aikatauluristiriidat automaattisesti, ennen kuin niistä ehtii tulla ongelma." },
+  { icon: Ico.calendar, label: "Kalenteri-export",       title: "Kalenteri-synkronointi",     desc: "Vie lukujärjestys suoraan Google tai Apple kalenteriin yhdellä klikkauksella." },
+  { icon: Ico.download, label: "PDF-export",             title: "PDF-export",                 desc: "Tallenna tai tulosta lukujärjestys siistinä PDF-tiedostona." },
+  { icon: Ico.shield,   label: "Pilvivarmuuskopio",      title: "Pilvivarmuuskopio",          desc: "Kurssivalintasi tallessa pilvessä. Vaihda laitetta huoletta, valinnat seuraavat mukana." },
 ];
 
 const CHROME = "linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%)";
-
-const HERO_SPARKS = [
-  { size: 22, x: -48, y: -18, rot: 12,  delay: 0.0,  opacity: 0.85 },
-  { size: 13, x:  16, y: -28, rot: -30, delay: 0.15, opacity: 0.65 },
-  { size: 17, x:  52, y:  -8, rot: 55,  delay: 0.08, opacity: 0.75 },
-  { size: 9,  x: -20, y:  18, rot: 20,  delay: 0.22, opacity: 0.50 },
-  { size: 11, x:  30, y:  14, rot: -15, delay: 0.18, opacity: 0.60 },
-];
-
-function ChromeStar({ size, opacity, rot, delay, id }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24"
-      style={{
-        opacity,
-        transform: `rotate(${rot}deg)`,
-        animation: `spark-in 0.55s cubic-bezier(.4,0,.2,1) forwards ${delay}s, spark-spin 14s linear infinite ${delay}s`,
-        display: "block",
-      }}>
-      <defs>
-        <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#d4d4de"/>
-          <stop offset="42%"  stopColor="#ffffff"/>
-          <stop offset="100%" stopColor="#9898a8"/>
-        </linearGradient>
-      </defs>
-      <path fill={`url(#${id})`}
-        d="M12,2 L13.4,10.6 L22,12 L13.4,13.4 L12,22 L10.6,13.4 L2,12 L10.6,10.6 Z"/>
-    </svg>
-  );
-}
-
-function HeroSparks() {
-  return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible" }}>
-      {HERO_SPARKS.map((s, i) => (
-        <div key={i} style={{
-          position: "absolute",
-          left: `calc(50% + ${s.x}px)`,
-          top: `calc(50% + ${s.y}px)`,
-        }}>
-          <ChromeStar {...s} id={`hs${i}`}/>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function FeatureCard({ feature, index }) {
   const [hovered, setHovered] = useState(false);
@@ -244,45 +200,9 @@ export function ProComingSoon() {
   }, []);
 
   return (
-    <div className="pro-pad" style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 80px", position: "relative" }}>
+    <div className="pi pro-pad" style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 80px", position: "relative" }}>
 
-      {/* Hero */}
-      <div style={{ textAlign: "center", marginBottom: 52, position: "relative" }}>
-        <HeroSparks />
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          background: CHROME,
-          borderRadius: 99, padding: "5px 16px", marginBottom: 22,
-          boxShadow: "0 4px 18px rgba(0,0,0,0.5)",
-        }}>
-          <span style={{ color: "rgba(20,18,30,0.85)", display: "flex" }}>{Ico.star}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(20,18,30,0.85)", letterSpacing: "0.06em" }}>BETA</span>
-        </div>
-        <h1 className="fr" style={{ fontSize: 60, fontWeight: 500, letterSpacing: "-0.03em", color: "#f0ede8", marginBottom: 16, lineHeight: 1.02 }}>
-          Lukkari <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Pro</span>
-        </h1>
-        <p style={{ fontSize: 15, color: "#a09c98", maxWidth: 400, margin: "0 auto 32px", lineHeight: 1.7 }}>
-          AI analysoi lukujärjestyksesi, rakentaa lukusuunnitelman ja optimoi kokeisiin valmistautumisen.
-        </p>
-
-        <button onClick={tryDemo} style={{
-          display: "inline-flex", alignItems: "center", gap: 8,
-          padding: "15px 36px", borderRadius: 99, border: "none",
-          background: "linear-gradient(135deg, rgba(240,237,232,0.96), rgba(210,205,225,0.92))",
-          color: "rgba(8,6,22,0.88)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em",
-          cursor: "pointer", fontFamily: "'Inter', sans-serif",
-          boxShadow: "0 6px 28px rgba(200,180,255,0.30), 0 1px 0 rgba(255,255,255,0.9) inset",
-          transition: "all 0.16s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 36px rgba(200,180,255,0.42), 0 1px 0 rgba(255,255,255,0.9) inset"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(200,180,255,0.30), 0 1px 0 rgba(255,255,255,0.9) inset"; }}
-        >
-          <span style={{ display: "flex" }}>{Ico.sparkle}</span>
-          Tutustu demoon
-          <span style={{ fontSize: 16, lineHeight: 1 }}>→</span>
-        </button>
-        <p style={{ fontSize: 11, color: "#605c58", marginTop: 11 }}>Ei rekisteröitymistä · näet heti miltä se näyttää</p>
-      </div>
+      <ProInfoHero onTryDemo={tryDemo} />
 
       {/* Flow diagram */}
       <div style={{
