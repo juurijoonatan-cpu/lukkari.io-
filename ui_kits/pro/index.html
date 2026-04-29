@@ -36,13 +36,26 @@ body[data-theme="dark"] {
   --tint-overlay: rgba(10,8,16,0.10);
 }
 
-body { background: #0a0810; color: var(--ink); }
+/* Theme-aware fallback so the page is never a black slab while the bg video loads */
+body[data-theme="light"] {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.18), transparent 60%),
+    linear-gradient(140deg, oklch(0.93 0.055 345) 0%, oklch(0.91 0.07 50) 55%, oklch(0.92 0.055 20) 100%);
+  color: var(--ink);
+}
+body[data-theme="dark"] {
+  background:
+    radial-gradient(120% 80% at 50% 100%, rgba(0,0,0,0.45), transparent 60%),
+    linear-gradient(160deg, #14101c 0%, #1a1426 55%, #0a0810 100%);
+  color: var(--ink);
+}
 
 /* ── Video background ── */
 .bg-video {
   position: fixed; inset: 0; width: 100vw; height: 100vh;
   object-fit: cover; z-index: 0;
   transition: opacity 0.6s ease;
+  will-change: opacity;
 }
 .bg-tint {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
@@ -154,6 +167,8 @@ body[data-theme="dark"] .lg::before {
   width: 78%; aspect-ratio: 1 / 0.92; position: relative;
   filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35));
   animation: orbBreath 5s ease-in-out infinite;
+  transform: translateZ(0); /* force compositor layer so the keyframes paint smoothly on desktop */
+  will-change: transform;
 }
 @keyframes orbBreath {
   0%, 100% { transform: scale(1); }
@@ -621,10 +636,10 @@ body[data-theme="dark"] .scrim { background: rgba(0,0,0,0.20); }
 <body data-theme="light">
 
 <!-- Background videos: light + dark, swap by data-theme -->
-<video class="bg-video" id="vidLight" autoplay loop muted playsinline>
+<video class="bg-video" id="vidLight" autoplay loop muted playsinline preload="auto" disablepictureinpicture>
   <source src="bg-light.mp4" type="video/mp4">
 </video>
-<video class="bg-video" id="vidDark" autoplay loop muted playsinline style="opacity:0">
+<video class="bg-video" id="vidDark" autoplay loop muted playsinline preload="auto" disablepictureinpicture style="opacity:0">
   <source src="bg-dark.mp4" type="video/mp4">
 </video>
 <div class="bg-tint"></div>
@@ -935,14 +950,29 @@ const body = document.body;
 const vidLight = document.getElementById('vidLight');
 const vidDark = document.getElementById('vidDark');
 
+// Some desktop browsers refuse the implicit autoplay even for muted video
+// (esp. when the tab opens in the background). Kick them awake explicitly
+// and silently swallow the rejection — the CSS gradient fallback covers
+// the case where playback is genuinely blocked.
+function kick(v) {
+  const p = v.play();
+  if (p && typeof p.catch === 'function') p.catch(() => {});
+}
+kick(vidLight); kick(vidDark);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { kick(vidLight); kick(vidDark); }
+});
+
 function setTheme(t) {
   body.setAttribute('data-theme', t);
   if (t === 'dark') {
     vidLight.style.opacity = 0;
     vidDark.style.opacity = 1;
+    kick(vidDark);
   } else {
     vidLight.style.opacity = 1;
     vidDark.style.opacity = 0;
+    kick(vidLight);
   }
 }
 setTheme(TWEAK_DEFAULTS.theme);
