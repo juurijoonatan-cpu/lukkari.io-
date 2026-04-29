@@ -1,5 +1,7 @@
 import { Ico } from './icons';
 import { SchoolPicker } from './SchoolPicker';
+import { LanguageToggle } from './LanguageToggle';
+import { useT } from '../i18n/i18n';
 
 const CHROME = "linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%)";
 
@@ -37,6 +39,7 @@ function HeaderSparks() {
 }
 
 export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
+  const t = useT();
   return (
     <header style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -91,7 +94,7 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
         <div className="tab-pill">
           <button className={"tab-btn" + (tab === "free" ? " on" : "")} onClick={() => setTab("free")}
             style={{ color: tab === "free" ? undefined : (isPro ? "#a09c98" : undefined) }}>
-            Free
+            {t('header.tab.free')}
           </button>
           <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
             <button className={"tab-btn" + (tab === "pro" ? " on" : "")} onClick={() => setTab("pro")}
@@ -104,7 +107,7 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
                   backgroundClip: "text",
                 } : {}),
               }}>
-              Pro
+              {t('header.tab.pro')}
             </button>
             {isPro && (
               <div style={{ position: "absolute", left: "100%", top: "50%", transform: "translateY(-50%)" }}>
@@ -114,14 +117,17 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
           </div>
         </div>
 
-        {/* Right: gear */}
-        <button className="icon-btn" onClick={onGear} style={{
-          width: 36, height: 36, borderRadius: "50%",
-          background: isPro ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
-          border: isPro ? "1.5px solid rgba(255,255,255,0.14)" : "1.5px solid rgba(255,255,255,0.8)",
-          color: isPro ? "#a09c98" : "var(--ink-s)",
-          transition: "all 0.3s",
-        }} title="Asetukset">{Ico.gear}</button>
+        {/* Right: language toggle + gear */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <LanguageToggle isPro={isPro} />
+          <button className="icon-btn" onClick={onGear} style={{
+            width: 36, height: 36, borderRadius: "50%",
+            background: isPro ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
+            border: isPro ? "1.5px solid rgba(255,255,255,0.14)" : "1.5px solid rgba(255,255,255,0.8)",
+            color: isPro ? "#a09c98" : "var(--ink-s)",
+            transition: "all 0.3s",
+          }} title={t('header.settings')}>{Ico.gear}</button>
+        </div>
       </div>
     </header>
   );
