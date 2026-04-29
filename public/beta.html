@@ -36,7 +36,9 @@ body[data-theme="dark"] {
   --tint-overlay: rgba(10,8,16,0.10);
 }
 
-/* Theme-aware fallback so the page is never a black slab while the bg video loads */
+/* Theme-aware fallback so the page is never a black slab while the bg video loads.
+   Sized larger than the viewport and slowly drifted so the page looks alive
+   even when the heavy bg videos haven't buffered yet (school networks, slow desktops). */
 body[data-theme="light"] {
   background:
     radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.18), transparent 60%),
@@ -48,6 +50,33 @@ body[data-theme="dark"] {
     radial-gradient(120% 80% at 50% 100%, rgba(0,0,0,0.45), transparent 60%),
     linear-gradient(160deg, #14101c 0%, #1a1426 55%, #0a0810 100%);
   color: var(--ink);
+}
+
+/* Animated wash that's always alive — drifts behind the bg videos so the
+   page breathes on desktop even before the heavy mp4s finish buffering. */
+.bg-wash {
+  position: fixed; inset: -10%; z-index: 0; pointer-events: none;
+  filter: blur(40px); opacity: 0.85;
+  background:
+    radial-gradient(38% 32% at 22% 28%, oklch(0.78 0.16 45 / 0.55) 0%, transparent 70%),
+    radial-gradient(32% 30% at 78% 22%, oklch(0.78 0.13 340 / 0.45) 0%, transparent 70%),
+    radial-gradient(40% 36% at 60% 82%, oklch(0.80 0.12 80 / 0.40) 0%, transparent 72%),
+    radial-gradient(28% 26% at 18% 82%, oklch(0.80 0.10 240 / 0.35) 0%, transparent 70%);
+  animation: washDrift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+body[data-theme="dark"] .bg-wash {
+  opacity: 0.65;
+  background:
+    radial-gradient(38% 32% at 22% 28%, oklch(0.55 0.16 280 / 0.55) 0%, transparent 70%),
+    radial-gradient(32% 30% at 78% 22%, oklch(0.50 0.18 320 / 0.50) 0%, transparent 70%),
+    radial-gradient(40% 36% at 60% 82%, oklch(0.45 0.14 250 / 0.55) 0%, transparent 72%),
+    radial-gradient(28% 26% at 18% 82%, oklch(0.55 0.18 30 / 0.35) 0%, transparent 70%);
+}
+@keyframes washDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-1.5%, 1%, 0) scale(1.04); }
+  100% { transform: translate3d(1.5%, -1%, 0) scale(1.02); }
 }
 
 /* ── Video background ── */
@@ -166,36 +195,41 @@ body[data-theme="dark"] .lg::before {
 .orb {
   width: 78%; aspect-ratio: 1 / 0.92; position: relative;
   filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35));
-  animation: orbBreath 5s ease-in-out infinite;
-  transform: translateZ(0); /* force compositor layer so the keyframes paint smoothly on desktop */
-  will-change: transform;
+  animation: orbBreath 4.5s ease-in-out infinite;
+  will-change: transform, filter;
 }
 @keyframes orbBreath {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.04); }
+  0%, 100% { transform: translateZ(0) scale(1);    filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35)); }
+  50%      { transform: translateZ(0) scale(1.07); filter: drop-shadow(0 36px 72px rgba(120,80,200,0.50)); }
 }
-/* Layered ellipses to mimic the reference image */
+/* Layered ellipses to mimic the reference image. Each layer drifts on its
+   own loop so the orb feels alive even when the bg video is stalled. */
 .orb-layer {
   position: absolute; inset: 0; border-radius: 50%;
   mix-blend-mode: screen;
   filter: blur(0.5px);
+  will-change: transform;
 }
 .orb-l1 {
   background: radial-gradient(circle at 50% 50%, transparent 32%, oklch(0.62 0.18 280 / 0.85) 48%, oklch(0.55 0.20 290 / 0.6) 60%, transparent 75%);
-  transform: scale(1, 0.95);
+  animation: orbSpin1 14s linear infinite;
 }
 .orb-l2 {
   background: radial-gradient(circle at 50% 50%, transparent 38%, oklch(0.70 0.16 320 / 0.7) 52%, oklch(0.65 0.20 350 / 0.5) 65%, transparent 78%);
-  transform: rotate(-8deg) scale(1.08, 0.94);
+  animation: orbSpin2 18s linear infinite reverse;
 }
 .orb-l3 {
   background: radial-gradient(circle at 50% 50%, transparent 42%, oklch(0.72 0.17 30 / 0.55) 56%, oklch(0.65 0.22 15 / 0.35) 68%, transparent 80%);
-  transform: rotate(12deg) scale(1.05, 0.96);
+  animation: orbSpin3 22s linear infinite;
 }
 .orb-l4 {
   background: radial-gradient(circle at 50% 50%, transparent 30%, oklch(0.75 0.14 260 / 0.5) 45%, transparent 65%);
-  transform: rotate(-22deg) scale(0.92, 1.05);
+  animation: orbSpin4 26s linear infinite reverse;
 }
+@keyframes orbSpin1 { from { transform: rotate(0deg)    scale(1.00, 0.95); } to { transform: rotate(360deg)  scale(1.00, 0.95); } }
+@keyframes orbSpin2 { from { transform: rotate(-8deg)   scale(1.08, 0.94); } to { transform: rotate(352deg)  scale(1.08, 0.94); } }
+@keyframes orbSpin3 { from { transform: rotate(12deg)   scale(1.05, 0.96); } to { transform: rotate(372deg)  scale(1.05, 0.96); } }
+@keyframes orbSpin4 { from { transform: rotate(-22deg)  scale(0.92, 1.05); } to { transform: rotate(338deg)  scale(0.92, 1.05); } }
 .orb-core {
   position: absolute; left: 50%; top: 50%;
   width: 30%; aspect-ratio: 1; border-radius: 50%;
@@ -634,6 +668,9 @@ body[data-theme="dark"] .scrim { background: rgba(0,0,0,0.20); }
 </style>
 </head>
 <body data-theme="light">
+
+<!-- Animated gradient wash: always alive, sits behind the bg videos -->
+<div class="bg-wash" aria-hidden="true"></div>
 
 <!-- Background videos: light + dark, swap by data-theme -->
 <video class="bg-video" id="vidLight" autoplay loop muted playsinline preload="auto" disablepictureinpicture>

@@ -15,7 +15,7 @@ export function WeekPreview({ school, selections }) {
       </h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {Array.from({ length: periodCount }, (_, pi) => {
-          const t = PTINTS[pi];
+          const tint = PTINTS[pi];
           const prefix = `p${pi + 1}-b`;
           let count = 0;
           for (let bi = 1; bi <= palkkiCount; bi++) {
@@ -27,17 +27,17 @@ export function WeekPreview({ school, selections }) {
             <div key={pi} className="glass" style={{ borderRadius: 20, padding: "18px 20px 16px", overflow: "hidden" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-                  <span className="fr" style={{ fontSize: 22, fontWeight: 500, fontStyle: "italic", color: t.l }}>{pi + 1}.</span>
+                  <span className="fr" style={{ fontSize: 22, fontWeight: 500, fontStyle: "italic", color: tint.l }}>{pi + 1}.</span>
                   <span className="fr" style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{t('app.period')}</span>
                 </div>
-                <div style={{ width: 20, height: 2, borderRadius: 99, background: t.l, opacity: .6 }}/>
+                <div style={{ width: 20, height: 2, borderRadius: 99, background: tint.l, opacity: .6 }}/>
                 <span style={{
-                  background: t.bg, border: `1px solid ${t.b}`, borderRadius: 99,
+                  background: tint.bg, border: `1px solid ${tint.b}`, borderRadius: 99,
                   padding: "2px 10px", fontSize: 9, fontWeight: 600,
-                  textTransform: "uppercase", letterSpacing: "0.1em", color: t.l,
-                }}>{t.name}</span>
+                  textTransform: "uppercase", letterSpacing: "0.1em", color: tint.l,
+                }}>{tint.name}</span>
                 <div style={{ flex: 1 }}/>
-                <span style={{ fontSize: 10, fontWeight: 600, color: t.l }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: tint.l }}>
                   {count} {count === 1 ? t('app.coursesOne') : t('app.coursesMany')}
                 </span>
               </div>
@@ -69,8 +69,8 @@ export function WeekPreview({ school, selections }) {
                               <div style={{
                                 height: 34, minWidth: 54, borderRadius: 7,
                                 display: "flex", alignItems: "center", justifyContent: "center",
-                                background: !beam ? "transparent" : has ? t.bg : "rgba(255,255,255,0.32)",
-                                border: !beam ? "none" : has ? `1.5px solid ${t.b}` : "1px solid rgba(200,195,190,0.28)",
+                                background: !beam ? "transparent" : has ? tint.bg : "rgba(255,255,255,0.32)",
+                                border: !beam ? "none" : has ? `1.5px solid ${tint.b}` : "1px solid rgba(200,195,190,0.28)",
                                 transition: "all .14s",
                               }}>
                                 {!beam ? null : has ? (
