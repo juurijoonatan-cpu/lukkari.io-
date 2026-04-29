@@ -171,6 +171,68 @@
   .pi-stat-value { font-size: 26px; }
 }
 
+/* ── Signup ── */
+.pi-signup {
+  padding: 28px;
+  text-align: center;
+}
+.pi-signup-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--pi-ink); margin-bottom: 6px;
+}
+.pi-signup-sub {
+  font-size: 13px; color: var(--pi-ink-s);
+  margin-bottom: 18px; line-height: 1.6;
+}
+.pi-signup-ok {
+  font-size: 14px; color: var(--pi-ink-s);
+  margin-top: 8px; line-height: 1.55;
+}
+.pi-signup-row {
+  display: flex; gap: 8px;
+  max-width: 360px; margin: 0 auto;
+}
+.pi-signup-input {
+  flex: 1; min-width: 0;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: var(--pi-ink);
+  font-family: inherit;
+  font-size: 16px; /* prevents iOS zoom */
+  outline: none;
+  transition: border-color .14s;
+}
+@media (min-width: 721px) {
+  .pi-signup-input { font-size: 13px; padding: 10px 16px; }
+}
+.pi-signup-input::placeholder { color: var(--pi-ink-f); }
+.pi-signup-input:focus { border-color: rgba(255,255,255,0.24); }
+.pi-signup-btn {
+  padding: 11px 18px;
+  border-radius: 12px; border: none;
+  background: rgba(255,255,255,0.08);
+  color: var(--pi-ink-f);
+  font-size: 13px; font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: not-allowed;
+  transition: all .14s;
+}
+.pi-signup-btn[data-active="1"] {
+  background: linear-gradient(135deg, oklch(0.62 0.13 45), oklch(0.57 0.15 20));
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 16px oklch(0.62 0.13 45 / 0.4);
+}
+.pi-signup-err {
+  margin-top: 12px;
+  font-size: 12px;
+  color: oklch(0.72 0.14 25);
+}
+
 /* ── Features grid ── */
 .pi-features-grid {
   display: grid;
