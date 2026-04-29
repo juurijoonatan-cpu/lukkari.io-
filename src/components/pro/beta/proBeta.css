@@ -216,12 +216,11 @@
   .pb-demo-banner { margin: 8px 14px 0; font-size: 11px; }
 }
 
-/* ── Reduced motion ── */
+/* ── Reduced motion ──
+   Don't kill every animation: the wash and orb breath are gentle enough
+   that an a11y-respecting reduce-motion user is fine, and killing them
+   blanket made the page look dead on Windows desktops where the OS often
+   reports reduce-motion. We do still slow the orb breath right down. */
 @media (prefers-reduced-motion: reduce) {
-  .pb-bg-video { display: none; }
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
+  .pb-orb { animation-duration: 14s; }
 }
