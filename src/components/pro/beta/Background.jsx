@@ -43,6 +43,10 @@ export function Background({ theme, playbackRate = 0.5 }) {
 
   return (
     <>
+      {/* Always-on animated gradient wash — sits behind the bg video so the
+          page breathes even before the heavy mp4 finishes buffering on
+          slow desktop networks. */}
+      <div className="pb-bg-wash" aria-hidden="true" />
       {enabled && (
         <video
           ref={videoRef}
