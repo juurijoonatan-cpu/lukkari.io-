@@ -170,3 +170,88 @@
   .pi-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .pi-stat-value { font-size: 26px; }
 }
+
+/* ── Flow (Näin Pro toimii) ── */
+.pi-flow {
+  padding: 30px 26px 32px;
+  margin-bottom: 28px;
+}
+.pi-flow-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pi-step {
+  position: relative;
+  padding: 22px 18px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  text-align: left;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.pi-step:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+  transform: translateY(-3px);
+}
+
+.pi-step-num {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+.pi-step-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  margin: 12px 0 14px;
+  background: var(--pi-chrome);
+  border: 1px solid rgba(255,255,255,0.75);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45),
+              0 1px 0 rgba(255,255,255,0.85) inset;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(20,18,30,0.85);
+}
+.pi-step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 17px; font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--pi-ink);
+  margin: 0 0 6px;
+}
+.pi-step-desc {
+  font-size: 12.5px;
+  color: var(--pi-ink-s);
+  line-height: 1.55;
+}
+
+/* Connecting arrow between steps (desktop horizontal) */
+.pi-step-arrow {
+  position: absolute;
+  right: -14px; top: 50%;
+  transform: translate(50%, -50%);
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: var(--pi-ink-s);
+  font-size: 11px; font-weight: 700;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .pi-flow { padding: 26px 20px; margin-bottom: 22px; }
+  .pi-flow-steps { grid-template-columns: 1fr; gap: 10px; }
+  .pi-step { padding: 18px 16px 16px; }
+  .pi-step-icon { width: 38px; height: 38px; margin: 10px 0 10px; }
+  .pi-step-title { font-size: 16px; }
+  /* Arrow rotates 90deg and sits between rows */
+  .pi-step-arrow {
+    right: 50%; top: auto; bottom: -14px;
+    transform: translate(50%, 50%) rotate(90deg);
+  }
+}
