@@ -12,10 +12,89 @@ export const STRINGS = {
     'lang.en': 'EN',
     'lang.toggle': 'Vaihda kieli',
 
+    'common.cancel': 'Peruuta',
+    'common.save':   'Tallenna',
+    'common.add':    'Lisää',
+    'common.clear':  'Tyhjennä',
+    'common.close':  'Sulje',
+
     /* header */
     'header.tab.free': 'Vapaa',
     'header.tab.pro':  'Pro',
     'header.settings': 'Asetukset',
+
+    /* footer */
+    'footer.privacy': 'Tietosuojaseloste',
+    'footer.terms':   'Käyttöehdot',
+    'footer.cookies': 'Evästekäytäntö',
+
+    /* free app shell */
+    'app.tagline':         'Täytä palkit, näe lukujärjestyksesi',
+    'app.coursesLogged':   '{n} kurssia kirjattu',
+    'app.matrix':          'Kurssimatriisi',
+    'app.gridSummary':     '{p} palkkia · {pe} periodia',
+    'app.saved':           'Tallennettu',
+    'app.share':           'Jaa kaverille',
+    'app.shareCopied':     'Linkki kopioitu!',
+    'app.shareText':       'Suunnittele lukuvuotesi kurssit helposti!',
+    'app.weekView':        'Viikkokaavio',
+    'app.period':          'periodi',
+    'app.coursesOne':      'kurssi',
+    'app.coursesMany':     'kursseja',
+    'app.customSchool':    'Oma koulu',
+
+    /* choice grid */
+    'grid.legend':         'Väri = palkki · Sarakkeet = periodit',
+    'grid.tabHint':        'Tab → seuraava solu',
+
+    /* confirm clear */
+    'confirm.title':       'Tyhjennä kaikki?',
+    'confirm.body':        'Kaikki kurssikirjaukset poistetaan pysyvästi. Tätä ei voi perua.',
+
+    /* wishlist */
+    'wishlist.title':      'Kurssilista',
+    'wishlist.placeholder':'Lisää kurssi (esim. MAA4)',
+    'wishlist.empty':      'Lisää haluamasi kurssit listaan',
+    'wishlist.allAdded':   'Kaikki kurssit lisätty ruudukkoon',
+    'wishlist.summary':    '{done} / {total} lisätty · {missing} puuttuu',
+
+    /* settings panel */
+    'settings.year':           'Lukuvuosi',
+    'settings.export':         'Vie & jaa',
+    'settings.exportHint':     'lisää ensin kursseja',
+    'settings.email':          'Lähetä sähköpostiin',
+    'settings.download':       'Lataa tekstitiedostona',
+    'settings.copy':           'Kopioi leikepöydälle',
+    'settings.copied':         'Kopioitu!',
+    'settings.print':          'Tulosta / Tallenna PDF:ksi',
+    'settings.export.hint':    'Saat lukujärjestyksesi sähköpostiisi siistinä koosteena.',
+    'settings.export.consent': 'Liity samalla Lukkari.io-listalle. Saat tiedon uusista ominaisuuksista.',
+    'settings.export.send':    'Lähetä lukujärjestys',
+    'settings.export.sent':    'Lähetetty. Tarkista sähköpostisi.',
+    'settings.export.failed':  'Lähetys epäonnistui.',
+    'settings.list.title':     'Liity Lukkari.io-listalle',
+    'settings.list.thanks':    'Kiitos! Olet nyt listalla.',
+    'settings.list.hint':      'Saat tiedon uusista ominaisuuksista. Ei spämmejä.',
+    'settings.list.placeholder': 'sähköpostisi@esim.fi',
+    'settings.list.consent':   'Suostun, että Lukkari.io käyttää sähköpostiani markkinointiviestintään. Voin peruuttaa suostumukseni milloin tahansa.',
+    'settings.list.error':     'Jokin meni pieleen, yritä uudelleen.',
+    'settings.list.sending':   'Lähetetään',
+    'settings.list.join':      'Liity listalle',
+    'settings.school':         'Koulu',
+    'settings.manage':         'Hallinta',
+    'settings.clearAll':       'Tyhjennä kaikki kurssit',
+    'settings.foot1':          'Lukkari.io. Kaikki tiedot tallennetaan vain tällä laitteella.',
+    'settings.foot2':          'Ei tiliä. Ei seurantaa.',
+
+    /* school picker / custom school */
+    'sp.custom.title':         'Oma koulu',
+    'sp.custom.optionLabel':   '✏️ Oma koulu',
+    'sp.custom.name':          'Koulun nimi',
+    'sp.custom.namePh':        'esim. Tapiolan lukio',
+    'sp.custom.periods':       'Periodeja',
+    'sp.custom.palkkit':       'Palkkeja',
+    'sp.custom.rotation':      'Tuntikiertokaavio',
+    'sp.custom.time':          'Aika',
 
     /* ── Pro info page ── */
 
@@ -95,10 +174,89 @@ export const STRINGS = {
     'lang.en': 'EN',
     'lang.toggle': 'Switch language',
 
+    'common.cancel': 'Cancel',
+    'common.save':   'Save',
+    'common.add':    'Add',
+    'common.clear':  'Clear',
+    'common.close':  'Close',
+
     /* header */
     'header.tab.free': 'Free',
     'header.tab.pro':  'Pro',
     'header.settings': 'Settings',
+
+    /* footer */
+    'footer.privacy': 'Privacy policy',
+    'footer.terms':   'Terms of service',
+    'footer.cookies': 'Cookie policy',
+
+    /* free app shell */
+    'app.tagline':         'Fill the slots, see your timetable',
+    'app.coursesLogged':   '{n} courses logged',
+    'app.matrix':          'Course matrix',
+    'app.gridSummary':     '{p} slots · {pe} periods',
+    'app.saved':           'Saved',
+    'app.share':           'Share with a friend',
+    'app.shareCopied':     'Link copied!',
+    'app.shareText':       'Plan your school year courses easily!',
+    'app.weekView':        'Weekly view',
+    'app.period':          'period',
+    'app.coursesOne':      'course',
+    'app.coursesMany':     'courses',
+    'app.customSchool':    'Custom school',
+
+    /* choice grid */
+    'grid.legend':         'Color = slot · Columns = periods',
+    'grid.tabHint':        'Tab → next cell',
+
+    /* confirm clear */
+    'confirm.title':       'Clear everything?',
+    'confirm.body':        'All course entries will be permanently deleted. This cannot be undone.',
+
+    /* wishlist */
+    'wishlist.title':      'Course list',
+    'wishlist.placeholder':'Add a course (e.g. MAA4)',
+    'wishlist.empty':      'Add the courses you want to your list',
+    'wishlist.allAdded':   'All courses added to the grid',
+    'wishlist.summary':    '{done} / {total} added · {missing} missing',
+
+    /* settings panel */
+    'settings.year':           'School year',
+    'settings.export':         'Export & share',
+    'settings.exportHint':     'add courses first',
+    'settings.email':          'Send by email',
+    'settings.download':       'Download as text file',
+    'settings.copy':           'Copy to clipboard',
+    'settings.copied':         'Copied!',
+    'settings.print':          'Print / Save as PDF',
+    'settings.export.hint':    'You will receive your timetable as a clean email summary.',
+    'settings.export.consent': 'Also join the Lukkari.io list. Get updates on new features.',
+    'settings.export.send':    'Send timetable',
+    'settings.export.sent':    'Sent. Check your email.',
+    'settings.export.failed':  'Sending failed.',
+    'settings.list.title':     'Join the Lukkari.io list',
+    'settings.list.thanks':    'Thanks! You are now on the list.',
+    'settings.list.hint':      'Get updates on new features. No spam.',
+    'settings.list.placeholder': 'your@email.com',
+    'settings.list.consent':   'I consent to Lukkari.io using my email for marketing communications. I can withdraw my consent at any time.',
+    'settings.list.error':     'Something went wrong, please try again.',
+    'settings.list.sending':   'Sending',
+    'settings.list.join':      'Join the list',
+    'settings.school':         'School',
+    'settings.manage':         'Manage',
+    'settings.clearAll':       'Clear all courses',
+    'settings.foot1':          'Lukkari.io. All data is stored only on this device.',
+    'settings.foot2':          'No account. No tracking.',
+
+    /* school picker / custom school */
+    'sp.custom.title':         'Custom school',
+    'sp.custom.optionLabel':   '✏️ Custom school',
+    'sp.custom.name':          'School name',
+    'sp.custom.namePh':        'e.g. My High School',
+    'sp.custom.periods':       'Periods',
+    'sp.custom.palkkit':       'Slots',
+    'sp.custom.rotation':      'Class rotation table',
+    'sp.custom.time':          'Time',
 
     /* ── Pro info page ── */
 

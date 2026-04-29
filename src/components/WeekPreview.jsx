@@ -1,6 +1,8 @@
 import { PTINTS } from '../data/schools';
+import { useT } from '../i18n/i18n';
 
 export function WeekPreview({ school, selections }) {
+  const t = useT();
   const { periodCount, times, days, rotation, palkkiCount } = school;
   const hasAny = Object.values(selections).some(v => v?.trim());
   if (!hasAny) return null;
@@ -9,7 +11,7 @@ export function WeekPreview({ school, selections }) {
   return (
     <div style={{ marginTop: 28 }}>
       <h2 className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)", marginBottom: 16 }}>
-        Viikkokaavio
+        {t('app.weekView')}
       </h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {Array.from({ length: periodCount }, (_, pi) => {
@@ -26,7 +28,7 @@ export function WeekPreview({ school, selections }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
                   <span className="fr" style={{ fontSize: 22, fontWeight: 500, fontStyle: "italic", color: t.l }}>{pi + 1}.</span>
-                  <span className="fr" style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>periodi</span>
+                  <span className="fr" style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{t('app.period')}</span>
                 </div>
                 <div style={{ width: 20, height: 2, borderRadius: 99, background: t.l, opacity: .6 }}/>
                 <span style={{
@@ -36,7 +38,7 @@ export function WeekPreview({ school, selections }) {
                 }}>{t.name}</span>
                 <div style={{ flex: 1 }}/>
                 <span style={{ fontSize: 10, fontWeight: 600, color: t.l }}>
-                  {count} {count === 1 ? "kurssi" : "kurssia"}
+                  {count} {count === 1 ? t('app.coursesOne') : t('app.coursesMany')}
                 </span>
               </div>
 

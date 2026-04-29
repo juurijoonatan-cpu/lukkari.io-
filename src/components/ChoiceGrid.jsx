@@ -1,7 +1,9 @@
 import { useRef, useCallback } from 'react';
 import { PTINTS } from '../data/schools';
+import { useT } from '../i18n/i18n';
 
 export function ChoiceGrid({ school, selections, onChange }) {
+  const t = useT();
   const refs = useRef({});
 
   const jump = useCallback((e, pi, bi) => {
@@ -71,8 +73,8 @@ export function ChoiceGrid({ school, selections, onChange }) {
         </tbody>
       </table>
       <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 10, color: "var(--ink-f)", fontWeight: 500 }}>Väri = palkki · Sarakkeet = periodit</span>
-        <span style={{ fontSize: 10, color: "var(--ink-f)" }}>Tab → seuraava solu</span>
+        <span style={{ fontSize: 10, color: "var(--ink-f)", fontWeight: 500 }}>{t('grid.legend')}</span>
+        <span style={{ fontSize: 10, color: "var(--ink-f)" }}>{t('grid.tabHint')}</span>
       </div>
     </div>
   );

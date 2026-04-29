@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Ico } from './icons';
+import { useT } from '../i18n/i18n';
 
 const IcoList = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,6 +23,7 @@ function isInGrid(courseName, selections) {
 }
 
 export function WishlistPanel({ wishlist, setWishlist, selections }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
@@ -86,7 +88,7 @@ export function WishlistPanel({ wishlist, setWishlist, selections }) {
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: "var(--ink-s)", display: "flex" }}>{IcoList}</span>
-                <span className="fr" style={{ fontSize: 16, fontWeight: 500, color: "var(--ink)" }}>Kurssilista</span>
+                <span className="fr" style={{ fontSize: 16, fontWeight: 500, color: "var(--ink)" }}>{t('wishlist.title')}</span>
                 {wishlist.length > 0 && (
                   <span style={{ fontSize: 10, fontWeight: 700, background: missing > 0 ? "var(--accent)" : "oklch(0.58 0.15 150)", color: "white", borderRadius: 99, padding: "1px 7px", minWidth: 18, textAlign: "center" }}>
                     {done}/{wishlist.length}
@@ -127,7 +129,7 @@ export function WishlistPanel({ wishlist, setWishlist, selections }) {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && add()}
-                placeholder="Lisää kurssi (esim. MAA4)"
+                placeholder={t('wishlist.placeholder')}
                 maxLength={30}
                 style={{
                   flex: 1, padding: "8px 12px", borderRadius: 10,
@@ -145,13 +147,13 @@ export function WishlistPanel({ wishlist, setWishlist, selections }) {
                 color: input.trim() ? "white" : "var(--ink-f)",
                 fontSize: 12, fontWeight: 600, cursor: input.trim() ? "pointer" : "default",
                 transition: "all .14s", fontFamily: "inherit", whiteSpace: "nowrap",
-              }}>Lisää</button>
+              }}>{t('common.add')}</button>
             </div>
 
             {/* Course list */}
             {wishlist.length === 0 ? (
               <p style={{ fontSize: 12, color: "var(--ink-f)", textAlign: "center", padding: "12px 0" }}>
-                Lisää haluamasi kurssit listaan
+                {t('wishlist.empty')}
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -203,8 +205,8 @@ export function WishlistPanel({ wishlist, setWishlist, selections }) {
               <div style={{ borderTop: "1px solid rgba(200,195,190,0.3)", paddingTop: 10, marginTop: 4 }}>
                 <p style={{ fontSize: 11, color: "var(--ink-f)", textAlign: "center" }}>
                   {done === wishlist.length
-                    ? "Kaikki kurssit lisätty ruudukkoon"
-                    : `${done} / ${wishlist.length} lisätty · ${missing} puuttuu`}
+                    ? t('wishlist.allAdded')
+                    : t('wishlist.summary', { done, total: wishlist.length, missing })}
                 </p>
               </div>
             )}
