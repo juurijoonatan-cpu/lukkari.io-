@@ -41,8 +41,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
         source: 'export_email',
         school, year,
         palkitFilled: filledCount,
-        scheduleText: text,
-        notify: false, // Brevo already delivers a richer email; skip Web3Forms duplicate.
+        sendWelcome: false, // user already gets the schedule mail; skip the welcome
       }));
     }
     recordDownload({ action: 'email', school, year, palkitFilled: filledCount, scheduleText: text, email: exportEmail });

@@ -1,40 +1,49 @@
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from './supabase';
 
-const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
-const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
-
 const ua = () => (typeof navigator !== 'undefined' ? navigator.userAgent : null);
-
 const cleanEmail = (e) => (e || '').trim().toLowerCase();
-
 const isEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-async function postWeb3Forms(payload) {
-  if (!WEB3FORMS_KEY) return { ok: false, skipped: true };
+async function callMailer(payload) {
   try {
-    const res = await fetch(WEB3FORMS_URL, {
+    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/send-schedule`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ access_key: WEB3FORMS_KEY, ...payload }),
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.success === false) {
-      return { ok: false, error: data.message || `HTTP ${res.status}` };
-    }
+    if (!res.ok) return { ok: false, error: data?.error || `HTTP ${res.status}` };
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err?.message || 'network' };
   }
 }
 
+export async function sendScheduleEmail({ email, school, selections, year }) {
+  const e = cleanEmail(email);
+  if (!isEmail(e)) return { ok: false, error: 'invalid_email' };
+  if (!school || !selections) return { ok: false, error: 'missing_schedule' };
+  return callMailer({ type: 'schedule', email: e, school, selections, year });
+}
+
+export async function sendWelcomeEmail({ email }) {
+  const e = cleanEmail(email);
+  if (!isEmail(e)) return { ok: false, error: 'invalid_email' };
+  return callMailer({ type: 'welcome', email: e });
+}
+
 export async function recordSubscribe({
   email,
   source,
-  school,
-  year,
+  school = null,
+  year = null,
   palkitFilled,
-  scheduleText,
-  notify = true,
+  scheduleText = null,
+  sendWelcome = true,
 }) {
   const e = cleanEmail(email);
   if (!isEmail(e)) return { ok: false, error: 'invalid_email' };
@@ -52,54 +61,16 @@ export async function recordSubscribe({
       user_agent:  ua(),
     });
 
-  const w3f = notify
-    ? postWeb3Forms({
-        subject: `Lukkari.io — uusi tilaaja: ${e}`,
-        from_name: 'Lukkari.io',
-        email: e,
-        message: [
-          `Sähköposti: ${e}`,
-          source ? `Lähde: ${source}` : null,
-          school?.name ? `Koulu: ${school.name}` : null,
-          year ? `Lukuvuosi: ${year}` : null,
-          typeof palkitFilled === 'number' ? `Kursseja täytetty: ${palkitFilled}` : null,
-          'Markkinointisuostumus: Kyllä',
-          scheduleText ? `\nLukujärjestys:\n${scheduleText}` : null,
-        ].filter(Boolean).join('\n'),
-      })
+  const welcome = sendWelcome
+    ? sendWelcomeEmail({ email: e })
     : Promise.resolve({ ok: true, skipped: true });
 
-  const [sbRes, w3fRes] = await Promise.allSettled([sb, w3f]);
-  const stored = sbRes.status === 'fulfilled' && !sbRes.value.error;
-  const notified = w3fRes.status === 'fulfilled' && w3fRes.value.ok;
+  const [sbRes, wRes] = await Promise.allSettled([sb, welcome]);
+  const stored   = sbRes.status === 'fulfilled' && !sbRes.value.error;
+  const welcomed = wRes.status === 'fulfilled' && wRes.value?.ok;
 
-  if (!stored && !notified) {
-    return { ok: false, error: 'storage_and_notify_failed' };
-  }
-  return { ok: true, stored, notified };
-}
-
-export async function sendScheduleEmail({ email, school, selections, year }) {
-  const e = cleanEmail(email);
-  if (!isEmail(e)) return { ok: false, error: 'invalid_email' };
-  if (!school || !selections) return { ok: false, error: 'missing_schedule' };
-
-  try {
-    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/send-schedule`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ email: e, school, selections, year }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { ok: false, error: data?.error || `HTTP ${res.status}` };
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err?.message || 'network' };
-  }
+  if (!stored && !welcomed) return { ok: false, error: 'subscribe_failed' };
+  return { ok: true, stored, welcomed };
 }
 
 export async function recordDownload({
