@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Ico } from './icons';
 import { buildTextExport } from '../utils/export';
-import { recordSubscribe, recordDownload } from '../utils/leads';
+import { recordSubscribe, recordDownload, sendScheduleEmail } from '../utils/leads';
 
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
 
@@ -11,48 +11,54 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
   const [shareConsent, setShareConsent] = useState(false);
   const [shareStatus, setShareStatus] = useState('idle'); // idle | sending | done | error
 
-  // Inline "subscribe while emailing" flow on top of the mailto: action
+  // Real server-side email send via Supabase Edge Function + Brevo
   const [exportOpen, setExportOpen] = useState(false);
   const [exportEmail, setExportEmail] = useState('');
   const [exportConsent, setExportConsent] = useState(false);
-  const [exportStatus, setExportStatus] = useState('idle'); // idle | saving | done
-
-  const openMailto = () => {
-    const text = buildTextExport(school, selections, year);
-    const subject = encodeURIComponent(`Lukujärjestykseni — ${school.name} ${year}`);
-    window.location.href = `mailto:?subject=${subject}&body=${encodeURIComponent(text)}`;
-  };
+  const [exportStatus, setExportStatus] = useState('idle'); // idle | sending | sent | error
+  const [exportError, setExportError] = useState(null);
 
   const handleEmail = () => {
     setExportOpen(o => !o);
+    setExportStatus('idle');
+    setExportError(null);
   };
 
   const handleEmailSend = async () => {
-    if (exportStatus === 'saving') return;
+    if (exportStatus === 'sending') return;
+    if (!isValidEmail(exportEmail)) return;
+
+    setExportStatus('sending');
+    setExportError(null);
     const text = buildTextExport(school, selections, year);
-    const wantsSubscribe = exportConsent && isValidEmail(exportEmail);
-    setExportStatus('saving');
-    try {
-      if (wantsSubscribe) {
-        await recordSubscribe({
-          email: exportEmail,
-          source: 'export_email',
-          school, year,
-          palkitFilled: filledCount,
-          scheduleText: text,
-        });
-      }
-      recordDownload({ action: 'email', school, year, palkitFilled: filledCount, scheduleText: text, email: wantsSubscribe ? exportEmail : null });
-    } finally {
-      setExportStatus('done');
-      openMailto();
-      // Reset after a beat so reopening the section feels fresh
+
+    const tasks = [
+      sendScheduleEmail({ email: exportEmail, school, selections, year }),
+    ];
+    if (exportConsent) {
+      tasks.push(recordSubscribe({
+        email: exportEmail,
+        source: 'export_email',
+        school, year,
+        palkitFilled: filledCount,
+        scheduleText: text,
+        notify: false, // Brevo already delivers a richer email; skip Web3Forms duplicate.
+      }));
+    }
+    recordDownload({ action: 'email', school, year, palkitFilled: filledCount, scheduleText: text, email: exportEmail });
+
+    const [sendRes] = await Promise.all(tasks);
+    if (sendRes?.ok) {
+      setExportStatus('sent');
       setTimeout(() => {
         setExportOpen(false);
         setExportStatus('idle');
         setExportConsent(false);
         setExportEmail('');
-      }, 600);
+      }, 2400);
+    } else {
+      setExportStatus('error');
+      setExportError(sendRes?.error || 'Lähetys epäonnistui.');
     }
   };
 
@@ -166,51 +172,65 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                   borderRadius: 12, padding: "12px 14px",
                   display: "flex", flexDirection: "column", gap: 8,
                 }}>
-                  <label style={{
-                    display: "flex", gap: 8, alignItems: "flex-start",
-                    fontSize: 11, color: "var(--ink-s)", lineHeight: 1.5, cursor: "pointer",
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={exportConsent}
-                      onChange={e => setExportConsent(e.target.checked)}
-                      style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
-                    />
-                    Tallenna myös Lukkari.io-listalle ja saan tiedon uusista ominaisuuksista.
-                  </label>
-                  {exportConsent && (
-                    <input
-                      type="email"
-                      value={exportEmail}
-                      onChange={e => setExportEmail(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleEmailSend()}
-                      placeholder="sähköpostisi@esim.fi"
-                      autoComplete="email"
-                      style={{
-                        width: "100%", padding: "9px 12px", borderRadius: 10,
-                        border: "1.5px solid rgba(255,255,255,0.8)",
-                        background: "rgba(255,255,255,0.6)",
-                        fontSize: 13, fontFamily: "inherit", color: "var(--ink)",
-                        outline: "none",
-                      }}
-                    />
+                  {exportStatus === 'sent' ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "2px 0" }}>
+                      <span style={{ color: "var(--accent)", display: "flex" }}>{Ico.check}</span>
+                      <span style={{ fontSize: 13, color: "var(--ink)" }}>Lähetetty. Tarkista sähköpostisi.</span>
+                    </div>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: 11, color: "var(--ink-s)", lineHeight: 1.6 }}>
+                        Saat lukujärjestyksesi sähköpostiisi siistinä koosteena.
+                      </p>
+                      <input
+                        type="email"
+                        value={exportEmail}
+                        onChange={e => { setExportEmail(e.target.value); setExportError(null); }}
+                        onKeyDown={e => e.key === 'Enter' && handleEmailSend()}
+                        placeholder="sinun@email.fi"
+                        autoComplete="email"
+                        disabled={exportStatus === 'sending'}
+                        style={{
+                          width: "100%", padding: "9px 12px", borderRadius: 10,
+                          border: "1.5px solid rgba(255,255,255,0.8)",
+                          background: "rgba(255,255,255,0.6)",
+                          fontSize: 13, fontFamily: "inherit", color: "var(--ink)",
+                          outline: "none",
+                        }}
+                      />
+                      <label style={{
+                        display: "flex", gap: 8, alignItems: "flex-start",
+                        fontSize: 11, color: "var(--ink-s)", lineHeight: 1.5, cursor: "pointer",
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={exportConsent}
+                          onChange={e => setExportConsent(e.target.checked)}
+                          style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
+                        />
+                        Liity samalla Lukkari.io-listalle. Saat tiedon uusista ominaisuuksista.
+                      </label>
+                      {exportError && (
+                        <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>{exportError}</p>
+                      )}
+                      <button
+                        onClick={handleEmailSend}
+                        disabled={exportStatus === 'sending' || !isValidEmail(exportEmail)}
+                        style={{
+                          width: "100%", padding: "9px 14px", borderRadius: 10,
+                          border: "1.5px solid rgba(255,255,255,0.8)",
+                          background: (exportStatus === 'sending' || !isValidEmail(exportEmail))
+                            ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.8)",
+                          fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                          color: (exportStatus === 'sending' || !isValidEmail(exportEmail)) ? "var(--ink-f)" : "var(--ink)",
+                          cursor: (exportStatus === 'sending' || !isValidEmail(exportEmail)) ? "default" : "pointer",
+                          transition: "all .14s",
+                        }}
+                      >
+                        {exportStatus === 'sending' ? 'Lähetetään…' : 'Lähetä lukujärjestys'}
+                      </button>
+                    </>
                   )}
-                  <button
-                    onClick={handleEmailSend}
-                    disabled={exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))}
-                    style={{
-                      width: "100%", padding: "9px 14px", borderRadius: 10,
-                      border: "1.5px solid rgba(255,255,255,0.8)",
-                      background: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail)))
-                        ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.8)",
-                      fontSize: 13, fontWeight: 600, fontFamily: "inherit",
-                      color: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))) ? "var(--ink-f)" : "var(--ink)",
-                      cursor: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))) ? "default" : "pointer",
-                      transition: "all .14s",
-                    }}
-                  >
-                    {exportStatus === 'saving' ? 'Avataan…' : 'Avaa sähköposti'}
-                  </button>
                 </div>
               )}
               {settingBtn(Ico.download, "Lataa tekstitiedostona", handleDownload)}
