@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Ico } from './icons';
 import { buildTextExport } from '../utils/export';
+import { recordSubscribe, recordDownload } from '../utils/leads';
+
+const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
 
 export function SettingsPanel({ open, onClose, school, selections, year, setYear, onClear, filledCount }) {
   const [copied, setCopied] = useState(false);
@@ -8,10 +11,49 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
   const [shareConsent, setShareConsent] = useState(false);
   const [shareStatus, setShareStatus] = useState('idle'); // idle | sending | done | error
 
-  const handleEmail = () => {
+  // Inline "subscribe while emailing" flow on top of the mailto: action
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportEmail, setExportEmail] = useState('');
+  const [exportConsent, setExportConsent] = useState(false);
+  const [exportStatus, setExportStatus] = useState('idle'); // idle | saving | done
+
+  const openMailto = () => {
     const text = buildTextExport(school, selections, year);
     const subject = encodeURIComponent(`Lukujärjestykseni — ${school.name} ${year}`);
     window.location.href = `mailto:?subject=${subject}&body=${encodeURIComponent(text)}`;
+  };
+
+  const handleEmail = () => {
+    setExportOpen(o => !o);
+  };
+
+  const handleEmailSend = async () => {
+    if (exportStatus === 'saving') return;
+    const text = buildTextExport(school, selections, year);
+    const wantsSubscribe = exportConsent && isValidEmail(exportEmail);
+    setExportStatus('saving');
+    try {
+      if (wantsSubscribe) {
+        await recordSubscribe({
+          email: exportEmail,
+          source: 'export_email',
+          school, year,
+          palkitFilled: filledCount,
+          scheduleText: text,
+        });
+      }
+      recordDownload({ action: 'email', school, year, palkitFilled: filledCount, scheduleText: text, email: wantsSubscribe ? exportEmail : null });
+    } finally {
+      setExportStatus('done');
+      openMailto();
+      // Reset after a beat so reopening the section feels fresh
+      setTimeout(() => {
+        setExportOpen(false);
+        setExportStatus('idle');
+        setExportConsent(false);
+        setExportEmail('');
+      }, 600);
+    }
   };
 
   const handleDownload = () => {
@@ -21,40 +63,36 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
     const a = document.createElement("a");
     a.href = url; a.download = `lukkari-${school.id}-${year}.txt`; a.click();
     URL.revokeObjectURL(url);
+    recordDownload({ action: 'download', school, year, palkitFilled: filledCount, scheduleText: text });
   };
 
   const handleCopy = async () => {
     const text = buildTextExport(school, selections, year);
-    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      recordDownload({ action: 'copy', school, year, palkitFilled: filledCount, scheduleText: text });
+    } catch {}
+  };
+
+  const handlePrint = () => {
+    recordDownload({ action: 'print', school, year, palkitFilled: filledCount });
+    window.print();
   };
 
   const handleSubscribe = async () => {
-    if (!shareEmail || !shareConsent || shareStatus === 'sending') return;
+    if (!isValidEmail(shareEmail) || !shareConsent || shareStatus === 'sending') return;
     setShareStatus('sending');
     const text = filledCount > 0 ? buildTextExport(school, selections, year) : '';
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
-          subject: `Lukkari.io — uusi tilaaja: ${shareEmail}`,
-          from_name: 'Lukkari.io',
-          email: shareEmail,
-          message: [
-            `Sähköposti: ${shareEmail}`,
-            `Koulu: ${school.name}`,
-            `Lukuvuosi: ${year}`,
-            `Markkinointisuostumus: Kyllä`,
-            `Kursseja täytetty: ${filledCount}`,
-            text ? `\nLukujärjestys:\n${text}` : '',
-          ].filter(Boolean).join('\n'),
-        }),
-      });
-      setShareStatus(res.ok ? 'done' : 'error');
-    } catch {
-      setShareStatus('error');
-    }
+    const r = await recordSubscribe({
+      email: shareEmail,
+      source: 'settings_panel',
+      school, year,
+      palkitFilled: filledCount,
+      scheduleText: text,
+    });
+    setShareStatus(r.ok ? 'done' : 'error');
   };
 
   const settingBtn = (icon, label, onClick, danger) => (
@@ -121,9 +159,63 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, opacity: filledCount === 0 ? 0.45 : 1, pointerEvents: filledCount === 0 ? "none" : "all" }}>
               {settingBtn(Ico.mail, "Lähetä sähköpostiin", handleEmail)}
+              {exportOpen && (
+                <div style={{
+                  background: "rgba(255,255,255,0.45)",
+                  border: "1.5px solid rgba(255,255,255,0.8)",
+                  borderRadius: 12, padding: "12px 14px",
+                  display: "flex", flexDirection: "column", gap: 8,
+                }}>
+                  <label style={{
+                    display: "flex", gap: 8, alignItems: "flex-start",
+                    fontSize: 11, color: "var(--ink-s)", lineHeight: 1.5, cursor: "pointer",
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={exportConsent}
+                      onChange={e => setExportConsent(e.target.checked)}
+                      style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
+                    />
+                    Tallenna myös Lukkari.io-listalle ja saan tiedon uusista ominaisuuksista.
+                  </label>
+                  {exportConsent && (
+                    <input
+                      type="email"
+                      value={exportEmail}
+                      onChange={e => setExportEmail(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleEmailSend()}
+                      placeholder="sähköpostisi@esim.fi"
+                      autoComplete="email"
+                      style={{
+                        width: "100%", padding: "9px 12px", borderRadius: 10,
+                        border: "1.5px solid rgba(255,255,255,0.8)",
+                        background: "rgba(255,255,255,0.6)",
+                        fontSize: 13, fontFamily: "inherit", color: "var(--ink)",
+                        outline: "none",
+                      }}
+                    />
+                  )}
+                  <button
+                    onClick={handleEmailSend}
+                    disabled={exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))}
+                    style={{
+                      width: "100%", padding: "9px 14px", borderRadius: 10,
+                      border: "1.5px solid rgba(255,255,255,0.8)",
+                      background: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail)))
+                        ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.8)",
+                      fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                      color: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))) ? "var(--ink-f)" : "var(--ink)",
+                      cursor: (exportStatus === 'saving' || (exportConsent && !isValidEmail(exportEmail))) ? "default" : "pointer",
+                      transition: "all .14s",
+                    }}
+                  >
+                    {exportStatus === 'saving' ? 'Avataan…' : 'Avaa sähköposti'}
+                  </button>
+                </div>
+              )}
               {settingBtn(Ico.download, "Lataa tekstitiedostona", handleDownload)}
               {settingBtn(copied ? Ico.check : Ico.copy, copied ? "Kopioitu!" : "Kopioi leikepöydälle", handleCopy)}
-              {settingBtn(Ico.print, "Tulosta / Tallenna PDF:ksi", () => window.print())}
+              {settingBtn(Ico.print, "Tulosta / Tallenna PDF:ksi", handlePrint)}
             </div>
           </div>
 
