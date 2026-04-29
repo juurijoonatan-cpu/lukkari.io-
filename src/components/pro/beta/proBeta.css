@@ -45,6 +45,34 @@
   overflow-x: hidden;
 }
 
+/* Animated gradient wash behind the video — keeps the page alive on
+   desktop even when the bg mp4 hasn't buffered yet. */
+.pb-bg-wash {
+  position: fixed; inset: -10%; z-index: 0;
+  pointer-events: none;
+  filter: blur(40px); opacity: 0.85;
+  background:
+    radial-gradient(38% 32% at 22% 28%, oklch(0.78 0.16 45 / 0.55) 0%, transparent 70%),
+    radial-gradient(32% 30% at 78% 22%, oklch(0.78 0.13 340 / 0.45) 0%, transparent 70%),
+    radial-gradient(40% 36% at 60% 82%, oklch(0.80 0.12 80 / 0.40) 0%, transparent 72%),
+    radial-gradient(28% 26% at 18% 82%, oklch(0.80 0.10 240 / 0.35) 0%, transparent 70%);
+  animation: pb-wash-drift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.pro-beta[data-theme="dark"] .pb-bg-wash {
+  opacity: 0.65;
+  background:
+    radial-gradient(38% 32% at 22% 28%, oklch(0.55 0.16 280 / 0.55) 0%, transparent 70%),
+    radial-gradient(32% 30% at 78% 22%, oklch(0.50 0.18 320 / 0.50) 0%, transparent 70%),
+    radial-gradient(40% 36% at 60% 82%, oklch(0.45 0.14 250 / 0.55) 0%, transparent 72%),
+    radial-gradient(28% 26% at 18% 82%, oklch(0.55 0.18 30 / 0.35) 0%, transparent 70%);
+}
+@keyframes pb-wash-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-1.5%, 1%, 0) scale(1.04); }
+  100% { transform: translate3d(1.5%, -1%, 0) scale(1.02); }
+}
+
 .pb-bg-video {
   position: fixed; inset: 0;
   width: 100vw; height: 100dvh;

@@ -29,32 +29,38 @@
   width: 76%; max-width: 320px; aspect-ratio: 1 / 0.92;
   position: relative;
   filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35));
-  animation: pb-orb-breath 5s ease-in-out infinite;
+  animation: pb-orb-breath 4.5s ease-in-out infinite;
+  will-change: transform, filter;
 }
 @keyframes pb-orb-breath {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.04); }
+  0%,100% { transform: translateZ(0) scale(1);    filter: drop-shadow(0 30px 60px rgba(80,60,180,0.35)); }
+  50%     { transform: translateZ(0) scale(1.07); filter: drop-shadow(0 36px 72px rgba(120,80,200,0.50)); }
 }
 .pb-orb-l {
   position: absolute; inset: 0; border-radius: 50%;
   mix-blend-mode: screen;
+  will-change: transform;
 }
 .pb-orb-l1 {
   background: radial-gradient(circle at 50% 50%, transparent 32%, oklch(0.62 0.18 280 / 0.85) 48%, oklch(0.55 0.20 290 / 0.6) 60%, transparent 75%);
-  transform: scale(1, 0.95);
+  animation: pb-orb-spin1 14s linear infinite;
 }
 .pb-orb-l2 {
   background: radial-gradient(circle at 50% 50%, transparent 38%, oklch(0.70 0.16 320 / 0.7) 52%, oklch(0.65 0.20 350 / 0.5) 65%, transparent 78%);
-  transform: rotate(-8deg) scale(1.08, 0.94);
+  animation: pb-orb-spin2 18s linear infinite reverse;
 }
 .pb-orb-l3 {
   background: radial-gradient(circle at 50% 50%, transparent 42%, oklch(0.72 0.17 30 / 0.55) 56%, oklch(0.65 0.22 15 / 0.35) 68%, transparent 80%);
-  transform: rotate(12deg) scale(1.05, 0.96);
+  animation: pb-orb-spin3 22s linear infinite;
 }
 .pb-orb-l4 {
   background: radial-gradient(circle at 50% 50%, transparent 30%, oklch(0.75 0.14 260 / 0.5) 45%, transparent 65%);
-  transform: rotate(-22deg) scale(0.92, 1.05);
+  animation: pb-orb-spin4 26s linear infinite reverse;
 }
+@keyframes pb-orb-spin1 { from { transform: rotate(0deg)   scale(1.00, 0.95); } to { transform: rotate(360deg) scale(1.00, 0.95); } }
+@keyframes pb-orb-spin2 { from { transform: rotate(-8deg)  scale(1.08, 0.94); } to { transform: rotate(352deg) scale(1.08, 0.94); } }
+@keyframes pb-orb-spin3 { from { transform: rotate(12deg)  scale(1.05, 0.96); } to { transform: rotate(372deg) scale(1.05, 0.96); } }
+@keyframes pb-orb-spin4 { from { transform: rotate(-22deg) scale(0.92, 1.05); } to { transform: rotate(338deg) scale(0.92, 1.05); } }
 .pb-orb-core {
   position: absolute; left: 50%; top: 50%;
   width: 30%; aspect-ratio: 1; border-radius: 50%;
