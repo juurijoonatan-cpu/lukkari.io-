@@ -1,47 +1,26 @@
-const STATS = [
-  {
-    value: '300+',
-    label: 'AI-kyselyä',
-    desc: 'Pro-tilauksella kuukaudessa. Riittää koko lukuvuoden suunnitteluun.',
-  },
-  {
-    value: 'Suomeksi',
-    label: 'Alusta asti',
-    desc: 'Rakennettu suomalaisille opiskelijoille. Wilman aikataulujen päälle.',
-  },
-  {
-    value: '0 €',
-    label: 'Demo',
-    desc: 'Kokeile ilman tiliä. Ei sähköpostia, ei sitoutumista.',
-  },
-  {
-    value: '24/7',
-    label: 'Selaimessa',
-    desc: 'Toimii puhelimella, läppärillä ja tabletilla. Ei asennusta.',
-  },
-];
+import { useT } from '../../../i18n/i18n';
+
+const STAT_KEYS = ['s1', 's2', 's3', 's4'];
 
 export function ProInfoStats() {
+  const t = useT();
+
   return (
     <section className="pi-card pi-stats">
       <div className="pi-stats-head">
-        <span className="pi-pill-quiet">Miksi Pro</span>
+        <span className="pi-pill-quiet">{t('pro.stats.label')}</span>
         <h2 className="pi-stats-title">
-          Tehty <em>opiskelijalle</em>, ei koululle.
+          {t('pro.stats.titleA')}<em>{t('pro.stats.titleEm')}</em>{t('pro.stats.titleB')}
         </h2>
-        <p className="pi-stats-sub">
-          Lukkari Pro ei ole kalenteri. Se on opintoassistentti, joka
-          ymmärtää suomalaisen lukion rakenteen ja auttaa sinua
-          valitsemaan oikein.
-        </p>
+        <p className="pi-stats-sub">{t('pro.stats.sub')}</p>
       </div>
 
       <div className="pi-stats-grid">
-        {STATS.map((s, i) => (
-          <div className="pi-stat" key={i}>
-            <div className="pi-stat-value">{s.value}</div>
-            <div className="pi-stat-label">{s.label}</div>
-            <div className="pi-stat-desc">{s.desc}</div>
+        {STAT_KEYS.map(k => (
+          <div className="pi-stat" key={k}>
+            <div className="pi-stat-value">{t(`pro.stats.${k}.value`)}</div>
+            <div className="pi-stat-label">{t(`pro.stats.${k}.label`)}</div>
+            <div className="pi-stat-desc">{t(`pro.stats.${k}.desc`)}</div>
           </div>
         ))}
       </div>
