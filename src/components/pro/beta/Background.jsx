@@ -1,32 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
- * Load the bg video for everyone except users who explicitly opted out:
- *  - prefers-reduced-motion
- *  - Save-Data header
- *  - 2g connection
- * Phones now get it too (per design request).
+ * Always render the bg video and explicitly kick `.play()` — desktop Chrome
+ * regularly stalls muted autoplay when `preload` only fetched metadata,
+ * which is why the demo looked frozen on desktop while phones (which use
+ * different autoplay heuristics) worked fine.
+ *
+ * We intentionally don't gate on `prefers-reduced-motion` here: the user
+ * explicitly wants the Pro demo alive on every device. The OS-level
+ * accessibility setting still slows down the animations (see proBeta.css)
+ * but we keep the video and the wash visible so the page never looks dead.
  */
-function shouldLoadVideo() {
-  if (typeof window === 'undefined') return false;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-  const c = navigator.connection;
-  if (c?.saveData) return false;
-  if (c?.effectiveType && /^(slow-)?2g$/.test(c.effectiveType)) return false;
-  return true;
+function kick(v) {
+  if (!v) return;
+  const p = v.play();
+  if (p && typeof p.catch === 'function') p.catch(() => {});
 }
 
 export function Background({ theme, playbackRate = 0.5 }) {
-  const [enabled, setEnabled] = useState(false);
   const videoRef = useRef(null);
-
-  useEffect(() => {
-    setEnabled(shouldLoadVideo());
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setEnabled(shouldLoadVideo());
-    mq.addEventListener?.('change', onChange);
-    return () => mq.removeEventListener?.('change', onChange);
-  }, []);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -35,11 +27,15 @@ export function Background({ theme, playbackRate = 0.5 }) {
     const apply = () => { v.playbackRate = playbackRate; };
     v.addEventListener('loadedmetadata', apply);
     v.addEventListener('play', apply);
+    kick(v);
+    const onVis = () => { if (!document.hidden) kick(v); };
+    document.addEventListener('visibilitychange', onVis);
     return () => {
       v.removeEventListener('loadedmetadata', apply);
       v.removeEventListener('play', apply);
+      document.removeEventListener('visibilitychange', onVis);
     };
-  }, [enabled, theme, playbackRate]);
+  }, [theme, playbackRate]);
 
   return (
     <>
@@ -47,16 +43,15 @@ export function Background({ theme, playbackRate = 0.5 }) {
           page breathes even before the heavy mp4 finishes buffering on
           slow desktop networks. */}
       <div className="pb-bg-wash" aria-hidden="true" />
-      {enabled && (
-        <video
-          ref={videoRef}
-          key={theme}
-          className="pb-bg-video"
-          autoPlay loop muted playsInline
-          preload="metadata"
-          src={theme === 'dark' ? '/bg-dark.mp4' : '/bg-light.mp4'}
-        />
-      )}
+      <video
+        ref={videoRef}
+        key={theme}
+        className="pb-bg-video"
+        autoPlay loop muted playsInline
+        preload="auto"
+        disablePictureInPicture
+        src={theme === 'dark' ? '/bg-dark.mp4' : '/bg-light.mp4'}
+      />
       <div className="pb-bg-tint" />
     </>
   );
