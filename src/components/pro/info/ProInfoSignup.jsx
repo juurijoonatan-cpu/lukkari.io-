@@ -1,38 +1,5 @@
 import { useState } from 'react';
-
-/**
- * Submit a Pro waitlist signup. Tomorrow this hits Web3Forms via:
- *   POST https://api.web3forms.com/submit
- *   { access_key, email, subject, from_name }
- * For now it returns success so the UI flow is testable without a key.
- */
-async function submitEmail(email) {
-  const key = import.meta.env.VITE_WEB3FORMS_KEY;
-  if (!key) {
-    // Demo path: fake success so the UI can be developed without the key.
-    await new Promise(r => setTimeout(r, 350));
-    return { ok: true, demo: true };
-  }
-  try {
-    const res = await fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        access_key: key,
-        subject: 'Lukkari Pro waitlist signup',
-        from_name: 'Lukkari.io',
-        email,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.success === false) {
-      return { ok: false, error: data.message || `Virhe ${res.status}` };
-    }
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err.message || 'Verkkoyhteys ei toimi.' };
-  }
-}
+import { recordSubscribe } from '../../../utils/leads';
 
 export function ProInfoSignup() {
   const [email, setEmail] = useState('');
@@ -43,11 +10,15 @@ export function ProInfoSignup() {
   const submit = async () => {
     if (!valid || state.status === 'sending') return;
     setState({ status: 'sending', error: null });
-    const r = await submitEmail(email.trim());
+    const r = await recordSubscribe({
+      email: email.trim(),
+      source: 'pro_info_waitlist',
+      sendWelcome: true,
+    });
     if (r.ok) {
       setState({ status: 'sent', error: null });
     } else {
-      setState({ status: 'idle', error: r.error || 'Yritä uudelleen.' });
+      setState({ status: 'idle', error: 'Yritä uudelleen hetken kuluttua.' });
     }
   };
 
@@ -57,7 +28,7 @@ export function ProInfoSignup() {
 
       {state.status === 'sent' ? (
         <p className="pi-signup-ok">
-          Kiitos. Olet listalla, ilmoitamme heti kun avaamme.
+          Kiitos. Olet listalla — saat tervetuloviestin sähköpostiisi.
         </p>
       ) : (
         <>
