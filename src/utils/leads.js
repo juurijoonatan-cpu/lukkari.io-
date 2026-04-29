@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from './supabase';
 
 const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
 const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
@@ -77,6 +77,29 @@ export async function recordSubscribe({
     return { ok: false, error: 'storage_and_notify_failed' };
   }
   return { ok: true, stored, notified };
+}
+
+export async function sendScheduleEmail({ email, school, selections, year }) {
+  const e = cleanEmail(email);
+  if (!isEmail(e)) return { ok: false, error: 'invalid_email' };
+  if (!school || !selections) return { ok: false, error: 'missing_schedule' };
+
+  try {
+    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/send-schedule`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ email: e, school, selections, year }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: data?.error || `HTTP ${res.status}` };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err?.message || 'network' };
+  }
 }
 
 export async function recordDownload({
