@@ -15,6 +15,7 @@ import { Ico } from './components/icons';
 import { ProAuth } from './components/pro/ProAuth';
 import { ProBeta } from './components/pro/beta/ProBeta';
 import { ProSubscribe } from './components/pro/ProSubscribe';
+import { useT } from './i18n/i18n';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
 const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe"];
@@ -31,12 +32,13 @@ function Orbs() {
 }
 
 function ShareButton() {
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   const share = useCallback(async () => {
     const url = "https://lukkari.io/";
     if (navigator.share) {
-      try { await navigator.share({ title: "Lukkari.io", text: "Suunnittele lukuvuotesi kurssit helposti!", url }); }
+      try { await navigator.share({ title: "Lukkari.io", text: t('app.shareText'), url }); }
       catch (_) {}
     } else {
       try {
@@ -45,7 +47,7 @@ function ShareButton() {
         setTimeout(() => setCopied(false), 2000);
       } catch (_) {}
     }
-  }, []);
+  }, [t]);
 
   return (
     <button onClick={share} style={{
@@ -58,12 +60,13 @@ function ShareButton() {
       transition: "color 0.14s",
     }}>
       {copied ? Ico.check : Ico.share}
-      <span>{copied ? "Linkki kopioitu!" : "Jaa kaverille"}</span>
+      <span>{copied ? t('app.shareCopied') : t('app.share')}</span>
     </button>
   );
 }
 
 export default function App() {
+  const t = useT();
   const [tab, setTab] = useState("free");
   const [schoolId, setSchoolId] = useState("otaniemi");
   const [selections, setSelections] = useState({});
@@ -135,8 +138,8 @@ export default function App() {
     ? (() => {
         try {
           const c = JSON.parse(localStorage.getItem("lukkari.customSchool") || "{}");
-          return { id: "custom", name: c.name || "Oma koulu", palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: c.times || [], days: c.days || [], rotation: c.rotation || [] };
-        } catch { return { id: "custom", name: "Oma koulu", palkkiCount: 6, periodCount: 4, times: [], days: [], rotation: [] }; }
+          return { id: "custom", name: c.name || t('app.customSchool'), palkkiCount: c.palkkiCount || 6, periodCount: c.periodCount || 4, times: c.times || [], days: c.days || [], rotation: c.rotation || [] };
+        } catch { return { id: "custom", name: t('app.customSchool'), palkkiCount: 6, periodCount: 4, times: [], days: [], rotation: [] }; }
       })()
     : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
@@ -193,14 +196,14 @@ export default function App() {
               {school.name}
             </h1>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-              <p style={{ fontSize: 13, color: "var(--ink-s)" }}>Täytä palkit, näe lukujärjestyksesi</p>
+              <p style={{ fontSize: 13, color: "var(--ink-s)" }}>{t('app.tagline')}</p>
               {filledCount > 0 && (
                 <span style={{
                   fontSize: 11, fontWeight: 600,
                   background: "rgba(255,255,255,0.55)", border: "1.5px solid rgba(255,255,255,0.85)",
                   borderRadius: 99, padding: "2px 10px", color: "var(--accent)",
                   backdropFilter: "blur(6px)",
-                }}>{filledCount} kurssia kirjattu</span>
+                }}>{t('app.coursesLogged', { n: filledCount })}</span>
               )}
               <ShareButton />
             </div>
@@ -208,17 +211,17 @@ export default function App() {
 
           <div className="glass" style={{ borderRadius: 24, padding: "24px 24px 18px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 8 }}>
-              <h2 className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)" }}>Kurssimatriisi</h2>
+              <h2 className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)" }}>{t('app.matrix')}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 10, color: "var(--ink-f)", fontWeight: 500 }}>
-                  {school.palkkiCount} palkkia · {school.periodCount} periodia
+                  {t('app.gridSummary', { p: school.palkkiCount, pe: school.periodCount })}
                 </span>
                 {filledCount > 0 && (
                   <button onClick={() => setConfirmClear(true)} style={{
                     fontSize: 11, color: "var(--ink-f)", background: "transparent", border: "none",
                     cursor: "pointer", padding: "2px 6px", borderRadius: 6,
                     textDecoration: "underline", textUnderlineOffset: 3,
-                  }}>Tyhjennä</button>
+                  }}>{t('common.clear')}</button>
                 )}
               </div>
             </div>
@@ -243,7 +246,7 @@ export default function App() {
           pointerEvents: "none", zIndex: 70,
         }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "oklch(0.58 0.15 150)" }}/>
-          <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-s)" }}>Tallennettu</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-s)" }}>{t('app.saved')}</span>
         </div>
       )}
 

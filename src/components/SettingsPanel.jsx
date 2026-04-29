@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Ico } from './icons';
 import { buildTextExport } from '../utils/export';
 import { recordSubscribe, recordDownload, sendScheduleEmail } from '../utils/leads';
+import { useT } from '../i18n/i18n';
 
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
 
 export function SettingsPanel({ open, onClose, school, selections, year, setYear, onClear, filledCount }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
   const [shareConsent, setShareConsent] = useState(false);
@@ -57,7 +59,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
       }, 2400);
     } else {
       setExportStatus('error');
-      setExportError(sendRes?.error || 'Lähetys epäonnistui.');
+      setExportError(sendRes?.error || t('settings.export.failed'));
     }
   };
 
@@ -131,7 +133,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
           padding: "20px 20px 16px",
           borderBottom: "1px solid rgba(255,255,255,0.6)",
         }}>
-          <span className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)" }}>Asetukset</span>
+          <span className="fr" style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)" }}>{t('header.settings')}</span>
           <button className="icon-btn" onClick={onClose} style={{
             width: 32, height: 32, borderRadius: "50%",
             background: "rgba(255,255,255,0.5)",
@@ -143,7 +145,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
 
           <div>
-            <div className="sec-label">Lukuvuosi</div>
+            <div className="sec-label">{t('settings.year')}</div>
             <div style={{ display: "flex", gap: 6 }}>
               {["2025–2026","2026–2027","2027–2028"].map(y => (
                 <button key={y} onClick={() => setYear(y)} style={{
@@ -159,11 +161,11 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
 
           <div>
             <div className="sec-label">
-              Vie & jaa
-              {filledCount === 0 && <span style={{ marginLeft: 6, fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "var(--ink-f)" }}>— lisää ensin kursseja</span>}
+              {t('settings.export')}
+              {filledCount === 0 && <span style={{ marginLeft: 6, fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "var(--ink-f)" }}>· {t('settings.exportHint')}</span>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, opacity: filledCount === 0 ? 0.45 : 1, pointerEvents: filledCount === 0 ? "none" : "all" }}>
-              {settingBtn(Ico.mail, "Lähetä sähköpostiin", handleEmail)}
+              {settingBtn(Ico.mail, t('settings.email'), handleEmail)}
               {exportOpen && (
                 <div style={{
                   background: "rgba(255,255,255,0.45)",
@@ -174,19 +176,19 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                   {exportStatus === 'sent' ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "2px 0" }}>
                       <span style={{ color: "var(--accent)", display: "flex" }}>{Ico.check}</span>
-                      <span style={{ fontSize: 13, color: "var(--ink)" }}>Lähetetty. Tarkista sähköpostisi.</span>
+                      <span style={{ fontSize: 13, color: "var(--ink)" }}>{t('settings.export.sent')}</span>
                     </div>
                   ) : (
                     <>
                       <p style={{ fontSize: 11, color: "var(--ink-s)", lineHeight: 1.6 }}>
-                        Saat lukujärjestyksesi sähköpostiisi siistinä koosteena.
+                        {t('settings.export.hint')}
                       </p>
                       <input
                         type="email"
                         value={exportEmail}
                         onChange={e => { setExportEmail(e.target.value); setExportError(null); }}
                         onKeyDown={e => e.key === 'Enter' && handleEmailSend()}
-                        placeholder="sinun@email.fi"
+                        placeholder={t('pro.signup.placeholder')}
                         autoComplete="email"
                         disabled={exportStatus === 'sending'}
                         style={{
@@ -207,7 +209,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                           onChange={e => setExportConsent(e.target.checked)}
                           style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
                         />
-                        Liity samalla Lukkari.io-listalle. Saat tiedon uusista ominaisuuksista.
+                        {t('settings.export.consent')}
                       </label>
                       {exportError && (
                         <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>{exportError}</p>
@@ -226,20 +228,20 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                           transition: "all .14s",
                         }}
                       >
-                        {exportStatus === 'sending' ? 'Lähetetään…' : 'Lähetä lukujärjestys'}
+                        {exportStatus === 'sending' ? t('settings.list.sending') : t('settings.export.send')}
                       </button>
                     </>
                   )}
                 </div>
               )}
-              {settingBtn(Ico.download, "Lataa tekstitiedostona", handleDownload)}
-              {settingBtn(copied ? Ico.check : Ico.copy, copied ? "Kopioitu!" : "Kopioi leikepöydälle", handleCopy)}
-              {settingBtn(Ico.print, "Tulosta / Tallenna PDF:ksi", handlePrint)}
+              {settingBtn(Ico.download, t('settings.download'), handleDownload)}
+              {settingBtn(copied ? Ico.check : Ico.copy, copied ? t('settings.copied') : t('settings.copy'), handleCopy)}
+              {settingBtn(Ico.print, t('settings.print'), handlePrint)}
             </div>
           </div>
 
           <div>
-            <div className="sec-label">Liity Lukkari.io-listalle</div>
+            <div className="sec-label">{t('settings.list.title')}</div>
             {shareStatus === 'done' ? (
               <div style={{
                 background: "rgba(255,255,255,0.55)", border: "1.5px solid rgba(255,255,255,0.8)",
@@ -247,19 +249,19 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                 display: "flex", alignItems: "center", gap: 10,
               }}>
                 <span style={{ color: "var(--accent)", display: "flex" }}>{Ico.check}</span>
-                <span style={{ fontSize: 13, color: "var(--ink)" }}>Kiitos! Olet nyt listalla.</span>
+                <span style={{ fontSize: 13, color: "var(--ink)" }}>{t('settings.list.thanks')}</span>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ fontSize: 11, color: "var(--ink-s)", lineHeight: 1.6 }}>
-                  Saat tiedon uusista ominaisuuksista. Ei spämmejä.
+                  {t('settings.list.hint')}
                 </p>
                 <input
                   type="email"
                   value={shareEmail}
                   onChange={e => setShareEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
-                  placeholder="sähköpostisi@esim.fi"
+                  placeholder={t('settings.list.placeholder')}
                   style={{
                     width: "100%", padding: "9px 12px", borderRadius: 10,
                     border: "1.5px solid rgba(255,255,255,0.8)",
@@ -278,10 +280,10 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                     onChange={e => setShareConsent(e.target.checked)}
                     style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
                   />
-                  Suostun, että Lukkari.io käyttää sähköpostiani markkinointiviestintään. Voin peruuttaa suostumukseni milloin tahansa.
+                  {t('settings.list.consent')}
                 </label>
                 {shareStatus === 'error' && (
-                  <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>Jokin meni pieleen — yritä uudelleen.</p>
+                  <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>{t('settings.list.error')}</p>
                 )}
                 <button
                   onClick={handleSubscribe}
@@ -296,14 +298,14 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                     transition: "all .14s",
                   }}
                 >
-                  {shareStatus === 'sending' ? 'Lähetetään…' : 'Liity listalle'}
+                  {shareStatus === 'sending' ? t('settings.list.sending') : t('settings.list.join')}
                 </button>
               </div>
             )}
           </div>
 
           <div>
-            <div className="sec-label">Koulu</div>
+            <div className="sec-label">{t('settings.school')}</div>
             <div style={{ background: "rgba(255,255,255,0.45)", border: "1.5px solid rgba(255,255,255,0.8)", borderRadius: 12, padding: "10px 14px" }}>
               <div style={{ fontSize: 12, color: "var(--ink-s)", padding: "3px 0", display: "flex", justifyContent: "space-between" }}>
                 <span>{school.name}</span>
@@ -313,14 +315,14 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
           </div>
 
           <div>
-            <div className="sec-label">Hallinta</div>
-            {settingBtn(Ico.trash, "Tyhjennä kaikki kurssit", onClear, true)}
+            <div className="sec-label">{t('settings.manage')}</div>
+            {settingBtn(Ico.trash, t('settings.clearAll'), onClear, true)}
           </div>
 
           <div style={{ marginTop: "auto", padding: "12px 0 0", borderTop: "1px solid rgba(200,195,190,0.3)" }}>
             <p style={{ fontSize: 11, color: "var(--ink-f)", lineHeight: 1.5 }}>
-              Lukkari.io — kaikki tiedot tallennetaan vain tällä laitteella.<br/>
-              Ei tiliä. Ei seurantaa.
+              {t('settings.foot1')}<br/>
+              {t('settings.foot2')}
             </p>
           </div>
 

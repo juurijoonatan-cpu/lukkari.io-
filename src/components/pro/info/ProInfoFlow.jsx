@@ -1,30 +1,18 @@
 import { Ico } from '../../icons';
+import { useT } from '../../../i18n/i18n';
 
 const STEPS = [
-  {
-    n: '01',
-    icon: Ico.calendar,
-    title: 'Lisää kurssisi',
-    desc: 'Täytä lukujärjestyksesi ilmaisversiossa. Vie hetken ja tallentuu selaimeesi.',
-  },
-  {
-    n: '02',
-    icon: Ico.sparkle,
-    title: 'AI analysoi',
-    desc: 'Tekoäly vertaa valintojasi ylioppilaskirjoituksiin, hakukohteisiin ja painotukseesi.',
-  },
-  {
-    n: '03',
-    icon: Ico.book,
-    title: 'Saat suunnitelman',
-    desc: 'Henkilökohtaiset kurssisuositukset ja viikkokohtainen lukusuunnitelma.',
-  },
+  { n: '01', key: 's1', icon: Ico.calendar },
+  { n: '02', key: 's2', icon: Ico.sparkle },
+  { n: '03', key: 's3', icon: Ico.book },
 ];
 
 export function ProInfoFlow() {
+  const t = useT();
+
   return (
     <section className="pi-card pi-flow">
-      <span className="pi-section-label">Näin Pro toimii</span>
+      <span className="pi-section-label">{t('pro.flow.label')}</span>
 
       <div className="pi-flow-steps">
         {STEPS.map((s, i) => (
@@ -39,8 +27,8 @@ export function ProInfoFlow() {
                 {s.icon.props.children}
               </svg>
             </div>
-            <h3 className="pi-step-title">{s.title}</h3>
-            <p className="pi-step-desc">{s.desc}</p>
+            <h3 className="pi-step-title">{t(`pro.flow.${s.key}.title`)}</h3>
+            <p className="pi-step-desc">{t(`pro.flow.${s.key}.desc`)}</p>
             {i < STEPS.length - 1 && <div className="pi-step-arrow" aria-hidden>→</div>}
           </div>
         ))}

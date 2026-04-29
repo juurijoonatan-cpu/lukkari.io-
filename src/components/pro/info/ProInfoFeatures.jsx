@@ -1,46 +1,18 @@
 import { useState } from 'react';
 import { Ico } from '../../icons';
+import { useT } from '../../../i18n/i18n';
 
 const FEATURES = [
-  {
-    icon: Ico.sparkle,
-    title: 'Kurssisuosittelija',
-    desc: 'Tekoäly ehdottaa juuri sinulle sopivat kurssit. Ehdotukset huomioivat ylioppilaskirjoitukset, hakukohteet ja oman painotuksesi.',
-    badge: 'Tärkein',
-  },
-  {
-    icon: Ico.book,
-    title: 'Lukusuunnitelma',
-    desc: 'Selkeä viikkosuunnitelma kursseittain. Tekoäly kertoo mitä opiskella ensin ja kuinka kauan.',
-  },
-  {
-    icon: Ico.timer,
-    title: 'Lukuaikataulu kokeisiin',
-    desc: 'Syötä koepäivä, saat kertausaikataulun. Tasainen tahti, ei viime hetken pänttäämistä.',
-  },
-  {
-    icon: Ico.conflict,
-    title: 'Konfliktianalyysi',
-    desc: 'Tunnistaa aikatauluristiriidat automaattisesti, ennen kuin niistä ehtii tulla ongelma.',
-  },
-  {
-    icon: Ico.calendar,
-    title: 'Kalenteri-synkronointi',
-    desc: 'Vie lukujärjestys suoraan Google tai Apple kalenteriin yhdellä klikkauksella.',
-  },
-  {
-    icon: Ico.download,
-    title: 'PDF-export',
-    desc: 'Tallenna tai tulosta lukujärjestys siistinä PDF-tiedostona.',
-  },
-  {
-    icon: Ico.shield,
-    title: 'Pilvivarmuuskopio',
-    desc: 'Kurssivalintasi tallessa pilvessä. Vaihda laitetta huoletta, valinnat seuraavat mukana.',
-  },
+  { key: 'f1', icon: Ico.sparkle,  badge: 'pro.features.badgeMain' },
+  { key: 'f2', icon: Ico.book },
+  { key: 'f3', icon: Ico.timer },
+  { key: 'f4', icon: Ico.conflict },
+  { key: 'f5', icon: Ico.calendar },
+  { key: 'f6', icon: Ico.download },
+  { key: 'f7', icon: Ico.shield },
 ];
 
-function FeatureCard({ feature, index }) {
+function FeatureCard({ feature, index, t }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -63,21 +35,22 @@ function FeatureCard({ feature, index }) {
       </div>
       <div className="pi-feature-body">
         <div className="pi-feature-head">
-          <span className="pi-feature-title">{feature.title}</span>
-          {feature.badge && <span className="pi-feature-badge">{feature.badge}</span>}
+          <span className="pi-feature-title">{t(`pro.features.${feature.key}.title`)}</span>
+          {feature.badge && <span className="pi-feature-badge">{t(feature.badge)}</span>}
         </div>
-        <p className="pi-feature-desc">{feature.desc}</p>
+        <p className="pi-feature-desc">{t(`pro.features.${feature.key}.desc`)}</p>
       </div>
     </div>
   );
 }
 
 export function ProInfoFeatures() {
+  const t = useT();
   return (
     <section>
-      <span className="pi-section-label">Mitä saat Prolla</span>
+      <span className="pi-section-label">{t('pro.features.label')}</span>
       <div className="pi-features-grid">
-        {FEATURES.map((f, i) => <FeatureCard key={i} feature={f} index={i}/>)}
+        {FEATURES.map((f, i) => <FeatureCard key={f.key} feature={f} index={i} t={t}/>)}
       </div>
     </section>
   );

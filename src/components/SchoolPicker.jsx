@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { SCHOOLS } from '../data/schools';
 import { Ico } from './icons';
+import { useT } from '../i18n/i18n';
 
 const CUSTOM_KEY = "lukkari.customSchool";
 const DAYS = ["Ma","Ti","Ke","To","Pe"];
@@ -16,6 +17,7 @@ function saveCustomSchool(obj) {
 }
 
 export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("list"); // 'list' | 'form'
   const [customName, setCustomName] = useState("");
@@ -27,7 +29,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
 
   const custom = loadCustomSchool();
   const school = schoolId === "custom"
-    ? { id: "custom", name: custom.name || "Oma koulu" }
+    ? { id: "custom", name: custom.name || t('sp.custom.title') }
     : (SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0]);
 
   useEffect(() => {
@@ -144,7 +146,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
               onMouseEnter={e => { if (schoolId !== "custom") e.currentTarget.style.background = "rgba(255,255,255,0.40)"; }}
               onMouseLeave={e => { if (schoolId !== "custom") e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}
               >
-                <span>{schoolId === "custom" && custom.name ? custom.name : "✏️ Oma koulu…"}</span>
+                <span>{schoolId === "custom" && custom.name ? custom.name : `${t('sp.custom.optionLabel')}…`}</span>
                 <span style={{ fontSize: 11, color: "oklch(0.60 0.13 45)" }}>
                   {schoolId === "custom" ? Ico.check : "›"}
                 </span>
@@ -153,12 +155,12 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
           ) : (
             /* Inline custom school form */
             <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#1f1d1a", letterSpacing: "0.06em", textTransform: "uppercase", margin: 0 }}>Oma koulu</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#1f1d1a", letterSpacing: "0.06em", textTransform: "uppercase", margin: 0 }}>{t('sp.custom.title')}</p>
               <div>
-                <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 4 }}>Koulun nimi</label>
+                <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 4 }}>{t('sp.custom.name')}</label>
                 <input
                   style={inputSt}
-                  placeholder="esim. Tapiolan lukio"
+                  placeholder={t('sp.custom.namePh')}
                   value={customName}
                   onChange={e => setCustomName(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && saveCustom()}
@@ -168,7 +170,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
               <div style={{ display: "flex", gap: 10 }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 4 }}>
-                    Periodeja <strong style={{ color: "#1f1d1a" }}>{customPeriods}</strong>
+                    {t('sp.custom.periods')} <strong style={{ color: "#1f1d1a" }}>{customPeriods}</strong>
                   </label>
                   <input type="range" min={2} max={8} value={customPeriods}
                     onChange={e => setCustomPeriods(Number(e.target.value))}
@@ -177,7 +179,7 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 4 }}>
-                    Palkkeja <strong style={{ color: "#1f1d1a" }}>{customPalkkis}</strong>
+                    {t('sp.custom.palkkit')} <strong style={{ color: "#1f1d1a" }}>{customPalkkis}</strong>
                   </label>
                   <input type="range" min={2} max={12} value={customPalkkis}
                     onChange={e => setCustomPalkkis(Number(e.target.value))}
@@ -187,12 +189,12 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
               </div>
               {/* Tuntikiertokaavio */}
               <div>
-                <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 6 }}>Tuntikiertokaavio</label>
+                <label style={{ fontSize: 11, color: "#797470", fontFamily: "inherit", display: "block", marginBottom: 6 }}>{t('sp.custom.rotation')}</label>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ borderCollapse: "collapse", width: "100%" }}>
                     <thead>
                       <tr>
-                        <th style={{ fontSize: 9, fontWeight: 600, color: "#797470", textAlign: "left", padding: "0 4px 4px 0", whiteSpace: "nowrap" }}>Aika</th>
+                        <th style={{ fontSize: 9, fontWeight: 600, color: "#797470", textAlign: "left", padding: "0 4px 4px 0", whiteSpace: "nowrap" }}>{t('sp.custom.time')}</th>
                         {DAYS.map(d => (
                           <th key={d} style={{ fontSize: 9, fontWeight: 600, color: "#797470", textAlign: "center", padding: "0 2px 4px" }}>{d}</th>
                         ))}
@@ -232,12 +234,12 @@ export function SchoolPicker({ schoolId, setSchoolId, isPro, dropdownZ = 50 }) {
                   color: customName.trim() ? "white" : "#a09c98",
                   fontSize: 12, fontWeight: 600, cursor: customName.trim() ? "pointer" : "default",
                   fontFamily: "inherit", transition: "all .12s",
-                }}>Tallenna</button>
+                }}>{t('common.save')}</button>
                 <button onClick={() => setMode("list")} style={{
                   padding: "9px 14px", borderRadius: 10,
                   background: "transparent", border: "1px solid rgba(200,195,190,0.5)",
                   color: "#797470", fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-                }}>Peruuta</button>
+                }}>{t('common.cancel')}</button>
               </div>
             </div>
           )}

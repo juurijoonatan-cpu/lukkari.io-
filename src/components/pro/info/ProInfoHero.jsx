@@ -1,4 +1,5 @@
 import { Ico } from '../../icons';
+import { useT } from '../../../i18n/i18n';
 
 const SPARKS = [
   { size: 22, x: -48, y: -18, rot: 12,  delay: 0.0,  opacity: 0.85 },
@@ -46,30 +47,29 @@ function HeroSparks() {
 }
 
 export function ProInfoHero({ onTryDemo }) {
+  const t = useT();
   return (
     <section className="pi-hero">
       <HeroSparks />
       <span className="pi-pill">
         <span style={{ display: 'flex' }}>{Ico.star}</span>
-        BETA
+        {t('pro.hero.beta')}
       </span>
       <h1 className="pi-hero-title">
-        Lukkari <em>Pro</em>
+        {t('pro.hero.brand')} <em>{t('pro.hero.brandPro')}</em>
       </h1>
       <p className="pi-hero-sub">
-        Tekoäly suunnittelee opintosi puolestasi. Sinä keskityt opiskeluun.
-        Saat henkilökohtaiset kurssisuositukset, valmiit lukusuunnitelmat
-        ja selkeät kertausaikataulut kokeisiin.
+        {t('pro.hero.sub')}
       </p>
 
       <button className="pi-cta" onClick={onTryDemo}>
         <span style={{ display: 'flex' }}>{Ico.sparkle}</span>
-        Tutustu demoon
+        {t('pro.hero.cta')}
         <span style={{ fontSize: 16, lineHeight: 1 }}>→</span>
       </button>
 
       <p className="pi-hero-foot">
-        Ei rekisteröitymistä. Demo aukeaa heti.
+        {t('pro.hero.foot')}
       </p>
     </section>
   );

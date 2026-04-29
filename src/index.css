@@ -136,6 +136,31 @@ body.pro-dark .tab-btn:not(.on):hover { color: #f0ede8; background: rgba(255,255
 
 .mx-scroll { overflow-x: auto; }
 
+/* Language toggle (FI / EN) — sits next to the gear in Header */
+.lang-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 11px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.5);
+  border: 1.5px solid rgba(255,255,255,0.8);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-f);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.lang-toggle:hover { background: rgba(255,255,255,0.85); }
+.lang-toggle .is-on { color: var(--ink); }
+.lang-toggle .sep { opacity: 0.45; font-weight: 500; }
+.lang-toggle[data-pro="1"] {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
+  color: #605c58;
+}
+.lang-toggle[data-pro="1"]:hover { background: rgba(255,255,255,0.14); }
+.lang-toggle[data-pro="1"] .is-on { color: #f0ede8; }
+
 @media (max-width: 640px) {
   .main-pad  { padding: 20px 16px 80px !important; }
   .pro-pad   { padding: 24px 16px 64px !important; }

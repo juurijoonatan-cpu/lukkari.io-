@@ -1,4 +1,7 @@
+import { useT } from '../i18n/i18n';
+
 export function Footer({ isPro, onOpenLegal }) {
+  const t = useT();
   const linkColor = isPro ? "#a09c98" : "var(--ink-s)";
   const linkHoverColor = isPro ? "#f0ede8" : "var(--ink)";
   const sepColor = isPro ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)";
@@ -9,6 +12,13 @@ export function Footer({ isPro, onOpenLegal }) {
     cursor: "pointer", fontFamily: "inherit",
     transition: "color 0.14s",
   };
+
+  const link = (key, label) => (
+    <button style={linkStyle}
+      onMouseEnter={e => e.currentTarget.style.color = linkHoverColor}
+      onMouseLeave={e => e.currentTarget.style.color = linkColor}
+      onClick={() => onOpenLegal(key)}>{label}</button>
+  );
 
   return (
     <footer style={{
@@ -23,20 +33,11 @@ export function Footer({ isPro, onOpenLegal }) {
         © {new Date().getFullYear()} Lukkari.io
       </div>
       <nav style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-        <button style={linkStyle}
-          onMouseEnter={e => e.currentTarget.style.color = linkHoverColor}
-          onMouseLeave={e => e.currentTarget.style.color = linkColor}
-          onClick={() => onOpenLegal("tietosuoja")}>Tietosuojaseloste</button>
+        {link("tietosuoja", t('footer.privacy'))}
         <span style={{ color: sepColor, alignSelf: "center", fontSize: 11 }}>·</span>
-        <button style={linkStyle}
-          onMouseEnter={e => e.currentTarget.style.color = linkHoverColor}
-          onMouseLeave={e => e.currentTarget.style.color = linkColor}
-          onClick={() => onOpenLegal("kayttoehdot")}>Käyttöehdot</button>
+        {link("kayttoehdot", t('footer.terms'))}
         <span style={{ color: sepColor, alignSelf: "center", fontSize: 11 }}>·</span>
-        <button style={linkStyle}
-          onMouseEnter={e => e.currentTarget.style.color = linkHoverColor}
-          onMouseLeave={e => e.currentTarget.style.color = linkColor}
-          onClick={() => onOpenLegal("evasteet")}>Evästekäytäntö</button>
+        {link("evasteet", t('footer.cookies'))}
       </nav>
     </footer>
   );
