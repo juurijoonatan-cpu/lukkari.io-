@@ -2,14 +2,18 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { STRINGS } from './strings';
 
 const LANG_KEY = 'lukkari.lang';
-const SUPPORTED = ['fi', 'en'];
+export const SUPPORTED_LANGS = ['fi', 'en', 'sv'];
 
 function detectInitial() {
   try {
     const saved = localStorage.getItem(LANG_KEY);
-    if (SUPPORTED.includes(saved)) return saved;
+    if (SUPPORTED_LANGS.includes(saved)) return saved;
   } catch {}
-  if (typeof navigator !== 'undefined' && /^en/i.test(navigator.language || '')) return 'en';
+  if (typeof navigator !== 'undefined') {
+    const nav = navigator.language || '';
+    if (/^sv/i.test(nav)) return 'sv';
+    if (/^en/i.test(nav)) return 'en';
+  }
   return 'fi';
 }
 
@@ -43,7 +47,7 @@ export function LanguageProvider({ children }) {
     };
     return {
       lang,
-      setLang: (next) => SUPPORTED.includes(next) && setLangState(next),
+      setLang: (next) => SUPPORTED_LANGS.includes(next) && setLangState(next),
       t,
     };
   }, [lang]);

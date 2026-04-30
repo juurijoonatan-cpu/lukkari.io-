@@ -10,6 +10,7 @@ export const STRINGS = {
     /* shared */
     'lang.fi': 'FI',
     'lang.en': 'EN',
+    'lang.sv': 'SV',
     'lang.toggle': 'Vaihda kieli',
 
     'common.cancel': 'Peruuta',
@@ -172,6 +173,7 @@ export const STRINGS = {
     /* shared */
     'lang.fi': 'FI',
     'lang.en': 'EN',
+    'lang.sv': 'SV',
     'lang.toggle': 'Switch language',
 
     'common.cancel': 'Cancel',
@@ -329,5 +331,169 @@ export const STRINGS = {
     'pro.signup.btnSending':    'Sending',
     'pro.signup.errRetry':      'Please try again in a moment.',
     'pro.signup.errNet':        'Network error.',
+  },
+
+  sv: {
+    /* shared */
+    'lang.fi': 'FI',
+    'lang.en': 'EN',
+    'lang.sv': 'SV',
+    'lang.toggle': 'Byt språk',
+
+    'common.cancel': 'Avbryt',
+    'common.save':   'Spara',
+    'common.add':    'Lägg till',
+    'common.clear':  'Rensa',
+    'common.close':  'Stäng',
+
+    /* header */
+    'header.tab.free': 'Gratis',
+    'header.tab.pro':  'Pro',
+    'header.settings': 'Inställningar',
+
+    /* footer */
+    'footer.privacy': 'Integritetspolicy',
+    'footer.terms':   'Användarvillkor',
+    'footer.cookies': 'Cookiepolicy',
+
+    /* free app shell */
+    'app.tagline':         'Fyll luckorna och se ditt schema',
+    'app.coursesLogged':   '{n} kurser tillagda',
+    'app.matrix':          'Kursmatris',
+    'app.gridSummary':     '{p} luckor · {pe} perioder',
+    'app.saved':           'Sparat',
+    'app.share':           'Dela med en vän',
+    'app.shareCopied':     'Länken kopierad!',
+    'app.shareText':       'Planera ditt läsår på ett enkelt sätt!',
+    'app.weekView':        'Veckovy',
+    'app.period':          'period',
+    'app.coursesOne':      'kurs',
+    'app.coursesMany':     'kurser',
+    'app.customSchool':    'Egen skola',
+
+    /* choice grid */
+    'grid.legend':         'Färg = lucka · Kolumner = perioder',
+    'grid.tabHint':        'Tab → nästa cell',
+
+    /* confirm clear */
+    'confirm.title':       'Rensa allt?',
+    'confirm.body':        'Alla kursanteckningar raderas permanent. Detta kan inte ångras.',
+
+    /* wishlist */
+    'wishlist.title':      'Kurslista',
+    'wishlist.placeholder':'Lägg till kurs (t.ex. MAA4)',
+    'wishlist.empty':      'Lägg till de kurser du vill ha i listan',
+    'wishlist.allAdded':   'Alla kurser tillagda i rutnätet',
+    'wishlist.summary':    '{done} / {total} tillagda · {missing} saknas',
+
+    /* settings panel */
+    'settings.year':           'Läsår',
+    'settings.export':         'Exportera & dela',
+    'settings.exportHint':     'lägg till kurser först',
+    'settings.email':          'Skicka via e-post',
+    'settings.download':       'Ladda ner som textfil',
+    'settings.copy':           'Kopiera till urklipp',
+    'settings.copied':         'Kopierat!',
+    'settings.print':          'Skriv ut / Spara som PDF',
+    'settings.export.hint':    'Du får ditt schema som ett rent e-postsammandrag.',
+    'settings.export.consent': 'Gå med i Lukkari.io-listan samtidigt. Få uppdateringar om nya funktioner.',
+    'settings.export.send':    'Skicka schema',
+    'settings.export.sent':    'Skickat. Kolla din e-post.',
+    'settings.export.failed':  'Sändningen misslyckades.',
+    'settings.list.title':     'Gå med i Lukkari.io-listan',
+    'settings.list.thanks':    'Tack! Du är nu med på listan.',
+    'settings.list.hint':      'Få uppdateringar om nya funktioner. Ingen spam.',
+    'settings.list.placeholder': 'din@epost.se',
+    'settings.list.consent':   'Jag samtycker till att Lukkari.io använder min e-post för marknadsföring. Jag kan återkalla mitt samtycke när som helst.',
+    'settings.list.error':     'Något gick fel, försök igen.',
+    'settings.list.sending':   'Skickar',
+    'settings.list.join':      'Gå med',
+    'settings.school':         'Skola',
+    'settings.manage':         'Hantera',
+    'settings.clearAll':       'Rensa alla kurser',
+    'settings.foot1':          'Lukkari.io. All data lagras endast på den här enheten.',
+    'settings.foot2':          'Inget konto. Ingen spårning.',
+
+    /* school picker / custom school */
+    'sp.custom.title':         'Egen skola',
+    'sp.custom.optionLabel':   '✏️ Egen skola',
+    'sp.custom.name':          'Skolans namn',
+    'sp.custom.namePh':        't.ex. Min Gymnasium',
+    'sp.custom.periods':       'Perioder',
+    'sp.custom.palkkit':       'Luckor',
+    'sp.custom.rotation':      'Lektionsrotation',
+    'sp.custom.time':          'Tid',
+
+    /* ── Pro info page ── */
+
+    /* hero */
+    'pro.hero.beta':  'BETA',
+    'pro.hero.brand': 'Lukkari',
+    'pro.hero.brandPro': 'Pro',
+    'pro.hero.sub':
+      'AI planerar dina studier åt dig. Du fokuserar på inlärningen. ' +
+      'Få personliga kursrekommendationer, färdiga studieplaner ' +
+      'och tydliga repetitionsscheman inför proven.',
+    'pro.hero.cta':   'Prova demon',
+    'pro.hero.foot':  'Ingen registrering. Demon öppnas direkt.',
+
+    /* stats */
+    'pro.stats.label':    'Varför Pro',
+    'pro.stats.titleA':   'Byggd för ',
+    'pro.stats.titleEm':  'studenten',
+    'pro.stats.titleB':   ', inte skolan.',
+    'pro.stats.sub':
+      'Lukkari Pro är ingen kalender. Det är en studieassistent som ' +
+      'förstår period- och lucksystemets uppbyggnad och hjälper dig ' +
+      'välja rätt väg.',
+    'pro.stats.s1.value': '300+',
+    'pro.stats.s1.label': 'AI-frågor',
+    'pro.stats.s1.desc':  'Per månad med Pro. Räcker för att planera ett helt läsår.',
+    'pro.stats.s2.value': 'AI-native',
+    'pro.stats.s2.label': 'Från grunden',
+    'pro.stats.s2.desc':  'Byggd kring period- och lucksystemet, inte ompaketerad från en vanlig kalender. Skalar till nya studieformer.',
+    'pro.stats.s3.value': '0 €',
+    'pro.stats.s3.label': 'Demo',
+    'pro.stats.s3.desc':  'Prova utan konto. Ingen e-post, ingen bindning.',
+    'pro.stats.s4.value': '24/7',
+    'pro.stats.s4.label': 'I webbläsaren',
+    'pro.stats.s4.desc':  'Funkar på telefon, laptop och surfplatta. Ingen installation.',
+
+    /* flow */
+    'pro.flow.label':     'Så fungerar Pro',
+    'pro.flow.s1.title':  'Lägg till dina kurser',
+    'pro.flow.s1.desc':   'Bygg ditt schema i gratisversionen. Tar en stund och sparas i din webbläsare.',
+    'pro.flow.s2.title':  'AI analyserar',
+    'pro.flow.s2.desc':   'AI jämför dina val med studentskrivningar, högskolemål och dina fokusområden.',
+    'pro.flow.s3.title':  'Få din plan',
+    'pro.flow.s3.desc':   'Personliga kursrekommendationer och en veckovis studieplan.',
+
+    /* features */
+    'pro.features.label':       'Vad du får med Pro',
+    'pro.features.badgeMain':   'Främst',
+    'pro.features.f1.title':    'Kursrekommenderare',
+    'pro.features.f1.desc':     'AI föreslår kurser som passar dig. Rekommendationerna tar hänsyn till studentskrivningar, högskolemål och dina egna prioriteringar.',
+    'pro.features.f2.title':    'Studieplan',
+    'pro.features.f2.desc':     'En tydlig veckoplan per kurs. AI berättar vad du ska studera först och hur länge.',
+    'pro.features.f3.title':    'Repetitionsschema',
+    'pro.features.f3.desc':     'Ange provdatumet, få ett repetitionsschema. Jämn takt, ingen plugging i sista minuten.',
+    'pro.features.f4.title':    'Konfliktanalys',
+    'pro.features.f4.desc':     'Upptäcker schemakonflikter automatiskt, innan de hinner bli ett problem.',
+    'pro.features.f5.title':    'Kalendersynk',
+    'pro.features.f5.desc':     'Exportera ditt schema direkt till Google eller Apple Kalender med ett klick.',
+    'pro.features.f6.title':    'PDF-export',
+    'pro.features.f6.desc':     'Spara eller skriv ut ditt schema som en ren PDF.',
+    'pro.features.f7.title':    'Molnbackup',
+    'pro.features.f7.desc':     'Dina kursval tryggt i molnet. Byt enhet utan oro, dina val följer med.',
+
+    /* signup */
+    'pro.signup.title':         'Intresserad?',
+    'pro.signup.sub':           'Lämna din e-post. Vi hör av oss när Pro lanseras officiellt.',
+    'pro.signup.ok':            'Tack. Du är med på listan, ett välkomstmejl är på väg.',
+    'pro.signup.placeholder':   'din@epost.se',
+    'pro.signup.btn':           'Meddela mig',
+    'pro.signup.btnSending':    'Skickar',
+    'pro.signup.errRetry':      'Försök igen om en stund.',
+    'pro.signup.errNet':        'Nätverksfel.',
   },
 };

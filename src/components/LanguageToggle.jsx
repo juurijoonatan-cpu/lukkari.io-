@@ -1,21 +1,27 @@
-import { useLang } from '../i18n/i18n';
+import { useLang, SUPPORTED_LANGS } from '../i18n/i18n';
 
 export function LanguageToggle({ isPro }) {
   const { lang, setLang, t } = useLang();
-  const next = lang === 'fi' ? 'en' : 'fi';
 
   return (
-    <button
-      type="button"
-      onClick={() => setLang(next)}
-      title={t('lang.toggle')}
+    <div
+      role="group"
       aria-label={t('lang.toggle')}
       className="lang-toggle"
       data-pro={isPro ? '1' : '0'}
     >
-      <span className={lang === 'fi' ? 'is-on' : ''}>{t('lang.fi')}</span>
-      <span className="sep" aria-hidden>/</span>
-      <span className={lang === 'en' ? 'is-on' : ''}>{t('lang.en')}</span>
-    </button>
+      {SUPPORTED_LANGS.map((code, i) => (
+        <span key={code} style={{ display: 'contents' }}>
+          {i > 0 && <span className="sep" aria-hidden>/</span>}
+          <button
+            type="button"
+            className={`lt-btn${lang === code ? ' is-on' : ''}`}
+            aria-pressed={lang === code}
+            aria-label={t(`lang.${code}`)}
+            onClick={() => setLang(code)}
+          >{t(`lang.${code}`)}</button>
+        </span>
+      ))}
+    </div>
   );
 }
