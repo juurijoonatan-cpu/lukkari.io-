@@ -116,13 +116,13 @@ export const STRINGS = {
     'pro.stats.titleB':   ', ei koululle.',
     'pro.stats.sub':
       'Lukkari Pro ei ole kalenteri. Se on opintoassistentti, joka ymmärtää ' +
-      'suomalaisen lukion rakenteen ja auttaa sinua valitsemaan oikein.',
+      'periodi- ja palkkijärjestelmän rakenteen ja auttaa sinua valitsemaan oikein.',
     'pro.stats.s1.value': '300+',
     'pro.stats.s1.label': 'AI-kyselyä',
     'pro.stats.s1.desc':  'Pro-tilauksella kuukaudessa. Riittää koko lukuvuoden suunnitteluun.',
-    'pro.stats.s2.value': 'Suomeksi',
-    'pro.stats.s2.label': 'Alusta asti',
-    'pro.stats.s2.desc':  'Rakennettu suomalaisille opiskelijoille. Wilman aikataulujen päälle.',
+    'pro.stats.s2.value': 'AI-natiivi',
+    'pro.stats.s2.label': 'Tehty alusta',
+    'pro.stats.s2.desc':  'Rakennettu periodi- ja palkkijärjestelmän ympärille, ei venytetty kalenterista. Skaalautuu uusiin opintomuotoihin.',
     'pro.stats.s3.value': '0 €',
     'pro.stats.s3.label': 'Demo',
     'pro.stats.s3.desc':  'Kokeile ilman tiliä. Ei sähköpostia, ei sitoutumista.',
@@ -278,14 +278,14 @@ export const STRINGS = {
     'pro.stats.titleB':   ', not schools.',
     'pro.stats.sub':
       'Lukkari Pro is not a calendar. It is a study assistant that ' +
-      'understands the Finnish upper secondary system and helps you ' +
-      'pick the right path.',
+      'understands the period and slot structure of upper secondary studies ' +
+      'and helps you pick the right path.',
     'pro.stats.s1.value': '300+',
     'pro.stats.s1.label': 'AI requests',
     'pro.stats.s1.desc':  'Per month with Pro. Enough to plan a full school year.',
-    'pro.stats.s2.value': 'Finnish',
-    'pro.stats.s2.label': 'Native',
-    'pro.stats.s2.desc':  'Built for Finnish students. Designed around Wilma timetables.',
+    'pro.stats.s2.value': 'AI-native',
+    'pro.stats.s2.label': 'From scratch',
+    'pro.stats.s2.desc':  'Built around the period and slot system, not retrofitted from a generic calendar. Scales to new study formats.',
     'pro.stats.s3.value': '€0',
     'pro.stats.s3.label': 'Demo',
     'pro.stats.s3.desc':  'Try without an account. No email, no commitment.',
