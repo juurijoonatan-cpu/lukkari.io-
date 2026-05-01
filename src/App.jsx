@@ -15,11 +15,13 @@ import { Ico } from './components/icons';
 import { ProAuth } from './components/pro/ProAuth';
 import { ProBeta } from './components/pro/beta/ProBeta';
 import { ProSubscribe } from './components/pro/ProSubscribe';
+import { OnboardingShell } from './components/pro/onboarding/OnboardingShell';
 import { useT } from './i18n/i18n';
 import { currentSchoolYear } from './utils/year';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
-const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe"];
+const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe", "onboarding"];
+const isOnboardingHash = (h) => h === "onboarding" || h.startsWith("onboarding/");
 
 function Orbs() {
   return (
@@ -85,7 +87,8 @@ export default function App() {
     const sync = () => {
       const h = window.location.hash.replace(/^#\/?/, "");
       setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
-      setProRoute(PRO_ROUTES.includes(h) ? h : null);
+      const proHash = isOnboardingHash(h) ? "onboarding" : (PRO_ROUTES.includes(h) ? h : null);
+      setProRoute(proHash);
     };
     sync();
     window.addEventListener("hashchange", sync);
@@ -149,6 +152,7 @@ export default function App() {
   if (proRoute === "pro-login")     return <ProAuth initialTab="login" />;
   if (proRoute === "pro-register")  return <ProAuth initialTab="register" />;
   if (proRoute === "pro-subscribe") return <ProSubscribe />;
+  if (proRoute === "onboarding")    return <OnboardingShell />;
   if (proRoute === "pro-app")       return <ProBeta />;
 
   return (

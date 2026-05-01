@@ -3,6 +3,7 @@ import { supabase } from '../../../utils/supabase';
 import { isDemoActive } from '../../../utils/demo';
 import { loadState } from '../../../utils/storage';
 import { SCHOOLS } from '../../../data/schools';
+import { currentSchoolYear } from '../../../utils/year';
 import { Background } from './Background';
 import { Topbar } from './Topbar';
 import { AIOrb } from './AIOrb';
@@ -76,7 +77,7 @@ export function ProBeta() {
       setName(readDisplayName(session));
       const { data } = await supabase
         .from('profiles')
-        .select('subscription_status')
+        .select('subscription_status, onboarded_at')
         .eq('id', session.user.id)
         .maybeSingle();
       const status = data?.subscription_status || '';
@@ -84,6 +85,18 @@ export function ProBeta() {
       if (!active && !isDemo) {
         // No active subscription / no profile row → vaadi tilaus, älä päästä Beta:an
         window.location.hash = '/pro-subscribe';
+        return;
+      }
+      if (!isDemo && active && !data?.onboarded_at) {
+        const { data: plan } = await supabase
+          .from('study_plans')
+          .select('id, status')
+          .eq('user_id', session.user.id)
+          .eq('school_year', currentSchoolYear())
+          .maybeSingle();
+        if (!plan || plan.status !== 'active') {
+          window.location.hash = '/onboarding';
+        }
       }
     });
 
