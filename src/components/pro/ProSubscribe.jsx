@@ -134,7 +134,7 @@ export function ProSubscribe() {
                 fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
               }}>
                 {label}
-                {b === "yearly" && <span style={{ fontSize: 9, marginLeft: 5, color: "oklch(0.72 0.13 150)", fontWeight: 700 }}>−37%</span>}
+                {b === "yearly" && <span style={{ fontSize: 9, marginLeft: 5, color: "oklch(0.72 0.13 150)", fontWeight: 700 }}>−13%</span>}
               </button>
             ))}
           </div>
@@ -152,7 +152,7 @@ export function ProSubscribe() {
           <div style={{ marginBottom: 28 }}>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 6, marginBottom: 4 }}>
               <span className="fr" style={{ fontSize: 52, fontWeight: 500, color: "#f0ede8", lineHeight: 1 }}>
-                {billing === "monthly" ? "3,99" : "2,49"}
+                {billing === "monthly" ? "7,99" : "6,99"}
               </span>
               <div style={{ paddingBottom: 8 }}>
                 <span style={{ fontSize: 14, color: "#a09c98", fontWeight: 500 }}>€</span>
@@ -161,7 +161,7 @@ export function ProSubscribe() {
             </div>
             {billing === "yearly" && (
               <p style={{ fontSize: 11, color: "oklch(0.72 0.13 150)" }}>
-                Laskutetaan €29.90/vuosi · Säästät €17.98 vuodessa
+                Laskutetaan €83,88/vuosi · Säästät €12,00 vuodessa
               </p>
             )}
             <p style={{ fontSize: 11, color: "#605c58", marginTop: 4 }}>
@@ -207,6 +207,12 @@ export function ProSubscribe() {
           </button>
           <p style={{ textAlign: "center", fontSize: 10, color: "#605c58", marginTop: 12 }}>
             Ei luottokorttia kokeilujaksolle · Peruuta milloin tahansa
+          </p>
+          <p style={{ textAlign: "center", fontSize: 10, color: "#605c58", marginTop: 4, lineHeight: 1.5 }}>
+            14 vrk peruutusoikeus kuluttajansuojalain mukaisesti.{" "}
+            <a href="#/kayttoehdot" target="_blank" rel="noreferrer" style={{ color: "#a09c98", textDecoration: "underline" }}>
+              Lue käyttöehdot
+            </a>.
           </p>
         </div>
 
