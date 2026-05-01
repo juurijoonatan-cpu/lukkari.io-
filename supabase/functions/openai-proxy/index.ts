@@ -1,11 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { MENTOR_SYSTEM_PROMPT } from "../_shared/prompts.ts";
 
 const OPENAI_KEY   = Deno.env.get("OPENAI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MAX_REQUESTS = 300;
+const MAX_HISTORY  = 8;
 
-const SYSTEM_PROMPT = `Olet Lukkari.io:n älykäs kurssisuosittelija. Autat suomalaisen lukion opiskelijaa suunnittelemaan kurssivalintojaan optimaalisesti. Vastaa aina suomeksi. Ole ytimekäs, kannustava ja konkreettinen. Käytä lyhyitä kappaleita ja listoja tarpeen mukaan.`;
+const SYSTEM_PROMPT = MENTOR_SYSTEM_PROMPT;
+
+interface HistoryMsg { role: "user" | "assistant"; content: string }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,12 +63,25 @@ Deno.serve(async (req) => {
     }
 
     // Parse body
-    const { prompt, scheduleContext } = await req.json();
+    const body = await req.json();
+    const prompt: string | undefined = body.prompt;
+    const scheduleContext: string | undefined = body.scheduleContext;
+    const triage = body.triage as Record<string, unknown> | undefined;
+    const history = (Array.isArray(body.history) ? body.history : []) as HistoryMsg[];
     if (!prompt?.trim()) return json({ error: "Kysymys puuttuu." }, 400);
 
-    const userMsg = scheduleContext
-      ? `${scheduleContext}\n\nKysymykseni: ${prompt}`
-      : `Opiskelijalla ei ole vielä tallennettuja kurssivalintoja.\n\nKysymykseni: ${prompt}`;
+    const triageNote = triage
+      ? `[mentor-meta] intent=${triage.intent ?? "?"} course=${triage.course_code ?? "—"} urgency=${triage.urgency ?? "normal"} tone=${triage.tone ?? "neutral"}`
+      : null;
+
+    const contextBlock = [
+      scheduleContext ? scheduleContext : "Opiskelijalla ei ole vielä tallennettuja kurssivalintoja.",
+      triageNote,
+    ].filter(Boolean).join("\n\n");
+
+    const trimmedHistory = history.slice(-MAX_HISTORY).filter(m =>
+      (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim()
+    );
 
     // Call OpenAI
     const oaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -78,7 +95,9 @@ Deno.serve(async (req) => {
         max_tokens: 800,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user",   content: userMsg },
+          { role: "system", content: contextBlock },
+          ...trimmedHistory,
+          { role: "user", content: prompt },
         ],
       }),
     });

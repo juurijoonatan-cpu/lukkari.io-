@@ -2,7 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14?target=deno";
 
 const stripe     = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
-const PRICE_ID   = Deno.env.get("STRIPE_PRICE_ID")!;
+const PRICE_MONTHLY = Deno.env.get("STRIPE_PRICE_ID_MONTHLY") || Deno.env.get("STRIPE_PRICE_ID");
+const PRICE_YEARLY  = Deno.env.get("STRIPE_PRICE_ID_YEARLY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -17,6 +18,13 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Kirjautuminen vaaditaan." }, 401);
+
+    const { billing } = await req.json().catch(() => ({ billing: "monthly" }));
+    const useYearly = billing === "yearly";
+    const priceId = useYearly ? PRICE_YEARLY : PRICE_MONTHLY;
+    if (!priceId) {
+      return json({ error: useYearly ? "Vuosihinta puuttuu konfiguraatiosta." : "Hinta puuttuu konfiguraatiosta." }, 500);
+    }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SVC);
     const { data: { user }, error: authErr } = await supabase.auth.getUser(
@@ -47,17 +55,18 @@ Deno.serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
-      line_items: [{ price: PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: { trial_period_days: 7 },
-      success_url: "https://lukkari.io/#/pro-app",
+      success_url: "https://lukkari.io/#/onboarding",
       cancel_url:  "https://lukkari.io/#/pro-subscribe",
       allow_promotion_codes: true,
       locale: "fi",
+      metadata: { billing: useYearly ? "yearly" : "monthly", supabase_id: user.id },
     });
 
     return json({ url: session.url });
 
-  } catch (e) {
+  } catch (_e) {
     return json({ error: "Virhe kassalle siirryttäessä." }, 500);
   }
 });
