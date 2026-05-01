@@ -3,7 +3,7 @@ import { Ico } from './icons';
 
 const UPDATED = "1.5.2026";
 const CONTACT_EMAIL = "tuki@lukkari.io";
-const REGISTRANT = "4H-yrittäjä [TÄYTÄ: oma nimi ennen julkaisua]";
+const REGISTRANT = "4H-yrittäjä Joonatan Juuri";
 const Y_TUNNUS = "3598782-9";
 
 const DOCS = {
