@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
+import { isDemoAllowed, enableDemo } from '../../utils/demo';
 
 const FEATURES = [
   "Kurssisuosittelija — AI suosittelee kurssit juuri sinulle",
@@ -67,9 +68,10 @@ export function ProSubscribe() {
   }, [billing]);
 
   const previewDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
+    if (!enableDemo()) return;
     window.location.hash = "/pro-app";
   }, []);
+  const showDemoButton = isDemoAllowed();
 
   const CHROME = "linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%)";
 
@@ -208,19 +210,21 @@ export function ProSubscribe() {
           </p>
         </div>
 
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <button onClick={previewDemo} style={{
-            background: "rgba(120,90,255,0.10)",
-            border: "1px solid rgba(120,90,255,0.28)",
-            color: "rgba(180,160,255,0.95)",
-            fontSize: 11, fontWeight: 600, letterSpacing: "0.06em",
-            borderRadius: 99, padding: "8px 18px", cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
-          >ESIKATSELE PRO DEMONA →</button>
-        </div>
+        {showDemoButton && (
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
+            <button onClick={previewDemo} style={{
+              background: "rgba(120,90,255,0.10)",
+              border: "1px solid rgba(120,90,255,0.28)",
+              color: "rgba(180,160,255,0.95)",
+              fontSize: 11, fontWeight: 600, letterSpacing: "0.06em",
+              borderRadius: 99, padding: "8px 18px", cursor: "pointer",
+              fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+            >ESIKATSELE PRO DEMONA →</button>
+          </div>
+        )}
 
         <p style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.15)", letterSpacing: "0.04em" }}>
           Maksu käsitellään turvallisesti Stripe-palvelun kautta

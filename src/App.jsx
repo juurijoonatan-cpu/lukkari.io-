@@ -16,6 +16,7 @@ import { ProAuth } from './components/pro/ProAuth';
 import { ProBeta } from './components/pro/beta/ProBeta';
 import { ProSubscribe } from './components/pro/ProSubscribe';
 import { useT } from './i18n/i18n';
+import { currentSchoolYear } from './utils/year';
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
 const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe"];
@@ -70,7 +71,7 @@ export default function App() {
   const [tab, setTab] = useState("free");
   const [schoolId, setSchoolId] = useState("otaniemi");
   const [selections, setSelections] = useState({});
-  const [year, setYear] = useState("2026–2027");
+  const [year, setYear] = useState(() => currentSchoolYear());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [wishlist, setWishlist] = useState([]);

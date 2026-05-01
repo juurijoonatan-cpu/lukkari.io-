@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
+import { isDemoAllowed, enableDemo } from '../../utils/demo';
 
 function injectProKeyframes() {
   if (document.getElementById("pro-kf")) return;
@@ -121,9 +122,10 @@ export function ProAuth({ initialTab = "login" }) {
   }, [email, password]);
 
   const previewDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
+    if (!enableDemo()) return;
     window.location.hash = "/pro-app";
   }, []);
+  const showDemoButton = isDemoAllowed();
 
   const inputStyle = {
     width: "100%", padding: "12px 14px", borderRadius: 11, boxSizing: "border-box",
@@ -250,19 +252,21 @@ export function ProAuth({ initialTab = "login" }) {
           </button>
         </div>
 
-        <div style={{ marginTop: 12, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-          <button onClick={previewDemo} style={{
-            background: "rgba(120,90,255,0.10)",
-            border: "1px solid rgba(120,90,255,0.28)",
-            color: "rgba(180,160,255,0.95)",
-            fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
-            borderRadius: 99, padding: "6px 14px", cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
-          >ESIKATSELE PRO DEMONA →</button>
-        </div>
+        {showDemoButton && (
+          <div style={{ marginTop: 12, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+            <button onClick={previewDemo} style={{
+              background: "rgba(120,90,255,0.10)",
+              border: "1px solid rgba(120,90,255,0.28)",
+              color: "rgba(180,160,255,0.95)",
+              fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+              borderRadius: 99, padding: "6px 14px", cursor: "pointer",
+              fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+            >ESIKATSELE PRO DEMONA →</button>
+          </div>
+        )}
 
         <p style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.13)", marginTop: 18, letterSpacing: "0.08em" }}>
           VERSION 0.1 · BETA

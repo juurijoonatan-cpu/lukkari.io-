@@ -4,12 +4,17 @@ import { ProInfoStats } from './pro/info/ProInfoStats';
 import { ProInfoFlow } from './pro/info/ProInfoFlow';
 import { ProInfoFeatures } from './pro/info/ProInfoFeatures';
 import { ProInfoSignup } from './pro/info/ProInfoSignup';
+import { enableDemo } from '../utils/demo';
 import './pro/info/proInfo.css';
 
 export function ProComingSoon() {
   const tryDemo = useCallback(() => {
-    try { localStorage.setItem("lukkari.proDemo", "1"); } catch {}
-    window.location.hash = "/pro-app";
+    if (!enableDemo()) {
+      // Demo disabled in production builds — direct users to the subscribe flow.
+      window.location.hash = '/pro';
+      return;
+    }
+    window.location.hash = '/pro-app';
   }, []);
 
   return (

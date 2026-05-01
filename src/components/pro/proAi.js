@@ -1,8 +1,9 @@
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
+import { currentSchoolYear } from '../../utils/year';
 
 export function buildScheduleContext(school, selections, year) {
   if (!school || !selections || !Object.keys(selections).length) return null;
-  const lines = [`Koulu: ${school.name}`, `Lukuvuosi: ${year || "2026–2027"}`, ""];
+  const lines = [`Koulu: ${school.name}`, `Lukuvuosi: ${year || currentSchoolYear()}`, ""];
   for (let pi = 1; pi <= school.periodCount; pi++) {
     const courses = [];
     for (let bi = 1; bi <= school.palkkiCount; bi++) {

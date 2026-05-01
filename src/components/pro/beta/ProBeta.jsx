@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
+import { isDemoActive } from '../../../utils/demo';
 import { loadState } from '../../../utils/storage';
 import { SCHOOLS } from '../../../data/schools';
 import { Background } from './Background';
@@ -64,7 +65,7 @@ export function ProBeta() {
 
   // Auth + subscription gate (matches the previous ProApp behavior)
   useEffect(() => {
-    const isDemo = localStorage.getItem('lukkari.proDemo') === '1';
+    const isDemo = isDemoActive();
     setDemoMode(isDemo);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -73,16 +74,17 @@ export function ProBeta() {
         return;
       }
       setName(readDisplayName(session));
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('subscription_status')
-          .eq('id', session.user.id)
-          .single();
-        if (data && !['active', 'trialing'].includes(data.subscription_status || '')) {
-          window.location.hash = '/pro-subscribe';
-        }
-      } catch { /* profiles table not yet set up — allow beta */ }
+      const { data } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      const status = data?.subscription_status || '';
+      const active = ['active', 'trialing'].includes(status);
+      if (!active && !isDemo) {
+        // No active subscription / no profile row → vaadi tilaus, älä päästä Beta:an
+        window.location.hash = '/pro-subscribe';
+      }
     });
 
     const s = loadState() || {};
