@@ -19,7 +19,9 @@ CREATE POLICY "own_profile_update" ON profiles
 
 -- Auto-create profile row when a user signs up
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id) VALUES (NEW.id) ON CONFLICT DO NOTHING;
   RETURN NEW;
