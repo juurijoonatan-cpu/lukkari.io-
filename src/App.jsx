@@ -93,6 +93,11 @@ export default function App() {
       // Supabase email confirmation callback — supabase client (imported above)
       // has already parsed the access_token from the URL; redirect to login flow.
       if (h.startsWith("access_token=") || h.startsWith("error=")) {
+        if (h.startsWith("error=")) {
+          const params = new URLSearchParams(h);
+          const desc = params.get("error_description");
+          if (desc) sessionStorage.setItem("pro_auth_error", decodeURIComponent(desc.replace(/\+/g, " ")));
+        }
         window.location.hash = "/pro-login";
         return;
       }

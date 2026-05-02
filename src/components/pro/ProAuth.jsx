@@ -90,7 +90,13 @@ export function ProAuth({ initialTab = "login" }) {
 
   useEffect(() => {
     document.body.classList.add("pro-dark");
-    checkAndRoute();
+    const storedError = sessionStorage.getItem("pro_auth_error");
+    if (storedError) {
+      sessionStorage.removeItem("pro_auth_error");
+      setError(storedError);
+    } else {
+      checkAndRoute();
+    }
     return () => document.body.classList.remove("pro-dark");
   }, []);
 
