@@ -124,12 +124,16 @@ export function ProAuth({ initialTab = "login" }) {
     }
     if (password.length < 8) { setError("Salasanan tulee olla vähintään 8 merkkiä."); return; }
     setLoading(true); setError(null);
-    const { error: err } = await supabase.auth.signUp({
+    const { data, error: err } = await supabase.auth.signUp({
       email: email.trim(), password,
       options: { emailRedirectTo: `${window.location.origin}/#/pro-login` },
     });
     if (err) { setError(err.message); setLoading(false); return; }
-    setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
+    if (data.session) {
+      await checkAndRoute();
+    } else {
+      setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
+    }
     setLoading(false);
   }, [email, password, ageOk, tosOk]);
 
