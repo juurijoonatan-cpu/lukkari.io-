@@ -102,7 +102,20 @@ export default function App() {
     };
     sync();
     window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
+
+    // Fallback: if Supabase cleared the hash before sync() ran, catch SIGNED_IN
+    // from email confirmation and redirect only when not already on a pro route.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN") return;
+      const h = window.location.hash.replace(/^#\/?/, "");
+      const onPro = PRO_ROUTES.some(r => h === r) || isOnboardingHash(h) || LEGAL_KEYS.includes(h);
+      if (!onPro && !h) window.location.hash = "/pro-login";
+    });
+
+    return () => {
+      window.removeEventListener("hashchange", sync);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const openLegal = useCallback((key) => {
