@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.1";
+import Anthropic from "npm:@anthropic-ai/sdk@0.39.0";
 import { preflight, requirePro, readJson, json, errorResponse, checkAndIncrementUsage } from "../_shared/auth.ts";
 import { NOTE_INGEST_PROMPT } from "../_shared/prompts.ts";
 
