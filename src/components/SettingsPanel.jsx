@@ -3,6 +3,7 @@ import { Ico } from './icons';
 import { buildTextExport } from '../utils/export';
 import { recordSubscribe, recordDownload, sendScheduleEmail } from '../utils/leads';
 import { useT } from '../i18n/i18n';
+import { schoolYearOptions } from '../utils/year';
 
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
 
@@ -147,7 +148,7 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
           <div>
             <div className="sec-label">{t('settings.year')}</div>
             <div style={{ display: "flex", gap: 6 }}>
-              {["2025–2026","2026–2027","2027–2028"].map(y => (
+              {schoolYearOptions().map(y => (
                 <button key={y} onClick={() => setYear(y)} style={{
                   flex: 1, padding: "7px 4px", borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: "pointer",
                   border: `1.5px solid ${year === y ? "var(--accent)" : "rgba(255,255,255,0.8)"}`,
@@ -211,6 +212,12 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                         />
                         {t('settings.export.consent')}
                       </label>
+                      <p style={{ fontSize: 10, color: "var(--ink-f)", lineHeight: 1.5 }}>
+                        {t('settings.privacy.notice')}{' '}
+                        <a href="#/tietosuoja" style={{ color: "var(--ink-s)", textDecoration: "underline" }}>
+                          {t('settings.privacy.link')}
+                        </a>.
+                      </p>
                       {exportError && (
                         <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>{exportError}</p>
                       )}
@@ -282,6 +289,12 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
                   />
                   {t('settings.list.consent')}
                 </label>
+                <p style={{ fontSize: 10, color: "var(--ink-f)", lineHeight: 1.5 }}>
+                  {t('settings.privacy.notice')}{' '}
+                  <a href="#/tietosuoja" style={{ color: "var(--ink-s)", textDecoration: "underline" }}>
+                    {t('settings.privacy.link')}
+                  </a>.
+                </p>
                 {shareStatus === 'error' && (
                   <p style={{ fontSize: 11, color: "oklch(0.52 0.18 25)" }}>{t('settings.list.error')}</p>
                 )}

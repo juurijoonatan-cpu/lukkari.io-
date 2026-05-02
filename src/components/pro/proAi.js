@@ -1,8 +1,9 @@
 import { supabase, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../../utils/supabase';
+import { currentSchoolYear } from '../../utils/year';
 
 export function buildScheduleContext(school, selections, year) {
   if (!school || !selections || !Object.keys(selections).length) return null;
-  const lines = [`Koulu: ${school.name}`, `Lukuvuosi: ${year || "2026–2027"}`, ""];
+  const lines = [`Koulu: ${school.name}`, `Lukuvuosi: ${year || currentSchoolYear()}`, ""];
   for (let pi = 1; pi <= school.periodCount; pi++) {
     const courses = [];
     for (let bi = 1; bi <= school.palkkiCount; bi++) {
@@ -29,9 +30,11 @@ Kun taustapalvelu on otettu käyttöön, saat tähän personoidun analyysin luku
 Kaikki vastaukset perustuvat OpenAI gpt-4o-mini -malliin, ja saat 300 kyselyä kuukaudessa Pro-tilauksella.`;
 }
 
-export async function callProxy(prompt, scheduleContext) {
+export async function callProxy(prompt, scheduleContext, options = {}) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { content: demoResponse(prompt, scheduleContext), demo: true };
+
+  const { triage = null, history = [] } = options;
 
   try {
     const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/openai-proxy`, {
@@ -41,7 +44,7 @@ export async function callProxy(prompt, scheduleContext) {
         "Authorization": `Bearer ${session.access_token}`,
         "apikey": SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ prompt, scheduleContext }),
+      body: JSON.stringify({ prompt, scheduleContext, triage, history }),
     });
     if (!res.ok) {
       if (res.status === 404 || res.status >= 500) {

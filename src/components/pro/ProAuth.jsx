@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
+import { isDemoAllowed, enableDemo } from '../../utils/demo';
 
 function injectProKeyframes() {
   if (document.getElementById("pro-kf")) return;
@@ -84,6 +85,8 @@ export function ProAuth({ initialTab = "login" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
+  const [ageOk, setAgeOk] = useState(false);
+  const [tosOk, setTosOk] = useState(false);
 
   useEffect(() => {
     document.body.classList.add("pro-dark");
@@ -109,6 +112,10 @@ export function ProAuth({ initialTab = "login" }) {
   const handleRegister = useCallback(async (e) => {
     e.preventDefault();
     if (!email.trim() || !password) return;
+    if (!ageOk || !tosOk) {
+      setError("Vahvista ikäraja ja hyväksy käyttöehdot ennen tilin luomista.");
+      return;
+    }
     if (password.length < 8) { setError("Salasanan tulee olla vähintään 8 merkkiä."); return; }
     setLoading(true); setError(null);
     const { error: err } = await supabase.auth.signUp({
@@ -118,12 +125,13 @@ export function ProAuth({ initialTab = "login" }) {
     if (err) { setError(err.message); setLoading(false); return; }
     setInfo("Tarkista sähköpostisi ja vahvista osoite ennen kirjautumista.");
     setLoading(false);
-  }, [email, password]);
+  }, [email, password, ageOk, tosOk]);
 
   const previewDemo = useCallback(() => {
-    localStorage.setItem("lukkari.proDemo", "1");
+    if (!enableDemo()) return;
     window.location.hash = "/pro-app";
   }, []);
+  const showDemoButton = isDemoAllowed();
 
   const inputStyle = {
     width: "100%", padding: "12px 14px", borderRadius: 11, boxSizing: "border-box",
@@ -213,6 +221,43 @@ export function ProAuth({ initialTab = "login" }) {
             </div>
           )}
 
+          {tab === "register" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+              <label style={{
+                display: "flex", gap: 9, alignItems: "flex-start",
+                fontSize: 11, color: "#a09c98", lineHeight: 1.5, cursor: "pointer",
+              }}>
+                <input
+                  type="checkbox"
+                  checked={ageOk}
+                  onChange={e => { setAgeOk(e.target.checked); setError(null); }}
+                  style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
+                />
+                <span>Olen vähintään 13-vuotias.</span>
+              </label>
+              <label style={{
+                display: "flex", gap: 9, alignItems: "flex-start",
+                fontSize: 11, color: "#a09c98", lineHeight: 1.5, cursor: "pointer",
+              }}>
+                <input
+                  type="checkbox"
+                  checked={tosOk}
+                  onChange={e => { setTosOk(e.target.checked); setError(null); }}
+                  style={{ marginTop: 2, flexShrink: 0, accentColor: "var(--accent)" }}
+                />
+                <span>
+                  Hyväksyn{" "}
+                  <a href="#/kayttoehdot" target="_blank" rel="noreferrer" style={{ color: "#d4cfc8", textDecoration: "underline" }}>
+                    käyttöehdot
+                  </a>{" "}ja olen lukenut{" "}
+                  <a href="#/tietosuoja" target="_blank" rel="noreferrer" style={{ color: "#d4cfc8", textDecoration: "underline" }}>
+                    tietosuojaselosteen
+                  </a>.
+                </span>
+              </label>
+            </div>
+          )}
+
           {error && (
             <p style={{ fontSize: 11, color: "oklch(0.72 0.14 20)", marginBottom: 12, background: "rgba(255,80,60,0.09)", border: "1px solid rgba(255,80,60,0.18)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>{error}</p>
           )}
@@ -220,20 +265,25 @@ export function ProAuth({ initialTab = "login" }) {
             <p style={{ fontSize: 11, color: "oklch(0.72 0.13 150)", marginBottom: 12, background: "rgba(60,200,100,0.07)", border: "1px solid rgba(60,200,100,0.18)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>{info}</p>
           )}
 
-          <button type="submit" disabled={loading || !email.trim() || !password} style={{
-            width: "100%", padding: "13px 20px", borderRadius: 13, border: "none",
-            background: (loading || !email.trim() || !password)
-              ? "rgba(200,195,210,0.12)"
-              : "linear-gradient(135deg, rgba(240,237,232,0.94), rgba(210,205,225,0.90))",
-            color: (loading || !email.trim() || !password) ? "#a09c98" : "rgba(8,6,22,0.90)",
-            fontSize: 12, fontWeight: 700, letterSpacing: "0.09em",
-            cursor: (loading || !email.trim() || !password) ? "default" : "pointer",
-            fontFamily: "'Inter', sans-serif",
-            boxShadow: (!loading && email.trim() && password) ? "0 4px 20px rgba(200,180,255,0.22)" : "none",
-            transition: "all 0.14s",
-          }}>
-            {loading ? "Odota…" : tab === "login" ? "KIRJAUDU SISÄÄN" : "LUO TILI"}
-          </button>
+          {(() => {
+            const blocked = loading || !email.trim() || !password || (tab === "register" && (!ageOk || !tosOk));
+            return (
+              <button type="submit" disabled={blocked} style={{
+                width: "100%", padding: "13px 20px", borderRadius: 13, border: "none",
+                background: blocked
+                  ? "rgba(200,195,210,0.12)"
+                  : "linear-gradient(135deg, rgba(240,237,232,0.94), rgba(210,205,225,0.90))",
+                color: blocked ? "#a09c98" : "rgba(8,6,22,0.90)",
+                fontSize: 12, fontWeight: 700, letterSpacing: "0.09em",
+                cursor: blocked ? "default" : "pointer",
+                fontFamily: "'Inter', sans-serif",
+                boxShadow: blocked ? "none" : "0 4px 20px rgba(200,180,255,0.22)",
+                transition: "all 0.14s",
+              }}>
+                {loading ? "Odota…" : tab === "login" ? "KIRJAUDU SISÄÄN" : "LUO TILI"}
+              </button>
+            );
+          })()}
         </form>
 
         <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
@@ -250,19 +300,21 @@ export function ProAuth({ initialTab = "login" }) {
           </button>
         </div>
 
-        <div style={{ marginTop: 12, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-          <button onClick={previewDemo} style={{
-            background: "rgba(120,90,255,0.10)",
-            border: "1px solid rgba(120,90,255,0.28)",
-            color: "rgba(180,160,255,0.95)",
-            fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
-            borderRadius: 99, padding: "6px 14px", cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
-          >ESIKATSELE PRO DEMONA →</button>
-        </div>
+        {showDemoButton && (
+          <div style={{ marginTop: 12, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+            <button onClick={previewDemo} style={{
+              background: "rgba(120,90,255,0.10)",
+              border: "1px solid rgba(120,90,255,0.28)",
+              color: "rgba(180,160,255,0.95)",
+              fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
+              borderRadius: 99, padding: "6px 14px", cursor: "pointer",
+              fontFamily: "'Inter', sans-serif", transition: "all 0.14s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(120,90,255,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(120,90,255,0.10)"; }}
+            >ESIKATSELE PRO DEMONA →</button>
+          </div>
+        )}
 
         <p style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.13)", marginTop: 18, letterSpacing: "0.08em" }}>
           VERSION 0.1 · BETA

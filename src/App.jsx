@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { SCHOOLS } from './data/schools';
 import { loadState, saveState, clearStoredSelections } from './utils/storage';
 import { Header } from './components/Header';
@@ -10,15 +10,21 @@ import { ProComingSoon } from './components/ProComingSoon';
 import { ConfirmClear } from './components/ConfirmClear';
 import { WishlistPanel } from './components/WishlistPanel';
 import { Footer } from './components/Footer';
-import { LegalPanel } from './components/LegalPanel';
 import { Ico } from './components/icons';
-import { ProAuth } from './components/pro/ProAuth';
-import { ProBeta } from './components/pro/beta/ProBeta';
-import { ProSubscribe } from './components/pro/ProSubscribe';
 import { useT } from './i18n/i18n';
+import { currentSchoolYear } from './utils/year';
+
+const LegalPanel = lazy(() => import('./components/LegalPanel').then(m => ({ default: m.LegalPanel })));
+const ProAuth = lazy(() => import('./components/pro/ProAuth').then(m => ({ default: m.ProAuth })));
+const ProBeta = lazy(() => import('./components/pro/beta/ProBeta').then(m => ({ default: m.ProBeta })));
+const ProSubscribe = lazy(() => import('./components/pro/ProSubscribe').then(m => ({ default: m.ProSubscribe })));
+const OnboardingShell = lazy(() => import('./components/pro/onboarding/OnboardingShell').then(m => ({ default: m.OnboardingShell })));
+
+const ProFallback = () => <div style={{ minHeight: '100dvh', background: '#08080f' }} />;
 
 const LEGAL_KEYS = ["tietosuoja", "kayttoehdot", "evasteet"];
-const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe"];
+const PRO_ROUTES = ["pro-login", "pro-register", "pro-app", "pro-subscribe", "onboarding"];
+const isOnboardingHash = (h) => h === "onboarding" || h.startsWith("onboarding/");
 
 function Orbs() {
   return (
@@ -70,7 +76,7 @@ export default function App() {
   const [tab, setTab] = useState("free");
   const [schoolId, setSchoolId] = useState("otaniemi");
   const [selections, setSelections] = useState({});
-  const [year, setYear] = useState("2026–2027");
+  const [year, setYear] = useState(() => currentSchoolYear());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [wishlist, setWishlist] = useState([]);
@@ -84,7 +90,8 @@ export default function App() {
     const sync = () => {
       const h = window.location.hash.replace(/^#\/?/, "");
       setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
-      setProRoute(PRO_ROUTES.includes(h) ? h : null);
+      const proHash = isOnboardingHash(h) ? "onboarding" : (PRO_ROUTES.includes(h) ? h : null);
+      setProRoute(proHash);
     };
     sync();
     window.addEventListener("hashchange", sync);
@@ -145,10 +152,19 @@ export default function App() {
   const filledCount = Object.values(selections).filter(v => v?.trim()).length;
 
   // Pro routes completely replace main UI
-  if (proRoute === "pro-login")     return <ProAuth initialTab="login" />;
-  if (proRoute === "pro-register")  return <ProAuth initialTab="register" />;
-  if (proRoute === "pro-subscribe") return <ProSubscribe />;
-  if (proRoute === "pro-app")       return <ProBeta />;
+  if (proRoute) {
+    const ProView = (() => {
+      switch (proRoute) {
+        case "pro-login":     return <ProAuth initialTab="login" />;
+        case "pro-register":  return <ProAuth initialTab="register" />;
+        case "pro-subscribe": return <ProSubscribe />;
+        case "onboarding":    return <OnboardingShell />;
+        case "pro-app":       return <ProBeta />;
+        default: return null;
+      }
+    })();
+    return <Suspense fallback={<ProFallback />}>{ProView}</Suspense>;
+  }
 
   return (
     <div style={{ minHeight: "100vh", position: "relative", zIndex: 1 }}>
@@ -234,7 +250,11 @@ export default function App() {
 
       <Footer isPro={isPro} onOpenLegal={openLegal}/>
 
-      {legalDoc && <LegalPanel docKey={legalDoc} onClose={closeLegal}/>}
+      {legalDoc && (
+        <Suspense fallback={null}>
+          <LegalPanel docKey={legalDoc} onClose={closeLegal}/>
+        </Suspense>
+      )}
 
       {filledCount > 0 && !isPro && !settingsOpen && (
         <div style={{
