@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { supabase } from './utils/supabase';
 import { SCHOOLS } from './data/schools';
 import { loadState, saveState, clearStoredSelections } from './utils/storage';
 import { Header } from './components/Header';
@@ -89,6 +90,12 @@ export default function App() {
   useEffect(() => {
     const sync = () => {
       const h = window.location.hash.replace(/^#\/?/, "");
+      // Supabase email confirmation callback — supabase client (imported above)
+      // has already parsed the access_token from the URL; redirect to login flow.
+      if (h.startsWith("access_token=") || h.startsWith("error=")) {
+        window.location.hash = "/pro-login";
+        return;
+      }
       setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
       const proHash = isOnboardingHash(h) ? "onboarding" : (PRO_ROUTES.includes(h) ? h : null);
       setProRoute(proHash);
