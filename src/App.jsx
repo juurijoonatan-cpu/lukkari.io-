@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { supabase } from './utils/supabase';
 import { SCHOOLS } from './data/schools';
 import { loadState, saveState, clearStoredSelections } from './utils/storage';
 import { Header } from './components/Header';
@@ -89,13 +90,32 @@ export default function App() {
   useEffect(() => {
     const sync = () => {
       const h = window.location.hash.replace(/^#\/?/, "");
+      // Supabase email confirmation callback — supabase client (imported above)
+      // has already parsed the access_token from the URL; redirect to login flow.
+      if (h.startsWith("access_token=") || h.startsWith("error=")) {
+        window.location.hash = "/pro-login";
+        return;
+      }
       setLegalDoc(LEGAL_KEYS.includes(h) ? h : null);
       const proHash = isOnboardingHash(h) ? "onboarding" : (PRO_ROUTES.includes(h) ? h : null);
       setProRoute(proHash);
     };
     sync();
     window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
+
+    // Fallback: if Supabase cleared the hash before sync() ran, catch SIGNED_IN
+    // from email confirmation and redirect only when not already on a pro route.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN") return;
+      const h = window.location.hash.replace(/^#\/?/, "");
+      const onPro = PRO_ROUTES.some(r => h === r) || isOnboardingHash(h) || LEGAL_KEYS.includes(h);
+      if (!onPro && !h) window.location.hash = "/pro-login";
+    });
+
+    return () => {
+      window.removeEventListener("hashchange", sync);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const openLegal = useCallback((key) => {
