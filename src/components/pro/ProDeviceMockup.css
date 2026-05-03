@@ -234,13 +234,25 @@
   filter: drop-shadow(0 24px 56px rgba(0,0,0,0.60));
 }
 
-/* Phone — 1206×2622, portrait, fixed height ~260px ≈ 120px wide */
+/* Phone — solo in stage, larger */
 .pdm-mockup-phone {
   display: block;
   flex: 0 0 auto;
-  height: 260px;
+  height: 340px;
   width: auto;
   filter: drop-shadow(0 28px 56px rgba(0,0,0,0.75));
+}
+
+/* Laptop section below features */
+.pdm-laptop-section {
+  display: flex;
+  justify-content: center;
+  margin: 48px 0 0;
+}
+
+.pdm-laptop-section .pdm-mockup-laptop {
+  max-width: 100%;
+  width: 100%;
 }
 
 /* ── Floating label tags ── */
@@ -458,7 +470,7 @@
     gap: 20px;
   }
   .pdm-mockup-laptop { max-width: 88vw; }
-  .pdm-mockup-phone  { height: 220px; }
+  .pdm-mockup-phone  { height: 280px; }
   .pdm-tag { display: none; }
   .pdm-stage-glow { width: 340px; }
   .pdm-cta-primary { padding: 14px 28px; font-size: 14px; }
@@ -467,5 +479,5 @@
 @media (max-width: 440px) {
   .pdm-hero-h1 { font-size: 46px; }
   .pdm-mockup-laptop { max-width: 96vw; }
-  .pdm-mockup-phone  { height: 180px; }
+  .pdm-mockup-phone  { height: 240px; }
 }
