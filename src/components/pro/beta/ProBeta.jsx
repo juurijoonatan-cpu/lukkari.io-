@@ -74,14 +74,14 @@ export function ProBeta() {
         if (!isDemo) { window.location.hash = '/pro-login'; return; }
         return;
       }
-      setName(readDisplayName(session));
       const { data } = await supabase
         .from('profiles')
-        .select('subscription_status, onboarded_at')
+        .select('subscription_status, onboarded_at, full_name')
         .eq('id', session.user.id)
         .maybeSingle();
       const status = data?.subscription_status || '';
       const active = ['active', 'trialing'].includes(status);
+      setName(data?.full_name || readDisplayName(session));
       if (!active && !isDemo) {
         // No active subscription / no profile row → vaadi tilaus, älä päästä Beta:an
         window.location.hash = '/pro-subscribe';
