@@ -8,7 +8,7 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
     <header style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "0 24px", height: 60,
-      background: isPro ? "rgba(8,7,18,0.68)" : "rgba(255,255,255,0.42)",
+      background: isPro ? "rgba(4,3,10,0.55)" : "rgba(255,255,255,0.42)",
       borderBottom: isPro ? "1px solid rgba(255,255,255,0.07)" : "1.5px solid rgba(255,255,255,0.72)",
       backdropFilter: isPro ? "blur(40px) saturate(1.4)" : "blur(28px) saturate(1.5)",
       WebkitBackdropFilter: isPro ? "blur(40px) saturate(1.4)" : "blur(28px) saturate(1.5)",
@@ -17,6 +17,19 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
       overflow: "visible",
       transition: "background 0.4s ease, border-color 0.4s ease",
     }}>
+      {/* Header video — clipped so dropdowns can escape */}
+      {isPro && (
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+          <video autoPlay loop muted playsInline
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover", opacity: 0.18,
+            }}
+            src="/138770-770553751_medium.mp4"
+          />
+        </div>
+      )}
+
       {/* Content */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",

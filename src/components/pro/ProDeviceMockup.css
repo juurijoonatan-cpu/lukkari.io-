@@ -25,7 +25,7 @@
 .pdm-hero {
   position: relative;
   text-align: center;
-  padding: 80px 20px 0;
+  padding: 60px 20px 0;
   overflow: hidden;
 }
 
@@ -76,7 +76,7 @@
   text-transform: uppercase;
   color: rgba(255,255,255,0.65);
   backdrop-filter: blur(12px);
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -88,7 +88,7 @@
   letter-spacing: -0.035em;
   color: var(--dm-ink);
   line-height: 1.0;
-  margin: 0 auto 22px;
+  margin: 0 auto 16px;
   max-width: 720px;
   position: relative;
 }
@@ -101,7 +101,7 @@
   font-size: 17px;
   color: var(--dm-ink-s);
   max-width: 500px;
-  margin: 0 auto 40px;
+  margin: 0 auto 24px;
   line-height: 1.7;
   position: relative;
 }
@@ -113,7 +113,7 @@
   justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   position: relative;
 }
 
@@ -147,7 +147,7 @@
   font-size: 11px;
   color: var(--dm-ink-f);
   letter-spacing: 0.04em;
-  margin-bottom: 36px;
+  margin-bottom: 0;
   position: relative;
 }
 
@@ -177,7 +177,7 @@
 /* ─── DEVICE STAGE ─── */
 .pdm-stage {
   position: relative;
-  padding: 40px 0 24px;
+  padding: 16px 0 0;
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -212,7 +212,7 @@
 }
 
 .pdm-mockup-img {
-  width: 360px;
+  width: 420px;
   max-width: 88vw;
   height: auto;
   display: block;
