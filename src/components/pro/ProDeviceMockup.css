@@ -178,6 +178,7 @@
 .pdm-stage {
   position: relative;
   padding: 16px 0 0;
+  margin-bottom: -20px;
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -247,7 +248,7 @@
 .pdm-laptop-section {
   display: flex;
   justify-content: center;
-  margin: 48px 0 0;
+  margin: 16px 0 0;
 }
 
 .pdm-laptop-section .pdm-mockup-laptop {
