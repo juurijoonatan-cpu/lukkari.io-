@@ -1,14 +1,11 @@
-// Demo-mode gate. In production, the Pro demo is hidden unless build-time
-// flag VITE_ALLOW_DEMO=true is set. In dev, the demo is always available.
-export const isDemoAllowed = () =>
-  import.meta.env.DEV ||
-  import.meta.env.VITE_ALLOW_DEMO === 'true';
+// Demo-mode gate. Demo is always public — any visitor can try it.
+export const isDemoAllowed = () => true;
 
-export const isDemoActive = () =>
-  isDemoAllowed() && localStorage.getItem('lukkari.proDemo') === '1';
+export const isDemoActive = () => {
+  try { return localStorage.getItem('lukkari.proDemo') === '1'; } catch { return false; }
+};
 
 export const enableDemo = () => {
-  if (!isDemoAllowed()) return false;
   try { localStorage.setItem('lukkari.proDemo', '1'); } catch {}
   return true;
 };
