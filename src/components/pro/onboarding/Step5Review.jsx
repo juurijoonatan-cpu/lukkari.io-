@@ -58,7 +58,9 @@ export function Step5Review({ user, draft, onBack, onFinish }) {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error === 'rate_limit' ? 'Kuukausiraja täynnä (10/kk).' : `Generointi epäonnistui (${res.status})`);
+      if (body.error === 'rate_limit') setError('Kuukausiraja täynnä (10/kk).');
+      else if (res.status === 402) setError('Tilaus ei ole vielä aktivoitunut. Päivitä sivu ja yritä uudelleen.');
+      else setError(`Generointi epäonnistui (${res.status})`);
       setGenerating(false);
       return;
     }
