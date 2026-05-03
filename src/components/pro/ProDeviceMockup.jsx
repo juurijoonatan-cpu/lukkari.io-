@@ -67,12 +67,20 @@ export function ProDeviceMockup() {
       <section className="pdm-stage">
         <div className="pdm-stage-glow" aria-hidden/>
         <div className="pdm-mockup-wrap">
-          <img
-            src="/app-screens/dual-phones.png"
-            alt="Lukkari Pro on iPhone"
-            className="pdm-mockup-img"
-            draggable={false}
-          />
+          <div className="pdm-devices-stack">
+            <img
+              src="/app-screens/dual-phones.png"
+              alt="Lukkari Pro on iPhone"
+              className="pdm-mockup-phone"
+              draggable={false}
+            />
+            <img
+              src="/app-screens/laptop-mockup.png"
+              alt="Lukkari Pro on laptop"
+              className="pdm-mockup-laptop"
+              draggable={false}
+            />
+          </div>
         </div>
       </section>
 
