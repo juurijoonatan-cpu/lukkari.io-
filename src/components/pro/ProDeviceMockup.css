@@ -1,0 +1,484 @@
+/* ═══════════════════════════════════════════════════════════
+   ProDeviceMockup — Tsemppi-style premium hero
+   Real app screenshots inside CSS device frames.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Root */
+.pdm-root {
+  --dm-purple:   #7c5cfc;
+  --dm-purple-l: rgba(124, 92, 252, 0.18);
+  --dm-amber:    #f4845f;
+  --dm-green:    #3dbf8a;
+  --dm-glass:    rgba(255,255,255,0.04);
+  --dm-glass-s:  rgba(255,255,255,0.06);
+  --dm-bd:       rgba(255,255,255,0.09);
+  --dm-bd-s:     rgba(255,255,255,0.16);
+  --dm-ink:      #f0ede8;
+  --dm-ink-s:    #a09c98;
+  --dm-ink-f:    #605c58;
+  --dm-chrome:   linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%);
+  min-height: 100vh;
+  padding-top: 0;
+}
+
+/* ─── HERO ─── */
+.pdm-hero {
+  position: relative;
+  text-align: center;
+  padding: 80px 20px 0;
+  overflow: hidden;
+}
+
+/* Glow orbs */
+.pdm-orbs { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.pdm-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.20;
+  animation: orb-drift 14s ease-in-out infinite alternate;
+}
+.pdm-orb-1 {
+  width: 500px; height: 500px;
+  top: -120px; left: -120px;
+  background: radial-gradient(circle, #7c5cfc, transparent 70%);
+  animation-delay: 0s;
+}
+.pdm-orb-2 {
+  width: 400px; height: 400px;
+  top: -80px; right: -80px;
+  background: radial-gradient(circle, #f4845f, transparent 70%);
+  animation-delay: -5s;
+}
+.pdm-orb-3 {
+  width: 320px; height: 320px;
+  bottom: 80px; left: 35%;
+  background: radial-gradient(circle, #3dbf8a, transparent 70%);
+  animation-delay: -10s;
+}
+@keyframes orb-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, -24px) scale(1.10); }
+}
+
+/* Badge */
+.pdm-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dm-chrome);
+  border-radius: 99px;
+  padding: 5px 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(20,18,30,0.85);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+  margin-bottom: 32px;
+  position: relative;
+}
+
+/* Headline */
+.pdm-hero-h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(52px, 8vw, 92px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  color: var(--dm-ink);
+  line-height: 1.0;
+  margin: 0 auto 22px;
+  max-width: 720px;
+  position: relative;
+}
+.pdm-hero-h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 40%, #f4845f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pdm-hero-sub {
+  font-size: 17px;
+  color: var(--dm-ink-s);
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+  position: relative;
+}
+
+/* CTA row */
+.pdm-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.pdm-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 17px 40px;
+  border-radius: 99px;
+  border: none;
+  background: linear-gradient(135deg, #7c5cfc, #a78bfa 80%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 8px 36px rgba(124,92,252,0.50), 0 1px 0 rgba(255,255,255,0.2) inset;
+  transition: transform .18s, box-shadow .18s;
+}
+.pdm-cta-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 50px rgba(124,92,252,0.65), 0 1px 0 rgba(255,255,255,0.2) inset;
+}
+.pdm-cta-primary span { font-size: 17px; line-height: 1; }
+
+.pdm-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 15px 30px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+  color: var(--dm-ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  transition: background .16s, border-color .16s, transform .16s;
+  backdrop-filter: blur(12px);
+}
+.pdm-cta-secondary:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.28);
+  transform: translateY(-2px);
+}
+
+.pdm-hero-foot {
+  font-size: 11px;
+  color: var(--dm-ink-f);
+  letter-spacing: 0.04em;
+  margin-bottom: 36px;
+  position: relative;
+}
+
+/* Feature pills */
+.pdm-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 0;
+  position: relative;
+}
+.pdm-feature-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  color: var(--dm-ink-s);
+  font-weight: 500;
+}
+.pdm-feature-pill svg { color: var(--dm-green); flex-shrink: 0; }
+
+/* ─── DEVICE STAGE ─── */
+.pdm-stage {
+  position: relative;
+  padding: 56px 0 32px;
+  overflow: visible;
+}
+
+/* Stage ambient glow under devices */
+.pdm-stage-glow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 300px;
+  background: radial-gradient(ellipse at center bottom,
+    rgba(124,92,252,0.22) 0%,
+    rgba(244,132,95,0.10) 40%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.pdm-stage-inner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 500px;
+  gap: 0;
+}
+
+/* ── Floating label tags ── */
+.pdm-tag {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,18,32,0.75);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--dm-ink);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.07) inset;
+  pointer-events: none;
+  animation: tag-float 6s ease-in-out infinite alternate;
+  z-index: 10;
+}
+.pdm-tag-1 { top: 70px;  left: calc(50% - 340px); animation-delay: 0s; }
+.pdm-tag-2 { top: 50px;  right: calc(50% - 340px); animation-delay: -2.2s; }
+.pdm-tag-3 { bottom: 90px; right: calc(50% - 400px); animation-delay: -4.4s; }
+@keyframes tag-float {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-10px); }
+}
+
+/* ─── LAPTOP DEVICE ─── */
+.pdm-laptop-wrap {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  filter:
+    drop-shadow(0 40px 80px rgba(0,0,0,0.75))
+    drop-shadow(0 0 1px rgba(0,0,0,0.9));
+}
+
+.pdm-laptop {
+  width: 580px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdm-laptop-lid {
+  width: 100%;
+  background: linear-gradient(160deg, #2a2840 0%, #18172a 60%, #100f1e 100%);
+  border-radius: 16px 16px 4px 4px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  padding: 10px 10px 6px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 30px 70px rgba(0,0,0,0.75),
+    0 1px 0 rgba(255,255,255,0.12) inset;
+  position: relative;
+}
+
+.pdm-laptop-cam {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.10);
+  margin: 0 auto 7px;
+}
+
+.pdm-laptop-display {
+  width: 100%;
+  height: 330px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0d0c1a;
+  border: 1px solid rgba(255,255,255,0.07);
+  position: relative;
+}
+
+.pdm-laptop-screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  display: block;
+}
+
+.pdm-laptop-base {
+  width: 110%;
+  height: 20px;
+  background: linear-gradient(180deg, #252338 0%, #1a192e 100%);
+  border-radius: 0 0 14px 14px;
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-top: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.65);
+}
+
+.pdm-laptop-trackpad {
+  width: 80px; height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+/* ─── PHONE DEVICE ─── */
+.pdm-phone-wrap {
+  position: absolute;
+  bottom: 20px;
+  z-index: 4;
+}
+
+/* Left phone: dark mode — lean left, slight forward tilt */
+.pdm-phone-left {
+  left: calc(50% - 360px);
+  transform: perspective(900px) rotateY(14deg) rotateX(-2deg) rotateZ(-5deg);
+  filter:
+    drop-shadow(0 40px 80px rgba(0,0,0,0.85))
+    drop-shadow(0 0 1px rgba(0,0,0,1));
+}
+
+/* Right phone: warm mode — lean right */
+.pdm-phone-right {
+  right: calc(50% - 360px);
+  transform: perspective(900px) rotateY(-14deg) rotateX(-2deg) rotateZ(5deg);
+  filter:
+    drop-shadow(0 40px 80px rgba(0,0,0,0.85))
+    drop-shadow(0 0 1px rgba(0,0,0,1));
+}
+
+.pdm-phone {
+  width: 154px;
+  height: 310px;
+  background: linear-gradient(160deg, #2d2b44 0%, #1a1928 60%, #111020 100%);
+  border-radius: 30px;
+  border: 1.5px solid rgba(255,255,255,0.16);
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 1px 0 rgba(255,255,255,0.20) inset;
+  overflow: visible;
+}
+
+/* Dynamic island (modern iPhone style) */
+.pdm-phone-island {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 11px;
+  background: #000;
+  border-radius: 8px;
+  z-index: 5;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.pdm-phone-inner {
+  position: absolute;
+  inset: 7px 6px 10px;
+  background: #0d0c1a;
+  border-radius: 25px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.pdm-phone-screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.pdm-phone-home {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.28);
+}
+
+/* Side buttons */
+.pdm-phone-btn {
+  position: absolute;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #3a3858 0%, #252342 100%);
+  border: 1px solid rgba(255,255,255,0.13);
+}
+.pdm-phone-vol1  { left: -3px; top: 62px;  width: 3px; height: 22px; }
+.pdm-phone-vol2  { left: -3px; top: 92px;  width: 3px; height: 22px; }
+.pdm-phone-power { right: -3px; top: 74px; width: 3px; height: 32px; }
+
+/* Warm phone gets a slightly lighter bezel */
+.pdm-phone-warm {
+  background: linear-gradient(160deg, #3a3030 0%, #2a1e1e 60%, #1e1414 100%);
+  border-color: rgba(255,200,160,0.16);
+}
+.pdm-phone-warm .pdm-phone-btn {
+  background: linear-gradient(180deg, #3a2a28 0%, #2a1e1e 100%);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 960px) {
+  .pdm-laptop { width: 460px; }
+  .pdm-laptop-display { height: 262px; }
+  .pdm-phone-left  { left: calc(50% - 290px); }
+  .pdm-phone-right { right: calc(50% - 290px); }
+  .pdm-tag-1 { left: 10px; }
+  .pdm-tag-2 { right: 10px; }
+  .pdm-tag-3 { right: 10px; }
+  .pdm-stage-inner { min-height: 420px; }
+}
+
+@media (max-width: 720px) {
+  .pdm-hero { padding: 60px 16px 0; }
+  .pdm-hero-sub { font-size: 15px; }
+
+  .pdm-stage-inner { min-height: 340px; }
+  .pdm-laptop { width: 320px; }
+  .pdm-laptop-display { height: 185px; }
+  .pdm-laptop-lid { padding: 6px 6px 5px; }
+
+  .pdm-phone-left {
+    left: auto;
+    right: calc(50% - 210px);
+    transform: perspective(700px) rotateY(-10deg) rotateZ(3deg) scale(0.84);
+    bottom: 10px;
+    z-index: 5;
+  }
+  .pdm-phone-right { display: none; }
+
+  .pdm-tag { display: none; }
+  .pdm-stage-glow { width: 400px; }
+
+  .pdm-pills-row { gap: 6px; }
+  .pdm-feature-pill { font-size: 10.5px; }
+
+  .pdm-cta-row { gap: 10px; }
+  .pdm-cta-primary  { padding: 14px 28px; font-size: 14px; }
+  .pdm-cta-secondary { padding: 13px 24px; font-size: 13px; }
+}
+
+@media (max-width: 440px) {
+  .pdm-hero-h1 { font-size: 46px; }
+  .pdm-laptop { width: 280px; }
+  .pdm-laptop-display { height: 162px; }
+  .pdm-phone-left {
+    right: calc(50% - 188px);
+    transform: perspective(600px) rotateY(-8deg) rotateZ(2deg) scale(0.78);
+  }
+}
