@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { isDemoActive } from '../../../utils/demo';
 import { loadState } from '../../../utils/storage';
@@ -48,7 +48,62 @@ function progressFromSelections(school, selections) {
   };
 }
 
-export function ProBeta() {
+// Pick the most prominent course for the AIOrb headline.
+// Uses today's live/next lesson first, then falls back to the most-filled period.
+function computeFocusCourse(school, selections, lessons) {
+  if (!school || !selections) return null;
+
+  // Prefer the currently live or first upcoming lesson today
+  const live = lessons.find(l => l.live && l.label);
+  if (live) return live.label;
+
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const upcoming = lessons.find(l => l.from != null && l.from > nowMin && l.label);
+  if (upcoming) return upcoming.label;
+
+  // Fallback: most-filled period, first course
+  let bestPeriod = 1, best = -1;
+  for (let pi = 1; pi <= school.periodCount; pi++) {
+    let n = 0;
+    for (let bi = 1; bi <= school.palkkiCount; bi++) {
+      if (selections[`p${pi}-b${bi}`]?.trim()) n++;
+    }
+    if (n > best) { best = n; bestPeriod = pi; }
+  }
+  for (let bi = 1; bi <= school.palkkiCount; bi++) {
+    const v = selections[`p${bestPeriod}-b${bi}`]?.trim();
+    if (v) return v;
+  }
+  return null;
+}
+
+// Build context-aware quick-ask suggestions from actual course selections.
+function computeSuggestions(school, selections) {
+  if (!school || !selections) return DEFAULT_SUGGESTIONS;
+
+  const courses = [];
+  for (let pi = 1; pi <= school.periodCount; pi++) {
+    for (let bi = 1; bi <= school.palkkiCount; bi++) {
+      const v = selections[`p${pi}-b${bi}`]?.trim();
+      if (v && !courses.includes(v)) courses.push(v);
+    }
+  }
+  if (!courses.length) return DEFAULT_SUGGESTIONS;
+
+  const suggestions = [];
+  if (courses[0]) suggestions.push(`Auta minua ${courses[0]}:n kanssa`);
+  if (courses[1]) suggestions.push(`Milloin aloittaa ${courses[1]} kertaus?`);
+  suggestions.push('Tee mulle lukusuunnitelma tälle viikolle');
+  return suggestions.slice(0, 3);
+}
+
+const DEFAULT_SUGGESTIONS = [
+  'Tee mulle lukusuunnitelma tälle viikolle',
+  'Onko aikataulussani konflikteja?',
+  'Mistä aloittaisin tänään?',
+];
+
+export function ProApp() {
   const [theme, setTheme] = useState(readTheme);
   const [panelOpen, setPanelOpen] = useState(false);
   const [tab, setTab] = useState('mentor');
@@ -59,12 +114,10 @@ export function ProBeta() {
   const [name, setName] = useState(null);
   const [demoMode, setDemoMode] = useState(false);
 
-  // Theme: persist + reflect on data attribute
   useEffect(() => {
     try { localStorage.setItem(THEME_KEY, theme); } catch {}
   }, [theme]);
 
-  // Auth + subscription gate (matches the previous ProApp behavior)
   useEffect(() => {
     const isDemo = isDemoActive();
     setDemoMode(isDemo);
@@ -83,7 +136,6 @@ export function ProBeta() {
       const status = data?.subscription_status || '';
       const active = ['active', 'trialing'].includes(status);
       if (!active && !isDemo) {
-        // No active subscription / no profile row → vaadi tilaus, älä päästä Beta:an
         window.location.hash = '/pro-subscribe';
         return;
       }
@@ -119,8 +171,22 @@ export function ProBeta() {
     openPanel('mentor');
   }, [openPanel]);
 
-  const { period } = buildTodayLessons(school, schedule?.selections);
+  const { period, lessons = [] } = buildTodayLessons(school, schedule?.selections);
   const progress = progressFromSelections(school, schedule?.selections);
+
+  const focusCourse = useMemo(
+    () => computeFocusCourse(school, schedule?.selections, lessons),
+    [school, schedule, lessons],
+  );
+
+  const suggestions = useMemo(
+    () => computeSuggestions(school, schedule?.selections),
+    [school, schedule],
+  );
+
+  const orbHeadline = focusCourse
+    ? { before: 'Tänään keskittyisin ', em: focusCourse, after: '.' }
+    : { before: 'Avaa ', em: 'mentor', after: ' aloittaaksesi.' };
 
   return (
     <div className="pro-beta" data-theme={theme}>
@@ -133,7 +199,7 @@ export function ProBeta() {
       />
       {demoMode && (
         <div className="pb-demo-banner" role="note">
-          Demo-tila — kirjaudu käyttääksesi oikeaa AI:ta.{' '}
+          Demo-tila —{' '}
           <a href="#/pro-register">Luo tili</a>
           {' · '}
           <a href="#/pro-login">Kirjaudu</a>
@@ -141,7 +207,7 @@ export function ProBeta() {
       )}
       <div className="pb-canvas">
         <AIOrb
-          headline={{ before: 'Tänään keskittyisin ', em: 'matikkaan', after: '.' }}
+          headline={orbHeadline}
           footText="Avaa mentor saadaksesi henkilökohtaisia neuvoja"
           onOpen={() => openPanel('mentor')}
         />
@@ -153,6 +219,7 @@ export function ProBeta() {
         />
         <AskAI
           headline={{ before: 'Mitä teen ', em: 'seuraavaksi', after: '?' }}
+          suggestions={suggestions}
           onAsk={ask}
         />
       </div>
@@ -169,3 +236,6 @@ export function ProBeta() {
     </div>
   );
 }
+
+// Keep legacy export name so the lazy import in App.jsx still works without a change.
+export { ProApp as ProBeta };

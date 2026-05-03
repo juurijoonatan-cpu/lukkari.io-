@@ -327,7 +327,7 @@ export function ProAuth({ initialTab = "login" }) {
         )}
 
         <p style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.13)", marginTop: 18, letterSpacing: "0.08em" }}>
-          VERSION 0.1 · BETA
+          LUKKARI.IO PRO
         </p>
       </div>
     </div>

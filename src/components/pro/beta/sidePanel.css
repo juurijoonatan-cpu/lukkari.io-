@@ -200,6 +200,13 @@
   font-size: 11px; color: var(--pb-ink-s);
   margin-top: 14px; line-height: 1.5;
 }
+.pb-cal-dt.has-exam { position: relative; }
+.pb-cal-exam-dot {
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: oklch(0.65 0.16 20);
+  display: block;
+}
 
 /* ── Plan ── */
 .pb-plan-empty {
