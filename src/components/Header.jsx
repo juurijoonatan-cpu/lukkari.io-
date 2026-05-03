@@ -1,6 +1,5 @@
 import { Ico } from './icons';
 import { SchoolPicker } from './SchoolPicker';
-import { LanguageToggle } from './LanguageToggle';
 import { useT } from '../i18n/i18n';
 
 const CHROME = "linear-gradient(145deg, #c8c8d0 0%, #f0f0f8 38%, #e4e4ec 56%, #9898a4 80%, #d4d4de 100%)";
@@ -117,9 +116,8 @@ export function Header({ tab, setTab, onGear, schoolId, setSchoolId, isPro }) {
           </div>
         </div>
 
-        {/* Right: language toggle + gear */}
+        {/* Right: gear only (language moved to settings panel) */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <LanguageToggle isPro={isPro} />
           <button className="icon-btn" onClick={onGear} style={{
             width: 36, height: 36, borderRadius: "50%",
             background: isPro ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)",
