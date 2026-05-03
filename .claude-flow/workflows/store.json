@@ -1,0 +1,66 @@
+{
+  "workflows": {
+    "workflow-1777800394274-wxdik9": {
+      "workflowId": "workflow-1777800394274-wxdik9",
+      "name": "pro-app-mvp-overhaul",
+      "description": "Overhaul ProBeta into a real paid Pro MVP — dynamic AI content, working PlanTab, CalendarTab with exam data, remove beta labels",
+      "steps": [
+        {
+          "stepId": "step-1",
+          "name": "rename-probeta-dynamic-content",
+          "type": "task",
+          "config": {
+            "description": "Rename ProBeta→ProApp, make AIOrb headline dynamic from schedule, compute AskAI suggestions from real courses, remove demo banner"
+          },
+          "status": "pending"
+        },
+        {
+          "stepId": "step-2",
+          "name": "rewrite-plantab",
+          "type": "task",
+          "config": {
+            "description": "Rewrite PlanTab to fetch study_plans+ai_recommendation, show weekly sessions, add generate-study-plan button"
+          },
+          "status": "pending"
+        },
+        {
+          "stepId": "step-3",
+          "name": "wire-calendartab-exams",
+          "type": "task",
+          "config": {
+            "description": "Wire CalendarTab to query exam_plans from DB, highlight exam dates on grid, list upcoming exams"
+          },
+          "status": "pending"
+        },
+        {
+          "stepId": "step-4",
+          "name": "remove-beta-labels",
+          "type": "task",
+          "config": {
+            "description": "Remove VERSION 0.1 BETA from ProAuth, remove beta comment in ProBeta, update App.jsx import"
+          },
+          "status": "pending"
+        },
+        {
+          "stepId": "step-5",
+          "name": "commit-push-pr",
+          "type": "task",
+          "config": {
+            "description": "Commit all changes and push to branch"
+          },
+          "status": "pending"
+        }
+      ],
+      "status": "running",
+      "currentStep": 0,
+      "variables": {
+        "branch": "claude/setup-lukkari-io-i23Qf",
+        "repo": "lukkari.io-"
+      },
+      "createdAt": "2026-05-03T09:26:34.274Z",
+      "startedAt": "2026-05-03T09:26:48.757Z"
+    }
+  },
+  "templates": {},
+  "version": "3.0.0"
+}
