@@ -212,12 +212,10 @@
 }
 
 .pdm-mockup-img {
-  width: 520px;
-  max-width: 90vw;
+  width: 360px;
+  max-width: 88vw;
   height: auto;
   display: block;
-  /* Remove the white/checkered background from the JPEG */
-  mix-blend-mode: normal;
 }
 
 /* ── Floating label tags ── */
@@ -426,7 +424,7 @@
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 960px) {
-  .pdm-mockup-img { width: 440px; }
+  .pdm-mockup-img { width: 300px; }
   .pdm-tag-1 { left: 12px; }
   .pdm-tag-2 { right: 12px; }
   .pdm-tag-3 { right: 12px; }
@@ -435,7 +433,7 @@
 @media (max-width: 720px) {
   .pdm-hero { padding: 60px 16px 0; }
   .pdm-hero-sub { font-size: 15px; }
-  .pdm-mockup-img { width: 340px; }
+  .pdm-mockup-img { width: 260px; }
   .pdm-tag { display: none; }
   .pdm-stage-glow { width: 340px; }
   .pdm-pills-row { gap: 6px; }
@@ -445,5 +443,5 @@
 
 @media (max-width: 440px) {
   .pdm-hero-h1 { font-size: 46px; }
-  .pdm-mockup-img { width: 280px; }
+  .pdm-mockup-img { width: 220px; }
 }
