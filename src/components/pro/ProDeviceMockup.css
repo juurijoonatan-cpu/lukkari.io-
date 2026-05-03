@@ -178,7 +178,7 @@
 .pdm-stage {
   position: relative;
   padding: 16px 0 0;
-  margin-bottom: -20px;
+  margin-bottom: 0;
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -239,7 +239,7 @@
 .pdm-mockup-phone {
   display: block;
   flex: 0 0 auto;
-  height: 340px;
+  height: 420px;
   width: auto;
   filter: drop-shadow(0 28px 56px rgba(0,0,0,0.75));
 }
@@ -248,7 +248,8 @@
 .pdm-laptop-section {
   display: flex;
   justify-content: center;
-  margin: 16px 0 0;
+  margin: 56px 0 0;
+  padding-bottom: 32px;
 }
 
 .pdm-laptop-section .pdm-mockup-laptop {
@@ -471,7 +472,7 @@
     gap: 20px;
   }
   .pdm-mockup-laptop { max-width: 88vw; }
-  .pdm-mockup-phone  { height: 280px; }
+  .pdm-mockup-phone  { height: 340px; }
   .pdm-tag { display: none; }
   .pdm-stage-glow { width: 340px; }
   .pdm-cta-primary { padding: 14px 28px; font-size: 14px; }
@@ -480,5 +481,5 @@
 @media (max-width: 440px) {
   .pdm-hero-h1 { font-size: 46px; }
   .pdm-mockup-laptop { max-width: 96vw; }
-  .pdm-mockup-phone  { height: 240px; }
+  .pdm-mockup-phone  { height: 300px; }
 }

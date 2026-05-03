@@ -76,7 +76,7 @@ export function ProDeviceMockup() {
         </div>
       </section>
 
-      <div className="pdm-sections" style={{ maxWidth: 760, margin: '0 auto', padding: '0 20px 80px' }}>
+      <div className="pdm-sections" style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px 120px' }}>
         <ProInfoStats />
         <ProInfoFlow />
         <ProInfoFeatures />
