@@ -177,8 +177,11 @@
 /* ─── DEVICE STAGE ─── */
 .pdm-stage {
   position: relative;
-  padding: 56px 0 32px;
+  padding: 40px 0 24px;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Stage ambient glow under devices */
@@ -187,24 +190,34 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
-  height: 300px;
+  width: 700px;
+  height: 280px;
   background: radial-gradient(ellipse at center bottom,
-    rgba(124,92,252,0.22) 0%,
-    rgba(244,132,95,0.10) 40%,
+    rgba(200,140,255,0.18) 0%,
+    rgba(244,132,95,0.10) 45%,
     transparent 70%
   );
-  filter: blur(40px);
+  filter: blur(50px);
   pointer-events: none;
+  z-index: 0;
 }
 
-.pdm-stage-inner {
+/* Single composed mockup image */
+.pdm-mockup-wrap {
   position: relative;
+  z-index: 2;
   display: flex;
-  align-items: flex-end;
   justify-content: center;
-  min-height: 500px;
-  gap: 0;
+  filter: drop-shadow(0 40px 80px rgba(0,0,0,0.55));
+}
+
+.pdm-mockup-img {
+  width: 520px;
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  /* Remove the white/checkered background from the JPEG */
+  mix-blend-mode: normal;
 }
 
 /* ── Floating label tags ── */
@@ -226,9 +239,9 @@
   animation: tag-float 6s ease-in-out infinite alternate;
   z-index: 10;
 }
-.pdm-tag-1 { top: 70px;  left: calc(50% - 340px); animation-delay: 0s; }
-.pdm-tag-2 { top: 50px;  right: calc(50% - 340px); animation-delay: -2.2s; }
-.pdm-tag-3 { bottom: 90px; right: calc(50% - 400px); animation-delay: -4.4s; }
+.pdm-tag-1 { top: 80px;  left: calc(50% - 300px); animation-delay: 0s; }
+.pdm-tag-2 { top: 60px;  right: calc(50% - 300px); animation-delay: -2.2s; }
+.pdm-tag-3 { bottom: 60px; right: calc(50% - 320px); animation-delay: -4.4s; }
 @keyframes tag-float {
   from { transform: translateY(0px); }
   to   { transform: translateY(-10px); }
@@ -413,51 +426,24 @@
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 960px) {
-  .pdm-laptop { width: 460px; }
-  .pdm-laptop-display { height: 262px; }
-  .pdm-phone-left  { left: calc(50% - 290px); }
-  .pdm-phone-right { right: calc(50% - 290px); }
-  .pdm-tag-1 { left: 10px; }
-  .pdm-tag-2 { right: 10px; }
-  .pdm-tag-3 { right: 10px; }
-  .pdm-stage-inner { min-height: 420px; }
+  .pdm-mockup-img { width: 440px; }
+  .pdm-tag-1 { left: 12px; }
+  .pdm-tag-2 { right: 12px; }
+  .pdm-tag-3 { right: 12px; }
 }
 
 @media (max-width: 720px) {
   .pdm-hero { padding: 60px 16px 0; }
   .pdm-hero-sub { font-size: 15px; }
-
-  .pdm-stage-inner { min-height: 340px; }
-  .pdm-laptop { width: 320px; }
-  .pdm-laptop-display { height: 185px; }
-  .pdm-laptop-lid { padding: 6px 6px 5px; }
-
-  .pdm-phone-left {
-    left: auto;
-    right: calc(50% - 210px);
-    transform: perspective(700px) rotateY(-10deg) rotateZ(3deg) scale(0.84);
-    bottom: 10px;
-    z-index: 5;
-  }
-  .pdm-phone-right { display: none; }
-
+  .pdm-mockup-img { width: 340px; }
   .pdm-tag { display: none; }
-  .pdm-stage-glow { width: 400px; }
-
+  .pdm-stage-glow { width: 340px; }
   .pdm-pills-row { gap: 6px; }
   .pdm-feature-pill { font-size: 10.5px; }
-
-  .pdm-cta-row { gap: 10px; }
-  .pdm-cta-primary  { padding: 14px 28px; font-size: 14px; }
-  .pdm-cta-secondary { padding: 13px 24px; font-size: 13px; }
+  .pdm-cta-primary { padding: 14px 28px; font-size: 14px; }
 }
 
 @media (max-width: 440px) {
   .pdm-hero-h1 { font-size: 46px; }
-  .pdm-laptop { width: 280px; }
-  .pdm-laptop-display { height: 162px; }
-  .pdm-phone-left {
-    right: calc(50% - 188px);
-    transform: perspective(600px) rotateY(-8deg) rotateZ(2deg) scale(0.78);
-  }
+  .pdm-mockup-img { width: 280px; }
 }

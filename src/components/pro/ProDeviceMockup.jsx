@@ -1,6 +1,6 @@
 /**
  * ProDeviceMockup — premium hero section for the Pro landing page.
- * Phone + laptop CSS device frames with REAL app screenshots inside.
+ * Real device mockup render (dual iPhones) with app screenshots composited in.
  */
 import { useCallback } from 'react';
 import { ProInfoStats }    from './info/ProInfoStats';
@@ -22,52 +22,18 @@ function SceneOrbs() {
   );
 }
 
-/* ── Phone device with real screenshot ── */
-function PhoneFrame({ src, className = '', alt = '' }) {
-  return (
-    <div className={`pdm-phone ${className}`}>
-      <div className="pdm-phone-island"/>
-      <div className="pdm-phone-inner">
-        <img src={src} alt={alt} className="pdm-phone-screenshot" draggable={false}/>
-      </div>
-      <div className="pdm-phone-home"/>
-      <div className="pdm-phone-btn pdm-phone-vol1"/>
-      <div className="pdm-phone-btn pdm-phone-vol2"/>
-      <div className="pdm-phone-btn pdm-phone-power"/>
-    </div>
-  );
-}
-
-/* ── Laptop device with real screenshot ── */
-function LaptopFrame({ src }) {
-  return (
-    <div className="pdm-laptop">
-      <div className="pdm-laptop-lid">
-        <div className="pdm-laptop-cam"/>
-        <div className="pdm-laptop-display">
-          <img src={src} alt="Lukkari Pro dashboard" className="pdm-laptop-screenshot" draggable={false}/>
-        </div>
-      </div>
-      <div className="pdm-laptop-base">
-        <div className="pdm-laptop-trackpad"/>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main export ── */
 export function ProDeviceMockup() {
   const { lang } = useLang();
   const fi = lang !== 'en';
 
   const handleDemo = useCallback(() => {
-    // Always navigate to pro-app — gate is handled inside ProBeta itself
     window.location.hash = '/pro-app';
   }, []);
 
   const PILLS = fi
-    ? ['AI-lukusuunnitelmat', 'Aikatauluanalyysi', 'Tenttimuistutukset', 'Älykäs kertausaikataulu']
-    : ['AI Study Plans', 'Schedule Analysis', 'Exam Reminders', 'Smart Revision Schedule'];
+    ? ['AI-lukusuunnitelmat', 'Aikatauluanalyysi', 'Tenttimuistutukset', 'Älykäs kertaus']
+    : ['AI Study Plans', 'Schedule Analysis', 'Exam Reminders', 'Smart Revision'];
 
   return (
     <div className="pi pdm-root">
@@ -76,7 +42,6 @@ export function ProDeviceMockup() {
       <section className="pdm-hero">
         <SceneOrbs />
 
-        {/* Badge */}
         <div className="pdm-hero-badge">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
             <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z" fill="currentColor"/>
@@ -84,7 +49,6 @@ export function ProDeviceMockup() {
           Lukkari Pro · Beta
         </div>
 
-        {/* Headline */}
         <h1 className="pdm-hero-h1">
           {fi ? <>Opiskelusi.<br/><em>AI-tasolla.</em></> : <>Your studies.<br/><em>AI-powered.</em></>}
         </h1>
@@ -96,7 +60,6 @@ export function ProDeviceMockup() {
           }
         </p>
 
-        {/* Single CTA — demo only, no register */}
         <div className="pdm-cta-row">
           <button className="pdm-cta-primary" onClick={handleDemo}>
             {fi ? 'Kokeile demoa' : 'Try the demo'}
@@ -111,7 +74,6 @@ export function ProDeviceMockup() {
           }
         </p>
 
-        {/* Feature pills */}
         <div className="pdm-pills-row">
           {PILLS.map(p => (
             <span key={p} className="pdm-feature-pill">
@@ -124,25 +86,16 @@ export function ProDeviceMockup() {
         </div>
       </section>
 
-      {/* ── DEVICE STAGE ── */}
+      {/* ── DEVICE STAGE — single composed mockup image ── */}
       <section className="pdm-stage">
         <div className="pdm-stage-glow" aria-hidden/>
-
-        <div className="pdm-stage-inner">
-          {/* Laptop — center back */}
-          <div className="pdm-laptop-wrap">
-            <LaptopFrame src="/app-screens/desktop2.jpg" />
-          </div>
-
-          {/* Phone left — dark */}
-          <div className="pdm-phone-wrap pdm-phone-left">
-            <PhoneFrame src="/app-screens/phone-dark.jpg" alt="Lukkari Pro dark mode" className="pdm-phone-dark"/>
-          </div>
-
-          {/* Phone right — warm */}
-          <div className="pdm-phone-wrap pdm-phone-right">
-            <PhoneFrame src="/app-screens/phone-warm.jpg" alt="Lukkari Pro warm mode" className="pdm-phone-warm"/>
-          </div>
+        <div className="pdm-mockup-wrap">
+          <img
+            src="/app-screens/dual-phones.png"
+            alt="Lukkari Pro on iPhone"
+            className="pdm-mockup-img"
+            draggable={false}
+          />
         </div>
 
         {/* Floating tags */}
@@ -168,7 +121,7 @@ export function ProDeviceMockup() {
         </div>
       </section>
 
-      {/* ── SECTIONS ── */}
+      {/* ── INFO SECTIONS ── */}
       <div className="pdm-sections" style={{ maxWidth: 760, margin: '0 auto', padding: '0 20px 80px' }}>
         <ProInfoStats />
         <ProInfoFlow />
