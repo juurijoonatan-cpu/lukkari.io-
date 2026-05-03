@@ -2,13 +2,15 @@ import { lazy, Suspense, useEffect } from 'react';
 import { MentorChat } from './MentorChat';
 import './sidePanel.css';
 
-const CalendarTab = lazy(() => import('./CalendarTab').then(m => ({ default: m.CalendarTab })));
-const PlanTab     = lazy(() => import('./PlanTab').then(m => ({ default: m.PlanTab })));
+const CalendarTab   = lazy(() => import('./CalendarTab').then(m => ({ default: m.CalendarTab })));
+const PlanTab       = lazy(() => import('./PlanTab').then(m => ({ default: m.PlanTab })));
+const AnalyticsTab  = lazy(() => import('./AnalyticsTab').then(m => ({ default: m.AnalyticsTab })));
 
 const TABS = [
-  { id: 'mentor', label: 'Mentor' },
-  { id: 'cal',    label: 'Kalenteri' },
-  { id: 'plan',   label: 'Suunnitelma' },
+  { id: 'mentor',    label: 'Mentor' },
+  { id: 'cal',       label: 'Kalenteri' },
+  { id: 'plan',      label: 'Suunnitelma' },
+  { id: 'analytics', label: 'Analyysi' },
 ];
 
 export function SidePanel({
@@ -77,6 +79,11 @@ export function SidePanel({
             {open && tab === 'plan' && (
               <Suspense fallback={<div className="pb-side-loading">Ladataan…</div>}>
                 <PlanTab/>
+              </Suspense>
+            )}
+            {open && tab === 'analytics' && (
+              <Suspense fallback={<div className="pb-side-loading">Ladataan…</div>}>
+                <AnalyticsTab school={school} schedule={schedule}/>
               </Suspense>
             )}
           </div>

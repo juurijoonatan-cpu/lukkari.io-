@@ -115,6 +115,18 @@ Deno.serve(async (req) => {
       .update({ ai_requests_this_month: currentRequests + 1 })
       .eq("id", user.id);
 
+    // Log AI event for analytics (fire-and-forget)
+    const tokensUsed: number = oaiData.usage?.total_tokens ?? 0;
+    supabase.from("ai_events").insert({
+      user_id: user.id,
+      event_type: "chat",
+      intent: triage?.intent ?? null,
+      course_code: triage?.course_code ?? null,
+      urgency: triage?.urgency ?? null,
+      tone: triage?.tone ?? null,
+      tokens_used: tokensUsed,
+    }).then(() => {});
+
     return json({ content, requestsUsed: currentRequests + 1 });
 
   } catch (e) {
