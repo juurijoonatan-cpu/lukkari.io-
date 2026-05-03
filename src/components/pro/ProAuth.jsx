@@ -126,7 +126,7 @@ export function ProAuth({ initialTab = "login" }) {
     setLoading(true); setError(null);
     const { data, error: err } = await supabase.auth.signUp({
       email: email.trim(), password,
-      options: { emailRedirectTo: `${window.location.origin}/#/pro-login` },
+      options: { emailRedirectTo: window.location.origin },
     });
     if (err) { setError(err.message); setLoading(false); return; }
     if (data.session) {
@@ -222,7 +222,7 @@ export function ProAuth({ initialTab = "login" }) {
               <button type="button" onClick={async () => {
                 if (!email.trim()) { setError("Kirjoita sähköpostiosoitteesi ensin."); return; }
                 setLoading(true);
-                await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/#/pro-login` });
+                await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
                 setInfo("Salasanan palautuslinkki lähetetty sähköpostiisi.");
                 setLoading(false);
               }} style={{ background: "none", border: "none", fontSize: 11, color: "#605c58", cursor: "pointer", fontFamily: "inherit" }}>
@@ -327,7 +327,7 @@ export function ProAuth({ initialTab = "login" }) {
         )}
 
         <p style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.13)", marginTop: 18, letterSpacing: "0.08em" }}>
-          VERSION 0.1 · BETA
+          LUKKARI.IO PRO
         </p>
       </div>
     </div>

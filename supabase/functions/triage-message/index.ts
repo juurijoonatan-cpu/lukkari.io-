@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     // Local fallback: if model didn't catch a course code, try regex.
     const fallbackCode = triage.course_code ?? localCourseCode(message);
 
-    return json({
+    const result = {
       ok: true,
       intent: (triage.intent as string) ?? "other",
       course_code: (fallbackCode as string | null) ?? null,
@@ -96,7 +96,20 @@ Deno.serve(async (req) => {
       needs_note_ingestion: !!triage.needs_note_ingestion || !!has_attachment,
       urgency: (triage.urgency as string) ?? "normal",
       tone: (triage.tone as string) ?? "neutral",
-    });
+    };
+
+    // Log triage event for analytics (fire-and-forget)
+    sb.from("ai_events").insert({
+      user_id: user.id,
+      event_type: "triage",
+      intent: result.intent,
+      course_code: result.course_code,
+      urgency: result.urgency,
+      tone: result.tone,
+      tokens_used: oaiData.usage?.total_tokens ?? 0,
+    }).then(() => {});
+
+    return json(result);
   } catch (err) {
     return errorResponse(err);
   }
