@@ -211,36 +211,35 @@
   width: 100%;
 }
 
-/* Device stage: laptop + phone overlapping */
-.pdm-devices-stack {
-  position: relative;
-  width: 620px;
-  max-width: 92vw;
-  /* extra bottom padding so phone doesn't clip */
-  padding-bottom: 60px;
+/* ─── DEVICE ROW: side-by-side on desktop, stacked on mobile ─── */
+.pdm-devices-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 860px;
   margin: 0 auto;
 }
 
-/* Laptop — 810x308, full width of container */
+/* Laptop — 810×308 wide mockup, takes most of the width */
 .pdm-mockup-laptop {
   display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 560px;
   width: 100%;
   height: auto;
-  position: relative;
-  z-index: 2;
   filter: drop-shadow(0 24px 56px rgba(0,0,0,0.60));
 }
 
-/* Phone — 800x1312, AR≈0.61, rendered ~170px wide / 280px tall
-   sits at bottom-right, overlapping laptop */
+/* Phone — 1206×2622, portrait, fixed height ~260px ≈ 120px wide */
 .pdm-mockup-phone {
   display: block;
-  width: 170px;
-  height: auto;
-  position: absolute;
-  right: -10px;
-  bottom: 0;
-  z-index: 4;
+  flex: 0 0 auto;
+  height: 260px;
+  width: auto;
   filter: drop-shadow(0 28px 56px rgba(0,0,0,0.75));
 }
 
@@ -449,11 +448,17 @@
 }
 
 /* ─── RESPONSIVE ─── */
-@media (max-width: 720px) {
+/* Mobiili: pino allekkain */
+@media (max-width: 680px) {
   .pdm-hero { padding: 60px 16px 0; }
   .pdm-hero-sub { font-size: 15px; }
-  .pdm-devices-stack { width: 90vw; padding-bottom: 48px; }
-  .pdm-mockup-phone  { width: 130px; right: -6px; }
+  .pdm-devices-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .pdm-mockup-laptop { max-width: 88vw; }
+  .pdm-mockup-phone  { height: 220px; }
   .pdm-tag { display: none; }
   .pdm-stage-glow { width: 340px; }
   .pdm-cta-primary { padding: 14px 28px; font-size: 14px; }
@@ -461,6 +466,6 @@
 
 @media (max-width: 440px) {
   .pdm-hero-h1 { font-size: 46px; }
-  .pdm-devices-stack { width: 96vw; padding-bottom: 40px; }
-  .pdm-mockup-phone  { width: 110px; right: -4px; }
+  .pdm-mockup-laptop { max-width: 96vw; }
+  .pdm-mockup-phone  { height: 180px; }
 }
