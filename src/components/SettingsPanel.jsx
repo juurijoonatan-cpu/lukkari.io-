@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Ico } from './icons';
 import { buildTextExport } from '../utils/export';
 import { recordSubscribe, recordDownload, sendScheduleEmail } from '../utils/leads';
-import { useT } from '../i18n/i18n';
+import { useT, useLang } from '../i18n/i18n';
 import { schoolYearOptions } from '../utils/year';
 
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
 
 export function SettingsPanel({ open, onClose, school, selections, year, setYear, onClear, filledCount }) {
   const t = useT();
+  const { lang, setLang } = useLang();
   const [copied, setCopied] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
   const [shareConsent, setShareConsent] = useState(false);
@@ -144,6 +145,23 @@ export function SettingsPanel({ open, onClose, school, selections, year, setYear
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Language */}
+          <div>
+            <div className="sec-label">{t('lang.toggle')}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {['fi', 'en'].map(l => (
+                <button key={l} onClick={() => setLang(l)} style={{
+                  flex: 1, padding: "7px 4px", borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                  border: `1.5px solid ${lang === l ? "var(--accent)" : "rgba(255,255,255,0.8)"}`,
+                  background: lang === l ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)",
+                  color: lang === l ? "var(--accent)" : "var(--ink-s)",
+                  transition: "all .14s", fontFamily: "inherit",
+                  textTransform: "uppercase", letterSpacing: "0.08em",
+                }}>{t(`lang.${l}`)}</button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <div className="sec-label">{t('settings.year')}</div>
